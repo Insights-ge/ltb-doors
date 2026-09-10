@@ -42,7 +42,8 @@ class UserForm
                     ->multiple()
                     ->preload()
                     ->searchable()
-                    ->noOptionsMessage(__('panel.users.form.roles_no_options')),
+                    ->noOptionsMessage(__('panel.users.form.roles_no_options'))
+                    ->hidden(fn (string $operation): bool => $operation === 'edit'),
             ]);
     }
 }
