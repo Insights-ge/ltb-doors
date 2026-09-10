@@ -38,7 +38,18 @@ class DatabaseSeeder extends Seeder
             '--panel' => 'admin',
         ]);
 
-        Role::firstOrCreate(['name' => RoleEnum::Admin->value]);
+        $adminRole = Role::firstOrCreate(['name' => RoleEnum::Admin->value]);
+        $adminRole->givePermissionTo(['ViewAny:User', 'View:User']);
+
+        $ltbAdmin = User::query()->firstOrCreate(
+            ['email' => 'admin@ltb.ge'],
+            [
+                'name' => 'LTB admin',
+                'password' => Hash::make('1234'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $ltbAdmin->assignRole(RoleEnum::Admin->value);
 
         $this->call(GeneralSettingsSeeder::class);
         $this->call(BackupPermissionSeeder::class);

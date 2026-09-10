@@ -19,8 +19,8 @@ class Login extends BaseLogin
         parent::mount();
 
         $this->form->fill([
-            'email' => 'demo@demo.com',
-            'password' => 'demo',
+            'email' => 'admin@ltb.ge',
+            'password' => '1234',
             'remember' => true,
         ]);
     }
