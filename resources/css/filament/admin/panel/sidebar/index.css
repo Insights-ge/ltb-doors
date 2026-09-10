@@ -32,6 +32,10 @@
         --tw-ring-color: var(--insights-theme-table-rule);
     }
 
+    :not(.fi-body-has-topbar) .fi-sidebar-header .fi-logo {
+        padding-top: 0.75rem;
+    }
+
     .fi-sidebar-header-controls:after {
         content: var(--tw-content);
         border-color: var(--insights-theme-table-rule);

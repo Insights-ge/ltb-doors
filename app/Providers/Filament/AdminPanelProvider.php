@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Filament\Resources\Users\UserResource;
 use App\Http\Middleware\SyncLocaleFromSession;
 use App\Settings\GeneralSettings;
+use App\Support\AdminTheme;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -55,14 +56,14 @@ class AdminPanelProvider extends PanelProvider
                 'red' => Color::hex('#ff5e5b'),
                 'purple' => Color::hex('#9d4edd'),
             ])
-            //->sidebarCollapsibleOnDesktop()
+            // ->sidebarCollapsibleOnDesktop()
             ->topbar(false)
             ->maxContentWidth(Width::Full)
             ->unsavedChangesAlerts()
             ->sidebarWidth('20rem')
             ->brandLogo(fn () => $this->brandLogoUrl())
             ->darkModeBrandLogo(fn () => $this->darkModeBrandLogoUrl())
-            ->brandLogoHeight(fn () => auth()->check() ? '3.5rem' : '2.5rem')
+            ->brandLogoHeight(fn () => auth()->check() ? '4rem' : '2.5rem')
             ->favicon(fn () => $this->faviconUrl())
             ->defaultThemeMode(ThemeMode::System)
             ->homeUrl(fn () => UserResource::getUrl())
