@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
 use Spatie\TranslationLoader\LanguageLine;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LanguageLinePolicy
 {
     use HandlesAuthorization;
-
+    
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:LanguageLine');
@@ -66,4 +66,5 @@ class LanguageLinePolicy
     {
         return $authUser->can('Reorder:LanguageLine');
     }
+
 }
