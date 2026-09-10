@@ -28,15 +28,19 @@ class UserPolicy
 
     public function update(User $authUser, User $user): bool
     {
-        if ($user->hasRole(Role::SuperAdmin->value) && ! $authUser->hasRole(Role::SuperAdmin->value)) {
+        if ($this->targetsSuperAdminWithoutBeingOne($authUser, $user)) {
             return false;
         }
 
         return $authUser->can('Update:User');
     }
 
-    public function delete(AuthUser $authUser): bool
+    public function delete(User $authUser, User $user): bool
     {
+        if ($this->targetsSuperAdminWithoutBeingOne($authUser, $user)) {
+            return false;
+        }
+
         return $authUser->can('Delete:User');
     }
 
@@ -68,5 +72,10 @@ class UserPolicy
     public function reorder(AuthUser $authUser): bool
     {
         return $authUser->can('Reorder:User');
+    }
+
+    private function targetsSuperAdminWithoutBeingOne(User $authUser, User $user): bool
+    {
+        return $user->hasRole(Role::SuperAdmin->value) && ! $authUser->hasRole(Role::SuperAdmin->value);
     }
 }

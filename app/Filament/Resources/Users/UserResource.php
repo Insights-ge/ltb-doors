@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Enums\Role as RoleEnum;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -14,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
 {
@@ -25,7 +27,13 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['roles']);
+        $query = parent::getEloquentQuery()->with(['roles']);
+
+        if (Auth::user()?->hasRole(RoleEnum::SuperAdmin->value)) {
+            return $query;
+        }
+
+        return $query->whereDoesntHave('roles', fn (Builder $query): Builder => $query->where('name', RoleEnum::SuperAdmin->value));
     }
 
     public static function form(Schema $schema): Schema

@@ -10,6 +10,7 @@ return [
         'table' => [
             'name' => 'Name',
             'email' => 'Email',
+            'role' => 'Role',
             'email_verified_at' => 'Email verified at',
             'created_at' => 'Created at',
             'updated_at' => 'Updated at',
@@ -24,6 +25,7 @@ return [
             'password' => 'Password',
             'role' => 'Role',
             'roles_no_options' => 'No roles available',
+            'roles_super_admin_forbidden' => 'Only a super admin can assign the super admin role.',
         ],
     ],
     'roles' => [

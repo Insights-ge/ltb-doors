@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role as RoleEnum;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -35,6 +37,8 @@ class DatabaseSeeder extends Seeder
             '--user' => 1,
             '--panel' => 'admin',
         ]);
+
+        Role::firstOrCreate(['name' => RoleEnum::Admin->value]);
 
         $this->call(GeneralSettingsSeeder::class);
         $this->call(BackupPermissionSeeder::class);

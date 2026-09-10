@@ -10,6 +10,7 @@ return [
         'table' => [
             'name' => 'სახელი',
             'email' => 'ელ-ფოსტა',
+            'role' => 'როლი',
             'email_verified_at' => 'დადასტურების თარიღი',
             'created_at' => 'შექმნის თარიღი',
             'updated_at' => 'განახლების თარიღი',
@@ -24,6 +25,7 @@ return [
             'password' => 'პაროლი',
             'role' => 'როლი',
             'roles_no_options' => 'როლები ვერ მოიძებნა',
+            'roles_super_admin_forbidden' => 'სუპერ ადმინის როლის მინიჭება მხოლოდ სუპერ ადმინს შეუძლია.',
         ],
     ],
     'roles' => [
