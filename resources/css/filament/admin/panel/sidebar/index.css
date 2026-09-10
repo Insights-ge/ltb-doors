@@ -36,6 +36,28 @@
         padding-top: 0.75rem;
     }
 
+    .fi-sidebar-header {
+        justify-content: flex-start;
+        gap: 0.625rem;
+    }
+
+    .fi-sidebar-header-logo-ctn {
+        flex: 0 1 auto;
+    }
+
+    .fi-sliding-doors-brand-text {
+        padding-top: 0.75rem;
+        font-family: var(--insights-theme-font-display);
+        font-size: 1.125rem;
+        font-weight: var(--font-weight-semibold);
+        color: var(--gray-900);
+        white-space: nowrap;
+    }
+
+    .fi-sliding-doors-brand-text:where(.dark, .dark *) {
+        color: var(--gray-100);
+    }
+
     .fi-sidebar-header-controls:after {
         content: var(--tw-content);
         border-color: var(--insights-theme-table-rule);
