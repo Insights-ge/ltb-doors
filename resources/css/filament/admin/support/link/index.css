@@ -1,0 +1,5 @@
+@layer insights-theme {
+    .fi-link .fi-link-badge-ctn {
+        border-radius: 2147483647px;
+    }
+}

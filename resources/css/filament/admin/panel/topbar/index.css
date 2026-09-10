@@ -1,25 +1,59 @@
-.fi-topbar-item .fi-topbar-item-btn {
-    @apply rounded-full px-4;
-}
+@layer insights-theme {
+    .fi-topbar {
+        background-color: var(--insights-theme-chrome);
+        --tw-shadow: 0 0 #0000;
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        --tw-ring-color: var(--insights-theme-table-rule);
+    }
 
-.fi-topbar-item.fi-active .fi-topbar-item-btn {
-    @apply bg-primary-400 dark:bg-primary-600 shadow-sm;
-}
+    .fi-topbar-item-btn {
+        border-radius: 2147483647px;
+    }
 
-.fi-topbar-item.fi-active .fi-topbar-item-label,
-.fi-topbar-item.fi-active .fi-topbar-item-icon {
-    @apply text-gray-900/75 dark:text-white;
-}
+    @media (hover: hover) {
+        .fi-topbar-item-btn:hover {
+            background-color: var(--gray-100);
+        }
+    }
 
-.fi-topbar-item.fi-active .fi-topbar-item-badge-ctn .fi-badge {
-    @apply bg-white text-gray-900 dark:bg-gray-900/75 dark:text-white;
-}
+    .fi-topbar-item-btn:focus-visible {
+        background-color: var(--gray-100);
+    }
 
-.fi-topbar-item.fi-active .fi-topbar-group-toggle-icon {
-    @apply text-gray-900/75 dark:text-white;
-}
+    @media (hover: hover) {
+        .fi-topbar-item-btn:where(.dark, .dark *):hover {
+            background-color: var(--gray-800);
+        }
+    }
 
-/* TODO: Implement this */
-.fi-topbar-group-dropdown-trigger-btn {
-    @apply rounded-3xl;
+    .fi-topbar-item-btn:where(.dark, .dark *):focus-visible {
+        background-color: var(--gray-800);
+    }
+
+    .fi-topbar-item.fi-active .fi-topbar-item-btn {
+        background-color: var(--primary-500);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-topbar-item.fi-active .fi-topbar-item-btn {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-topbar-item.fi-active .fi-topbar-item-btn:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-topbar-item.fi-active .fi-topbar-item-btn:where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
 }

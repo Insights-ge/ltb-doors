@@ -1,11 +1,53 @@
-.fi-modal-window {
-    @apply rounded-3xl;
-}
+@layer insights-theme {
+    .fi-modal:not(.fi-modal-slide-over):not(.fi-width-screen)>.fi-modal-window-ctn>.fi-modal-window {
+        border-radius: var(--insights-theme-radius);
+    }
 
-.fi-modal-close-overlay {
-    @apply backdrop-blur-xs;
-}
+    .fi-modal:not(.fi-modal-slide-over):not(.fi-width-screen).fi-modal-has-sticky-header>.fi-modal-window-ctn>.fi-modal-window>.fi-modal-header {
+        border-top-left-radius: var(--insights-theme-radius);
+        border-top-right-radius: var(--insights-theme-radius);
+    }
 
-.fi-modal-slide-over .fi-modal-window {
-    @apply mt-2 mr-3 h-[calc(100vh-2rem)];
+    .fi-modal:not(.fi-modal-slide-over):not(.fi-width-screen).fi-modal-has-sticky-footer>.fi-modal-window-ctn>.fi-modal-window>.fi-modal-footer {
+        border-bottom-right-radius: var(--insights-theme-radius);
+        border-bottom-left-radius: var(--insights-theme-radius);
+    }
+
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window {
+        --tw-shadow: var(--insights-theme-shadow-overlay);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading {
+        font-family: var(--insights-theme-font-display);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading .fi-badge,
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading .fi-btn,
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading .fi-icon-btn,
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading .fi-link,
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-heading .fi-ac {
+        font-family:
+            var(--font-family), ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window .fi-modal-description {
+        --tw-leading: var(--insights-theme-leading-reading);
+        line-height: var(--insights-theme-leading-reading);
+    }
+
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window.fi-transition-enter,
+    .fi-modal>.fi-modal-window-ctn>.fi-modal-window.fi-transition-leave {
+        --tw-duration: 0.2s;
+        --tw-ease: var(--ease-out);
+        transition-duration: 0.2s;
+        transition-timing-function: var(--ease-out);
+    }
 }

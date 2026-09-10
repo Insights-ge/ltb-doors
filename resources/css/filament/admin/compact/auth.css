@@ -1,0 +1,5 @@
+@layer compact-theme {
+    .fi-simple-layout :not(#fi):not(#fi) {
+        all: revert-layer;
+    }
+}

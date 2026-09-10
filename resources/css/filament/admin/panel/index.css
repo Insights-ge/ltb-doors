@@ -1,6 +1,8 @@
-@import './layout/index.css';
 @import './search/index.css';
+@import './header/index.css';
+@import './layout/index.css';
 @import './sidebar/index.css';
 @import './tenant-menu/index.css';
 @import './theme-switcher/index.css';
 @import './topbar/index.css';
+@import './user-menu/index.css';

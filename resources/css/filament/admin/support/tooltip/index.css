@@ -1,0 +1,12 @@
+@layer insights-theme {
+    .tippy-box {
+        --tippy-background-color: var(--gray-800);
+        --tippy-box-shadow: var(--insights-theme-shadow-floating);
+        border-radius: var(--insights-theme-radius-small);
+        color: var(--gray-50);
+    }
+
+    .tippy-box:where(.dark, .dark *) {
+        --tippy-background-color: var(--gray-700);
+    }
+}

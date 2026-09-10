@@ -1,0 +1,9 @@
+@layer insights-theme {
+    .fi-avatar {
+        --tw-shadow: var(--insights-theme-avatar-lift);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+}

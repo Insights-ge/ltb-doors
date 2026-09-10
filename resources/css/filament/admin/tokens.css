@@ -1,0 +1,59 @@
+@layer insights-theme {
+    .fi-body {
+        --insights-theme-shadow-hue: 28 30% 18%;
+        --insights-theme-shadow-flat:
+            0 1px 2px -1px hsl(var(--insights-theme-shadow-hue) / 7%),
+            0 2px 6px -2px hsl(var(--insights-theme-shadow-hue) / 7%);
+        --insights-theme-shadow-raised:
+            0 1px 2px -1px hsl(var(--insights-theme-shadow-hue) / 9%),
+            0 4px 12px -4px hsl(var(--insights-theme-shadow-hue) / 11%);
+        --insights-theme-shadow-floating:
+            0 2px 4px -2px hsl(var(--insights-theme-shadow-hue) / 10%),
+            0 12px 28px -8px hsl(var(--insights-theme-shadow-hue) / 16%);
+        --insights-theme-shadow-overlay:
+            0 4px 8px -4px hsl(var(--insights-theme-shadow-hue) / 12%),
+            0 24px 56px -12px hsl(var(--insights-theme-shadow-hue) / 22%);
+        --insights-theme-ground: var(--gray-50);
+        --insights-theme-chrome: var(--insights-theme-ground);
+        --insights-theme-font-display: var(--font-serif);
+        --insights-theme-input-border: transparent;
+        --insights-theme-input-fill: var(--gray-100);
+        --insights-theme-input-fill-focus: var(--color-white);
+        --insights-theme-leading-reading: 1.7;
+        --insights-theme-table-rule: var(--gray-200);
+        --insights-theme-row-tint: var(--insights-theme-ground);
+        --insights-theme-row-tint-selected: var(--insights-theme-row-tint);
+        --insights-theme-dark-glow: none;
+        --insights-theme-paper-wash:
+            radial-gradient(80% 42% at 50% 0%, #f3e4cd8c 0%, transparent 70%),
+            radial-gradient(135% 78% at 50% 0%, #f4e7d773 0%, transparent 80%);
+        --insights-theme-icon-halo-width: 0.625rem;
+        --insights-theme-avatar-lift:
+            0 0 0 1px hsl(var(--insights-theme-shadow-hue) / 9%),
+            0 1px 2px -1px hsl(var(--insights-theme-shadow-hue) / 14%);
+    }
+
+    .dark .fi-body {
+        --insights-theme-shadow-flat: 0 0 #0000;
+        --insights-theme-shadow-raised: 0 0 #0000;
+        --insights-theme-shadow-floating:
+            0 2px 4px -2px #0000004d, 0 12px 28px -8px #00000073;
+        --insights-theme-shadow-overlay:
+            0 4px 8px -4px #00000059, 0 24px 56px -12px #0000008c;
+        --insights-theme-ground: #191512;
+        --insights-theme-chrome: var(--insights-theme-dark-raised);
+        --insights-theme-input-fill: var(--insights-theme-dark-well);
+        --insights-theme-input-fill-focus: var(--insights-theme-dark-well-strong);
+        --insights-theme-table-rule: var(--insights-theme-dark-well-strong);
+        --insights-theme-row-tint: var(--insights-theme-dark-well);
+        --insights-theme-row-tint-selected: var(--insights-theme-dark-well-strong);
+        --insights-theme-dark-raised: var(--gray-900);
+        --insights-theme-dark-well: var(--gray-800);
+        --insights-theme-dark-well-strong: var(--gray-700);
+        --insights-theme-dark-glow:
+            radial-gradient(100% 38% at 50% 0%, #e2a75a1a 0%, transparent 70%),
+            radial-gradient(165% 76% at 50% 0%, #be7a3717 0%, transparent 78%);
+        --insights-theme-paper-wash: none;
+        --insights-theme-avatar-lift: 0 0 0 1px #d5c9b921;
+    }
+}

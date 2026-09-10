@@ -1,20 +1,88 @@
-.fi-tabs {
-    @apply rounded-3xl p-1;
-}
+@layer insights-theme {
+    .fi-tabs:not(.fi-contained) {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        border-radius: 2147483647px;
+    }
 
-.fi-tabs-item {
-    @apply rounded-full;
-}
+    .fi-tabs-item {
+        border-radius: 2147483647px;
+    }
 
-.fi-tabs-item.fi-active {
-    @apply bg-primary-400 dark:bg-primary-600;
-}
+    .fi-tabs-item.fi-active {
+        background-color: var(--primary-500);
+    }
 
-.fi-tabs-item.fi-active .fi-tabs-item-label,
-.fi-tabs-item.fi-active .fi-icon {
-    @apply text-gray-900/75 dark:text-white;
-}
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
 
-.fi-tabs-item.fi-active .fi-badge {
-    @apply bg-white text-gray-900 dark:bg-gray-900/75 dark:text-white;
+    .fi-tabs-item.fi-active:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active:where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-tabs-item.fi-active>.fi-badge:not(.fi-color) {
+        --insights-theme-chip-seed: var(--primary-500);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active>.fi-badge:not(.fi-color) {
+            --insights-theme-chip-seed: color-mix(in oklab,
+                    var(--primary-500) 75%,
+                    var(--gray-500));
+        }
+    }
+
+    .fi-tabs-item.fi-active>.fi-badge:not(.fi-color) {
+        color: var(--primary-800);
+        --tw-ring-color: var(--primary-600);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active>.fi-badge:not(.fi-color) {
+            --tw-ring-color: color-mix(in oklab,
+                    var(--primary-600) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-tabs-item.fi-active>.fi-badge:not(.fi-color):where(.dark, .dark *) {
+        color: var(--primary-200);
+        --tw-ring-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active>.fi-badge:not(.fi-color):where(.dark, .dark *) {
+            --tw-ring-color: color-mix(in oklab,
+                    var(--primary-400) 30%,
+                    transparent);
+        }
+    }
+
+    .fi-tabs-item.fi-active>.fi-badge:not(.fi-color):where(.dark, .dark *) {
+        --insights-theme-chip-seed: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-tabs-item.fi-active>.fi-badge:not(.fi-color):where(.dark, .dark *) {
+            --insights-theme-chip-seed: color-mix(in oklab,
+                    var(--primary-400) 75%,
+                    var(--gray-400));
+        }
+    }
 }

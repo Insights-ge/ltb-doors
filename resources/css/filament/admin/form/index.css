@@ -1,3 +1,172 @@
-.fi-input-wrp {
-    @apply rounded-3xl;
+@layer insights-theme {
+    .fi-fo-builder:not(.fi-fo-builder-not-contained) .fi-fo-builder-item {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-builder:not(.fi-fo-builder-not-contained) .fi-fo-builder-item:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-raised);
+    }
+
+    .fi-fo-builder .fi-fo-builder-add-between-items {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-color-picker .fi-fo-color-picker-panel,
+    .fi-fo-date-time-picker .fi-fo-date-time-picker-panel {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-date-time-picker .fi-fo-date-time-picker-calendar .fi-fo-date-time-picker-calendar-day.fi-selected {
+        background-color: var(--primary-500);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-fo-date-time-picker .fi-fo-date-time-picker-calendar .fi-fo-date-time-picker-calendar-day.fi-selected {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-fo-date-time-picker .fi-fo-date-time-picker-calendar .fi-fo-date-time-picker-calendar-day.fi-selected:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+
+        .fi-fo-date-time-picker .fi-fo-date-time-picker-calendar .fi-fo-date-time-picker-calendar-day.fi-selected:where(.dark,
+            .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-fo-file-upload .filepond--root {
+        --tw-shadow: 0 0 #0000;
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        --tw-ring-color: var(--insights-theme-input-border);
+    }
+
+    .fi-fo-file-upload .filepond--root:not([data-disabled='disabled']) {
+        background-color: var(--insights-theme-input-fill);
+    }
+
+    .fi-fo-markdown-editor.fi-disabled {
+        --tw-shadow: 0 0 #0000;
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-markdown-editor .EasyMDEContainer .editor-toolbar button {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-repeater .fi-fo-repeater-item {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-repeater .fi-fo-repeater-item:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-raised);
+    }
+
+    .fi-fo-repeater .fi-fo-repeater-add-between-items {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-table-repeater>table {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-table-repeater>table>thead>tr>th {
+        background-color: var(--insights-theme-row-tint);
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-floating-toolbar {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-trigger {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-menu {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-option {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-textual .fi-fo-rich-editor-dropdown-tool-option {
+        border-radius: max(0px, calc(var(--insights-theme-radius-field) - 4px));
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-tool {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-uploading-file-message:where(.dark, .dark *),
+    .fi-fo-rich-editor .fi-fo-rich-editor-file-validation-message:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-fo-rich-editor span[data-type='mention'] {
+        border-radius: var(--insights-theme-radius-small);
+    }
+
+    .fi-fo-rich-editor .fi-fo-rich-editor-merge-tag-btn,
+    .fi-fo-rich-editor .fi-fo-rich-editor-custom-block-btn {
+        border-radius: 2147483647px;
+    }
+
+    .fi-fo-rich-editor div[data-type='customBlock'],
+    .fi-fo-slider {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-fo-slider .noUi-connects:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-fo-slider .noUi-tooltip {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
 }

@@ -1,3 +1,42 @@
-.fi-section {
-    @apply rounded-3xl;
+@layer insights-theme {
+    .fi-section:not(.fi-section-not-contained):not(.fi-aside) {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-section:not(.fi-section-not-contained):not(.fi-aside).fi-secondary:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-section:not(.fi-section-not-contained).fi-aside>.fi-section-content-ctn {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-section:not(.fi-section-not-contained).fi-aside.fi-secondary>.fi-section-content-ctn:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-section .fi-section-header-heading {
+        font-family: var(--insights-theme-font-display);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-section .fi-section-header-heading .fi-badge,
+    .fi-section .fi-section-header-heading .fi-btn,
+    .fi-section .fi-section-header-heading .fi-icon-btn,
+    .fi-section .fi-section-header-heading .fi-link,
+    .fi-section .fi-section-header-heading .fi-ac {
+        font-family:
+            var(--font-family), ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
 }

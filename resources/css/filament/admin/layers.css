@@ -1,0 +1,9 @@
+/* Theme overrides must follow Filament components and precede utility classes. */
+@layer theme, base, components, insights-theme, compact-theme, compact-theme-bridge, utilities;
+
+@layer utilities {
+    .fi-body {
+        --insights-theme-layer-order: ok;
+        --compact-theme-layer-order: ok;
+    }
+}

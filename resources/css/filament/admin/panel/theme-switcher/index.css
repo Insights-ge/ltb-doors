@@ -1,11 +1,25 @@
-.fi-theme-switcher-btn {
-    @apply rounded-full;
-}
+@layer insights-theme {
+    .fi-theme-switcher-btn.fi-active {
+        background-color: var(--primary-500);
+    }
 
-.fi-theme-switcher-btn.fi-active {
-    @apply bg-primary-400 dark:bg-primary-600 shadow-sm;
-}
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-theme-switcher-btn.fi-active {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
 
-.fi-theme-switcher-btn.fi-active .fi-icon {
-    @apply text-gray-900/75 dark:text-white;
+    .fi-theme-switcher-btn.fi-active:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-theme-switcher-btn.fi-active:where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
 }

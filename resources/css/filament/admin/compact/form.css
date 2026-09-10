@@ -1,0 +1,519 @@
+@layer compact-theme {
+    @media (width>=40rem) {
+        .fi-fo-builder {
+            row-gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-builder .fi-fo-builder-actions {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-builder .fi-fo-builder-items > * + * {
+            margin-top: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-builder .fi-fo-builder-item {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-builder .fi-fo-builder-item-header {
+            column-gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-builder .fi-fo-builder-item-header-start-actions,
+        .fi-fo-builder .fi-fo-builder-item-header-end-actions {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-builder
+            .fi-fo-builder-item-content:not(
+                .fi-fo-builder-item-content-has-preview
+            ) {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-builder.fi-fo-builder-not-contained
+            > .fi-fo-builder-items
+            > .fi-fo-builder-item {
+            border-radius: 0;
+        }
+
+        .fi-fo-builder.fi-fo-builder-not-contained
+            > .fi-fo-builder-items
+            > .fi-fo-builder-item
+            > .fi-fo-builder-item-content {
+            padding: 0;
+        }
+
+        .fi-fo-builder .fi-fo-builder-block-picker-ctn,
+        .fi-fo-builder .fi-fo-builder-add-between-items {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-builder .fi-fo-builder-label-between-items-ctn {
+            margin-bottom: calc(var(--spacing) * -2);
+        }
+
+        .fi-fo-checkbox-list .fi-fo-checkbox-list-search-input-wrp {
+            margin-bottom: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-checkbox-list .fi-fo-checkbox-list-actions {
+            margin-bottom: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-checkbox-list .fi-fo-checkbox-list-options {
+            gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-checkbox-list
+            .fi-fo-checkbox-list-options.fi-grid-direction-col {
+            margin-top: calc(var(--spacing) * -3);
+        }
+
+        .fi-fo-checkbox-list
+            .fi-fo-checkbox-list-options.fi-grid-direction-col
+            .fi-fo-checkbox-list-option-ctn {
+            padding-top: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-checkbox-list .fi-fo-checkbox-list-option {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-color-picker .fi-fo-color-picker-preview {
+            margin-inline-end: calc(var(--spacing) * 2.5);
+        }
+
+        .fi-fo-color-picker .fi-fo-color-picker-panel {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-date-time-picker .fi-fo-date-time-picker-display-text-input {
+            padding-inline: calc(var(--spacing) * 2.5);
+            padding-block: var(--spacing);
+        }
+
+        :where(
+            .fi-fo-date-time-picker
+                .fi-fo-date-time-picker-panel
+                > :not(:last-child)
+        ) {
+            --tw-space-y-reverse: 0;
+            margin-block-start: calc(
+                calc(var(--spacing) * 2) * var(--tw-space-y-reverse)
+            );
+            margin-block-end: calc(
+                calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse))
+            );
+        }
+
+        .fi-fo-date-time-picker .fi-fo-date-time-picker-panel {
+            border-radius: var(--compact-theme-radius-control);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-field {
+            row-gap: var(--compact-theme-gap-fields);
+        }
+
+        .fi-fo-field.fi-fo-field-has-inline-label {
+            column-gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-field .fi-fo-field-label-ctn,
+        .fi-fo-field .fi-fo-field-label {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-field .fi-fo-field-label-col,
+        .fi-fo-field .fi-fo-field-content-col {
+            row-gap: var(--compact-theme-gap-fields);
+        }
+
+        .fi-fo-field .fi-fo-field-content-ctn {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-file-upload {
+            row-gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-file-upload .filepond--root {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-file-upload
+            .fi-fo-file-upload-editor
+            .fi-fo-file-upload-editor-window {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-file-upload
+            .fi-fo-file-upload-editor
+            .fi-fo-file-upload-editor-image-ctn {
+            margin-inline: calc(var(--spacing) * 3.5);
+            margin-block: calc(var(--spacing) * 3);
+        }
+
+        :where(
+            .fi-fo-file-upload
+                .fi-fo-file-upload-editor
+                .fi-fo-file-upload-editor-control-panel
+                .fi-fo-file-upload-editor-control-panel-main
+                > :not(:last-child)
+        ) {
+            --tw-space-y-reverse: 0;
+            margin-block-start: calc(
+                calc(var(--spacing) * 4) * var(--tw-space-y-reverse)
+            );
+            margin-block-end: calc(
+                calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse))
+            );
+        }
+
+        .fi-fo-file-upload
+            .fi-fo-file-upload-editor
+            .fi-fo-file-upload-editor-control-panel
+            .fi-fo-file-upload-editor-control-panel-main {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-file-upload
+            .fi-fo-file-upload-editor
+            .fi-fo-file-upload-editor-control-panel
+            .fi-fo-file-upload-editor-control-panel-group {
+            gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-file-upload
+            .fi-fo-file-upload-editor
+            .fi-fo-file-upload-editor-control-panel
+            .fi-fo-file-upload-editor-control-panel-footer {
+            gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-key-value .fi-fo-key-value-table > thead > tr > th {
+            padding-inline: var(--compact-theme-cell-px);
+        }
+
+        .fi-fo-key-value
+            .fi-fo-key-value-table
+            > thead
+            > tr
+            > th.fi-has-action {
+            padding: 0;
+        }
+
+        .fi-fo-key-value
+            .fi-fo-key-value-table
+            > tbody
+            > tr
+            > td.fi-has-action {
+            padding-inline: var(--compact-theme-cell-px);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-key-value .fi-fo-key-value-add-action-ctn {
+            padding-inline: var(--compact-theme-cell-px);
+        }
+
+        .fi-fo-key-value-wrp.fi-fo-field-has-inline-label
+            .fi-fo-field-label-col {
+            padding-top: var(--spacing);
+        }
+
+        .fi-fo-markdown-editor.fi-disabled {
+            border-radius: var(--compact-theme-radius-control);
+            padding-inline: calc(var(--spacing) * 2.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-markdown-editor .EasyMDEContainer .editor-toolbar {
+            padding-inline: calc(var(--spacing) * 2);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-modal-table-select:not(.fi-fo-modal-table-select-multiple) {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-modal-table-select.fi-fo-modal-table-select-multiple {
+            gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-modal-table-select.fi-fo-modal-table-select-multiple
+            .fi-fo-modal-table-select-badges-ctn {
+            gap: var(--spacing);
+        }
+
+        .fi-fo-radio {
+            gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-radio:not(.fi-inline).fi-grid-direction-col {
+            margin-top: calc(var(--spacing) * -3);
+        }
+
+        .fi-fo-radio:not(.fi-inline).fi-grid-direction-col
+            > .fi-fo-radio-label {
+            padding-top: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-radio > .fi-fo-radio-label {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-repeater {
+            row-gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-actions {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-items {
+            gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-item {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-item-header {
+            column-gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-item-header-start-actions,
+        .fi-fo-repeater .fi-fo-repeater-item-header-end-actions {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-item-content {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-add-between-items {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-repeater .fi-fo-repeater-label-between-items-ctn {
+            margin-block: calc(var(--spacing) * -1.5);
+        }
+
+        .fi-fo-simple-repeater {
+            row-gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-simple-repeater .fi-fo-simple-repeater-items {
+            gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-simple-repeater .fi-fo-simple-repeater-item {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-table-repeater {
+            gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-table-repeater > table {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-table-repeater > table > thead > tr > th {
+            padding-inline: var(--compact-theme-cell-px);
+        }
+
+        .fi-fo-table-repeater > table > thead > tr > th:first-of-type {
+            border-start-start-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-table-repeater > table > thead > tr > th:last-of-type {
+            border-start-end-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-fo-table-repeater > table > tbody > tr {
+            gap: calc(var(--spacing) * 4);
+            padding: var(--compact-theme-card-p);
+        }
+    }
+
+    @supports (container-type: inline-size) {
+        @media (width>=40rem) {
+            @container (width>=36rem) {
+                .fi-fo-table-repeater:not(.fi-compact)
+                    > table
+                    > tbody
+                    > tr
+                    > td {
+                    padding-inline: var(--compact-theme-cell-px);
+                }
+
+                .fi-fo-table-repeater > table > tbody > tr > td .fi-fo-field,
+                .fi-fo-table-repeater > table > tbody > tr > td .fi-in-entry {
+                    row-gap: 0;
+                }
+            }
+        }
+    }
+
+    @supports not (container-type: inline-size) {
+        @media (width>=40rem) {
+            @media (width>=64rem) {
+                .fi-fo-table-repeater:not(.fi-compact)
+                    > table
+                    > tbody
+                    > tr
+                    > td {
+                    padding-inline: var(--compact-theme-cell-px);
+                }
+
+                .fi-fo-table-repeater > table > tbody > tr > td .fi-fo-field,
+                .fi-fo-table-repeater > table > tbody > tr > td .fi-in-entry {
+                    row-gap: 0;
+                }
+            }
+        }
+    }
+
+    @media (width>=40rem) {
+        .fi-fo-rich-editor .fi-fo-rich-editor-toolbar {
+            column-gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 2);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-floating-toolbar {
+            column-gap: calc(var(--spacing) * 2);
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-trigger,
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-menu {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-option {
+            border-radius: var(--compact-theme-radius-nested);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-tool {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-uploading-file-message,
+        .fi-fo-rich-editor .fi-fo-rich-editor-file-validation-message {
+            column-gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 4);
+            padding-block: var(--spacing);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-content {
+            padding-inline: calc(var(--spacing) * 4);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-panel-header {
+            gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-merge-tags-list {
+            gap: calc(var(--spacing) * 1.5);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-merge-tag-btn {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-custom-blocks-group-header {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-custom-blocks-list {
+            gap: calc(var(--spacing) * 1.5);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-rich-editor .fi-fo-rich-editor-custom-block-btn {
+            gap: var(--spacing);
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-select-wrp.fi-fo-field-has-inline-label .fi-fo-field-label-col {
+            padding-top: var(--spacing);
+        }
+
+        .fi-fo-slider {
+            gap: calc(var(--spacing) * 3);
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-slider .noUi-connects,
+        .fi-fo-slider .noUi-handle {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-fo-slider.fi-fo-slider-vertical {
+            margin-top: calc(var(--spacing) * 3);
+        }
+
+        .fi-fo-tags-input .fi-fo-tags-input-tags-ctn {
+            gap: var(--spacing);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-fo-tags-input-wrp.fi-fo-field-has-inline-label
+            .fi-fo-field-label-col {
+            padding-top: var(--spacing);
+        }
+
+        .fi-fo-textarea textarea {
+            padding-inline: calc(var(--spacing) * 2.5);
+            padding-block: var(--spacing);
+        }
+
+        .fi-fo-textarea-wrp.fi-fo-field-has-inline-label
+            .fi-fo-field-label-col {
+            padding-top: var(--spacing);
+        }
+
+        .fi-fo-toggle-buttons:not(.fi-btn-group) {
+            gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-toggle-buttons:not(.fi-btn-group):not(
+                .fi-inline
+            ).fi-grid-direction-col {
+            margin-top: calc(var(--spacing) * -2);
+        }
+
+        .fi-fo-toggle-buttons:not(.fi-btn-group):not(
+                .fi-inline
+            ).fi-grid-direction-col
+            .fi-fo-toggle-buttons-btn-ctn {
+            padding-top: calc(var(--spacing) * 2);
+        }
+
+        .fi-fo-toggle-buttons-wrp.fi-fo-field-has-inline-label
+            .fi-fo-field-label-col {
+            padding-top: var(--spacing);
+        }
+    }
+}

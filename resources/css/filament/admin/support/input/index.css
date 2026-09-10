@@ -1,0 +1,71 @@
+@layer insights-theme {
+    input[type='checkbox'].fi-checkbox-input {
+        border-radius: min(var(--insights-theme-radius-xs), 0.4375rem);
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    input[type='checkbox'].fi-checkbox-input:not(:checked):not( :indeterminate):not(:disabled):where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-one-time-code-input-ctn>.fi-one-time-code-input-digit:not(:disabled) {
+        background-color: var(--insights-theme-input-fill);
+    }
+
+    .fi-one-time-code-input-ctn>.fi-one-time-code-input-digit:not(:disabled):focus {
+        background-color: var(--insights-theme-input-fill-focus);
+    }
+
+    .fi-one-time-code-input-ctn>.fi-one-time-code-input-digit:not(:focus) {
+        border-color: var(--insights-theme-input-border);
+    }
+
+    input[type='radio'].fi-radio-input {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    input[type='radio'].fi-radio-input:not(:checked):not(:disabled):where(.dark,
+        .dark *) {
+        background-color: var(--insights-theme-dark-well);
+    }
+
+    .fi-input-wrp {
+        --tw-shadow: 0 0 #0000;
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-input-wrp:not(.fi-disabled) {
+        background-color: var(--insights-theme-input-fill);
+    }
+
+    .fi-input-wrp:not(.fi-disabled):not( :has(.fi-ac-action:focus)):focus-within {
+        background-color: var(--insights-theme-input-fill-focus);
+    }
+
+    .fi-input-wrp .fi-input-wrp-label {
+        color: var(--gray-600);
+    }
+
+    .fi-input-wrp .fi-input-wrp-label:where(.dark, .dark *) {
+        color: var(--gray-400);
+    }
+
+    .fi-input-wrp:not(.fi-invalid):not(.fi-disabled):not(:focus-within) {
+        --tw-ring-color: var(--insights-theme-input-border);
+    }
+
+    .fi-input-wrp:not(.fi-invalid):not(.fi-disabled):has(.fi-ac-action:focus) {
+        --tw-ring-color: var(--insights-theme-input-border);
+    }
+}

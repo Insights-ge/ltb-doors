@@ -1,0 +1,52 @@
+@layer insights-theme {
+    .fi-in-code .phiki {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-in-key-value {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-in-key-value:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-raised);
+    }
+
+    :where(.fi-in-key-value tr > :not(:last-child)) {
+        --tw-divide-x-reverse: 0;
+        border-inline-style: var(--tw-border-style);
+        border-inline-start-width: calc(0px * var(--tw-divide-x-reverse));
+        border-inline-end-width: calc(0px * calc(1 - var(--tw-divide-x-reverse)));
+    }
+
+    .fi-in-repeatable.fi-contained>.fi-in-repeatable-item {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-in-repeatable.fi-contained>.fi-in-repeatable-item:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-raised);
+    }
+
+    .fi-in-table-repeatable>table {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-in-table-repeatable>table>thead>tr>th {
+        background-color: var(--insights-theme-row-tint);
+    }
+}

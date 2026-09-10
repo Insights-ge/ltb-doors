@@ -1,0 +1,16 @@
+@layer insights-theme {
+    .fi-toggle {
+        --tw-ease: var(--ease-out);
+        transition-timing-function: var(--ease-out);
+    }
+
+    .fi-toggle> :first-child {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        --tw-ease: var(--ease-out);
+        transition-timing-function: var(--ease-out);
+    }
+}

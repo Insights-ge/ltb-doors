@@ -1,13 +1,19 @@
+@import './layers.css';
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import './form/index.css';
-@import './notifications/index.css';
-@import './panel/index.css';
+@import './radius.css';
+@import './tokens.css';
 @import './support/index.css';
+@import './form/index.css';
+@import './infolist/index.css';
+@import './notifications/index.css';
+@import './schema/index.css';
 @import './table/index.css';
 @import './widget/index.css';
+@import './panel/index.css';
+@import './compact/index.css';
+
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 @source '../../../../vendor/bezhansalleh/filament-language-switch/resources/views/**/*.blade.php';
 @source '../../../../vendor/jeffgreco13/filament-breezy/resources/**/*';
 @source '../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php';
-

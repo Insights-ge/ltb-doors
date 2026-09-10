@@ -1,0 +1,48 @@
+@layer insights-theme {
+    .fi-empty-state {
+        background-image: var(--insights-theme-paper-wash);
+    }
+
+    .fi-empty-state:not(.fi-empty-state-not-contained) {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-empty-state .fi-empty-state-icon-bg {
+        position: relative;
+    }
+
+    .fi-empty-state .fi-empty-state-icon-bg:before {
+        content: '';
+        inset: calc(var(--insights-theme-icon-halo-width) * -1);
+        border: var(--insights-theme-icon-halo-width) solid var(--insights-theme-row-tint);
+        border-radius: inherit;
+        pointer-events: none;
+        position: absolute;
+    }
+
+    .fi-empty-state .fi-empty-state-heading {
+        font-family: var(--insights-theme-font-display);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-empty-state .fi-empty-state-heading .fi-badge,
+    .fi-empty-state .fi-empty-state-heading .fi-btn,
+    .fi-empty-state .fi-empty-state-heading .fi-icon-btn,
+    .fi-empty-state .fi-empty-state-heading .fi-link,
+    .fi-empty-state .fi-empty-state-heading .fi-ac {
+        font-family:
+            var(--font-family), ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+
+    .fi-empty-state .fi-empty-state-description {
+        --tw-leading: var(--insights-theme-leading-reading);
+        line-height: var(--insights-theme-leading-reading);
+    }
+}

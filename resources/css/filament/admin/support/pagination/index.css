@@ -1,0 +1,48 @@
+@layer insights-theme {
+    .fi-pagination .fi-pagination-items {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        border-radius: 2147483647px;
+    }
+
+    .fi-pagination .fi-pagination-items:where(.dark, .dark *) {
+        background-color: var(--insights-theme-dark-raised);
+    }
+
+    .fi-pagination .fi-pagination-item.fi-active .fi-pagination-item-btn {
+        background-color: var(--primary-500);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-pagination .fi-pagination-item.fi-active .fi-pagination-item-btn {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-pagination .fi-pagination-item.fi-active .fi-pagination-item-btn:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-pagination .fi-pagination-item.fi-active .fi-pagination-item-btn:where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-pagination .fi-pagination-item:first-of-type .fi-pagination-item-btn {
+        border-start-start-radius: 2147483647px;
+        border-end-start-radius: 2147483647px;
+    }
+
+    .fi-pagination .fi-pagination-item:last-of-type .fi-pagination-item-btn {
+        border-start-end-radius: 2147483647px;
+        border-end-end-radius: 2147483647px;
+    }
+}

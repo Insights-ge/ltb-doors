@@ -1,7 +1,38 @@
-.fi-simple-main {
-    @apply rounded-3xl;
-}
+@layer insights-theme {
+    .fi-body {
+        --insights-theme-layer-order: MISORDERED;
+    }
 
-.fi-page-header-main-ctn .fi-header .fi-header-heading {
-    @apply relative inline-block after:content-[''] after:absolute after:-z-10 after:-left-1 after:-right-1 after:bottom-1 after:rounded-full after:bg-primary-400/75 dark:after:bg-primary-600/75 after:h-1.5;
+    .fi-body {
+        background-color: var(--insights-theme-ground);
+    }
+
+    .fi-simple-main {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-simple-layout {
+        background-image: var(--insights-theme-paper-wash);
+    }
+
+    .dark .fi-body {
+        isolation: isolate;
+    }
+
+    .dark .fi-body:before {
+        content: '';
+        z-index: -1;
+        pointer-events: none;
+        background-image: var(--insights-theme-dark-glow);
+        position: fixed;
+        inset: 0;
+    }
+
+    .fi-logo {
+        font-family: var(--insights-theme-font-display);
+    }
 }

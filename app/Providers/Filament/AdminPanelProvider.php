@@ -42,11 +42,12 @@ class AdminPanelProvider extends PanelProvider
             ->emailVerification()
             ->databaseNotifications()
 
-            ->font('Noto Sans Georgian')
+            ->font('Albert Sans')
+            ->serifFont('Lora')
 
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
-                'primary' => Color::hex('#6f69c1'),
+                ...AdminTheme::COLORS,
                 'pink' => Color::hex('#ff006e'),
                 'blue' => Color::hex('#00b4d8'),
                 'green' => Color::hex('#38b000'),
@@ -54,10 +55,11 @@ class AdminPanelProvider extends PanelProvider
                 'red' => Color::hex('#ff5e5b'),
                 'purple' => Color::hex('#9d4edd'),
             ])
-            ->sidebarCollapsibleOnDesktop()
+            //->sidebarCollapsibleOnDesktop()
+            ->topbar(false)
             ->maxContentWidth(Width::Full)
             ->unsavedChangesAlerts()
-            ->sidebarWidth('15rem')
+            ->sidebarWidth('20rem')
             ->brandLogo(fn () => $this->brandLogoUrl())
             ->darkModeBrandLogo(fn () => $this->darkModeBrandLogoUrl())
             ->brandLogoHeight(fn () => auth()->check() ? '3.5rem' : '2.5rem')

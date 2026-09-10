@@ -1,0 +1,7 @@
+@layer insights-theme {
+
+    .fi-icon-btn,
+    .fi-icon-btn>.fi-icon-btn-badge-ctn {
+        border-radius: 2147483647px;
+    }
+}

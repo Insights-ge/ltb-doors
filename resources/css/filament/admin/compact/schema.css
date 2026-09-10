@@ -1,0 +1,626 @@
+@layer compact-theme {
+    @media (width>=40rem) {
+        .fi-sc-actions {
+            gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sc-actions .fi-sc-actions-label-ctn {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-sc-actions.fi-sticky .fi-ac {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        @media (width>=48rem) {
+            .fi-sc-actions.fi-sticky .fi-ac {
+                border-radius: var(--compact-theme-radius-card);
+            }
+        }
+
+        .fi-sc-flex:not(.fi-dense),
+        .fi-sc-form:not(.fi-dense) {
+            gap: calc(var(--spacing) * 4);
+        }
+
+        .fi-sc-fused-group .fi-sc {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-fused-group .fi-sc .fi-sc-component .fi-sc-actions {
+            padding-inline: calc(var(--spacing) * 2.5);
+            padding-block: var(--compact-theme-control-py);
+        }
+
+        .fi-sc-fused-group .fi-sc > :first-child .fi-input-wrp {
+            border-top-left-radius: var(--compact-theme-radius-control);
+            border-top-right-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-fused-group .fi-sc > :last-child .fi-input-wrp {
+            border-bottom-right-radius: var(--compact-theme-radius-control);
+            border-bottom-left-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-fused-group .fi-sc.fi-grid-cols > :first-child .fi-input-wrp {
+            border-start-end-radius: 0;
+            border-end-start-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-fused-group .fi-sc.fi-grid-cols > :last-child .fi-input-wrp {
+            border-start-end-radius: var(--compact-theme-radius-control);
+            border-end-start-radius: 0;
+        }
+
+        .fi-sc-fused-group
+            .fi-sc.sm\:fi-grid-cols
+            > :first-child
+            .fi-input-wrp {
+            border-start-end-radius: 0;
+            border-end-start-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-fused-group .fi-sc.sm\:fi-grid-cols > :last-child .fi-input-wrp {
+            border-start-end-radius: var(--compact-theme-radius-control);
+            border-end-start-radius: 0;
+        }
+
+        @media (width>=48rem) {
+            .fi-sc-fused-group
+                .fi-sc.md\:fi-grid-cols
+                > :first-child
+                .fi-input-wrp {
+                border-start-end-radius: 0;
+                border-end-start-radius: var(--compact-theme-radius-control);
+            }
+
+            .fi-sc-fused-group
+                .fi-sc.md\:fi-grid-cols
+                > :last-child
+                .fi-input-wrp {
+                border-start-end-radius: var(--compact-theme-radius-control);
+                border-end-start-radius: 0;
+            }
+        }
+
+        @media (width>=64rem) {
+            .fi-sc-fused-group
+                .fi-sc.lg\:fi-grid-cols
+                > :first-child
+                .fi-input-wrp {
+                border-start-end-radius: 0;
+                border-end-start-radius: var(--compact-theme-radius-control);
+            }
+
+            .fi-sc-fused-group
+                .fi-sc.lg\:fi-grid-cols
+                > :last-child
+                .fi-input-wrp {
+                border-start-end-radius: var(--compact-theme-radius-control);
+                border-end-start-radius: 0;
+            }
+        }
+
+        @media (width>=80rem) {
+            .fi-sc-fused-group
+                .fi-sc.xl\:fi-grid-cols
+                > :first-child
+                .fi-input-wrp {
+                border-start-end-radius: 0;
+                border-end-start-radius: var(--compact-theme-radius-control);
+            }
+
+            .fi-sc-fused-group
+                .fi-sc.xl\:fi-grid-cols
+                > :last-child
+                .fi-input-wrp {
+                border-start-end-radius: var(--compact-theme-radius-control);
+                border-end-start-radius: 0;
+            }
+        }
+
+        @media (width>=96rem) {
+            .fi-sc-fused-group
+                .fi-sc.\32
+                xl\:fi-grid-cols
+                > :first-child
+                .fi-input-wrp {
+                border-start-end-radius: 0;
+                border-end-start-radius: var(--compact-theme-radius-control);
+            }
+
+            .fi-sc-fused-group
+                .fi-sc.\32
+                xl\:fi-grid-cols
+                > :last-child
+                .fi-input-wrp {
+                border-start-end-radius: var(--compact-theme-radius-control);
+                border-end-start-radius: 0;
+            }
+        }
+    }
+
+    @supports (container-type: inline-size) {
+        @media (width>=40rem) {
+            @container (width>=16rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@3xs\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@3xs\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=18rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@2xs\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@2xs\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=20rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@xs\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@xs\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=24rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@sm\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@sm\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=28rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@md\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@md\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=32rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@lg\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@lg\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=36rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=42rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@2xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@2xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=48rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@3xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@3xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=56rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@4xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@4xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=64rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@5xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@5xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=72rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@6xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@6xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @container (width>=80rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\@7xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\@7xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+        }
+    }
+
+    @supports not (container-type: inline-size) {
+        @media (width>=40rem) {
+            .fi-sc-fused-group
+                .fi-sc.\!\@sm\:fi-grid-cols
+                > :first-child
+                .fi-input-wrp {
+                border-start-end-radius: 0;
+                border-end-start-radius: var(--compact-theme-radius-control);
+            }
+
+            .fi-sc-fused-group
+                .fi-sc.\!\@sm\:fi-grid-cols
+                > :last-child
+                .fi-input-wrp {
+                border-start-end-radius: var(--compact-theme-radius-control);
+                border-end-start-radius: 0;
+            }
+
+            @media (width>=48rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\!\@md\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\!\@md\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @media (width>=64rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\!\@lg\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\!\@lg\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @media (width>=80rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\!\@xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\!\@xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+
+            @media (width>=96rem) {
+                .fi-sc-fused-group
+                    .fi-sc.\!\@2xl\:fi-grid-cols
+                    > :first-child
+                    .fi-input-wrp {
+                    border-start-end-radius: 0;
+                    border-end-start-radius: var(
+                        --compact-theme-radius-control
+                    );
+                }
+
+                .fi-sc-fused-group
+                    .fi-sc.\!\@2xl\:fi-grid-cols
+                    > :last-child
+                    .fi-input-wrp {
+                    border-start-end-radius: var(
+                        --compact-theme-radius-control
+                    );
+                    border-end-start-radius: 0;
+                }
+            }
+        }
+    }
+
+    @media (width>=40rem) {
+        .fi-sc-image {
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sc-section {
+            gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sc-section .fi-sc-section-label-ctn {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-sc-tabs .fi-sc-tabs-tab.fi-active {
+            margin-top: calc(var(--spacing) * 4);
+        }
+
+        .fi-sc-tabs.fi-contained {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-sc-tabs.fi-contained .fi-sc-tabs-tab.fi-active {
+            padding: var(--compact-theme-card-p);
+            margin-top: 0;
+        }
+
+        .fi-sc-tabs.fi-vertical .fi-sc-tabs-tab.fi-active {
+            margin-inline-start: calc(var(--spacing) * 4);
+            margin-top: 0;
+        }
+
+        .fi-sc-unordered-list {
+            margin-inline-start: calc(var(--spacing) * 2.5);
+        }
+
+        .fi-sc-wizard
+            .fi-sc-wizard-header
+            .fi-sc-wizard-header-step
+            .fi-sc-wizard-header-step-btn {
+            column-gap: calc(var(--spacing) * 3);
+            padding-inline: var(--compact-theme-card-p);
+            padding-block: var(--compact-theme-card-header-py);
+        }
+
+        .fi-sc-wizard
+            .fi-sc-wizard-header
+            .fi-sc-wizard-header-step
+            .fi-sc-wizard-header-step-btn
+            .fi-sc-wizard-header-step-icon-ctn {
+            width: calc(var(--spacing) * 9);
+            height: calc(var(--spacing) * 9);
+        }
+
+        .fi-sc-wizard:not(.fi-sc-wizard-header-hidden)
+            .fi-sc-wizard-step.fi-active {
+            margin-top: var(--compact-theme-gap-sections);
+        }
+
+        .fi-sc-wizard .fi-sc-wizard-footer {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-sc-wizard.fi-contained {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-sc-wizard.fi-contained .fi-sc-wizard-step.fi-active {
+            padding: var(--compact-theme-card-p);
+            margin-top: 0;
+        }
+
+        .fi-sc-wizard.fi-contained .fi-sc-wizard-footer {
+            padding-inline: var(--compact-theme-card-p);
+            padding-bottom: var(--compact-theme-card-p);
+        }
+
+        .fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-header {
+            border-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-footer {
+            margin-top: var(--compact-theme-gap-sections);
+        }
+    }
+}

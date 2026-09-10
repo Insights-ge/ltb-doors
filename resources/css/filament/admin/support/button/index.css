@@ -1,12 +1,78 @@
-.fi-btn {
-    @apply rounded-full px-4 shadow-sm;
-}
+@layer insights-theme {
+    .fi-btn {
+        border-radius: 2147483647px;
+    }
 
-div.fi-fo-toggle-buttons-btn-ctn > input:checked + label {
-    @apply text-(--text) dark:text-(--dark-text) bg-(--bg);
-}
+    .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-outlined {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
 
-div.fi-fo-toggle-buttons-btn-ctn > input:checked + label,
-div.fi-fo-toggle-buttons-btn-ctn > input:checked + label > .fi-icon {
-    @apply text-(--text) dark:text-(--dark-text);
+    .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined) {
+        --insights-theme-shadow-sticker-strength: 34%;
+        --insights-theme-shadow-sticker: var(--insights-theme-shadow-raised);
+    }
+
+    @supports (color: color-mix(in oklab, red, red)) {
+        .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined) {
+            --insights-theme-shadow-sticker:
+                0 1px 2px -1px color-mix(in oklab,
+                    var(--color-600, var(--gray-600)) calc(var(--insights-theme-shadow-sticker-strength) * 0.65),
+                    transparent),
+                0 6px 14px -6px color-mix(in oklab,
+                    var(--color-600, var(--gray-600)) var(--insights-theme-shadow-sticker-strength),
+                    transparent);
+        }
+
+        .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined):where(.dark, .dark *) {
+            --insights-theme-shadow-sticker: var(--insights-theme-shadow-raised);
+        }
+    }
+
+    .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined) {
+        --tw-shadow: var(--insights-theme-shadow-sticker);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined).fi-disabled:not(.fi-force-enabled),
+    .fi-btn:not(:where(.fi-btn-group > .fi-btn)).fi-color:not(.fi-outlined)[disabled]:not(.fi-force-enabled) {
+        --tw-shadow: 0 0 #0000;
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-btn .fi-btn-badge-ctn {
+        border-radius: 2147483647px;
+    }
+
+    .fi-btn-group {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        border-radius: 2147483647px;
+    }
+
+    .fi-btn-group>.fi-btn {
+        border-radius: 0;
+    }
+
+    .fi-btn-group>.fi-btn:nth-child(1 of .fi-btn) {
+        border-start-start-radius: 2147483647px;
+        border-end-start-radius: 2147483647px;
+    }
+
+    .fi-btn-group>.fi-btn:nth-last-child(1 of .fi-btn) {
+        border-start-end-radius: 2147483647px;
+        border-end-end-radius: 2147483647px;
+    }
 }

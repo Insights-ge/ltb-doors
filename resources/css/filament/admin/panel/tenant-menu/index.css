@@ -1,3 +1,7 @@
-.fi-tenant-menu-trigger {
-    @apply rounded-3xl px-4;
+@layer insights-theme {
+
+    .fi-tenant-menu-trigger,
+    .fi-theme-switcher-btn {
+        border-radius: 2147483647px;
+    }
 }

@@ -1,0 +1,48 @@
+@layer insights-theme {
+    .fi-header-heading {
+        font-family: var(--insights-theme-font-display);
+        --tw-font-weight: var(--font-weight-semibold);
+        font-weight: var(--font-weight-semibold);
+        --tw-tracking: var(--tracking-normal);
+        letter-spacing: var(--tracking-normal);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-header-heading .fi-badge,
+    .fi-header-heading .fi-btn,
+    .fi-header-heading .fi-icon-btn,
+    .fi-header-heading .fi-link,
+    .fi-header-heading .fi-ac {
+        font-family:
+            var(--font-family), ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+
+    .fi-header-subheading {
+        --tw-leading: var(--insights-theme-leading-reading);
+        line-height: var(--insights-theme-leading-reading);
+    }
+
+    .fi-simple-header-heading {
+        font-family: var(--insights-theme-font-display);
+        --tw-font-weight: var(--font-weight-semibold);
+        font-weight: var(--font-weight-semibold);
+        --tw-tracking: var(--tracking-normal);
+        letter-spacing: var(--tracking-normal);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-simple-header-heading .fi-badge,
+    .fi-simple-header-heading .fi-btn,
+    .fi-simple-header-heading .fi-icon-btn,
+    .fi-simple-header-heading .fi-link,
+    .fi-simple-header-heading .fi-ac {
+        font-family:
+            var(--font-family), ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+    }
+}

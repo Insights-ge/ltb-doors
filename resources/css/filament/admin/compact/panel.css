@@ -1,0 +1,205 @@
+@layer compact-theme {
+    @media (width>=40rem) {
+        .fi-global-search-results-ctn {
+            margin-top: calc(var(--spacing) * 1.5);
+            border-radius: var(--compact-theme-radius-control);
+        }
+
+        .fi-sidebar .fi-global-search-ctn {
+            margin-top: calc(var(--spacing) * 2);
+        }
+
+        .fi-global-search-no-results-message {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 3);
+        }
+
+        .fi-global-search-result-group-header {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-global-search-result {
+            scroll-margin-top: calc(var(--spacing) * 8);
+        }
+
+        .fi-global-search-result-link {
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-block: calc(var(--spacing) * 2);
+        }
+
+        .fi-global-search-result.fi-global-search-result-has-actions
+            .fi-global-search-result-link {
+            padding-bottom: 0;
+        }
+
+        .fi-global-search-result-actions {
+            margin-top: calc(var(--spacing) * 2);
+            column-gap: calc(var(--spacing) * 2);
+            padding-inline: calc(var(--spacing) * 3.5);
+            padding-bottom: calc(var(--spacing) * 2);
+        }
+
+        .fi-header {
+            gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-header-heading {
+            font-size: var(--text-2xl);
+            line-height: var(--tw-leading, var(--text-2xl--line-height));
+        }
+
+        .fi-header-subheading {
+            margin-top: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-header-actions-ctn {
+            gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-body > .fi-layout-sidebar-toggle-btn-ctn {
+            padding-inline-start: calc(var(--spacing) * 4);
+            padding-top: calc(var(--spacing) * 4);
+        }
+
+        .fi-main {
+            padding-inline: calc(var(--spacing) * 3.5);
+        }
+
+        @media (width>=48rem) {
+            .fi-main {
+                padding-inline: calc(var(--spacing) * 4);
+            }
+        }
+
+        @media (width>=64rem) {
+            .fi-main {
+                padding-inline: calc(var(--spacing) * 6);
+            }
+        }
+
+        .fi-page-sub-navigation-sidebar {
+            row-gap: calc(var(--spacing) * 6);
+        }
+
+        .fi-page.fi-page-has-sub-navigation .fi-page-main {
+            gap: calc(var(--spacing) * 6);
+        }
+
+        .fi-page-header-main-ctn {
+            row-gap: calc(var(--spacing) * 6);
+            padding-block: calc(var(--spacing) * 6);
+        }
+
+        .fi-page-content {
+            row-gap: calc(var(--spacing) * 6);
+        }
+
+        .fi-sidebar-group-btn {
+            column-gap: calc(var(--spacing) * 2);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sidebar-group-dropdown-trigger-btn {
+            column-gap: calc(var(--spacing) * 2);
+            border-radius: var(--compact-theme-radius-control);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sidebar-nav {
+            row-gap: calc(var(--spacing) * 5);
+            padding-block: calc(var(--spacing) * 6);
+        }
+
+        .fi-sidebar-nav-groups {
+            row-gap: calc(var(--spacing) * 5);
+        }
+
+        .fi-sidebar-item-btn {
+            column-gap: calc(var(--spacing) * 2);
+            border-radius: var(--compact-theme-radius-control);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sidebar-header-controls:after {
+            content: var(--tw-content);
+            margin-top: calc(var(--spacing) * 2);
+        }
+
+        .fi-sidebar-footer {
+            margin-bottom: calc(var(--spacing) * 2);
+            row-gap: calc(var(--spacing) * 2);
+            padding-top: calc(var(--spacing) * 2);
+        }
+
+        .fi-sidebar-database-notifications-btn,
+        .fi-tenant-menu-trigger {
+            column-gap: calc(var(--spacing) * 2);
+            border-radius: var(--compact-theme-radius-control);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sidebar .fi-tenant-menu {
+            margin-top: calc(var(--spacing) * 2);
+        }
+
+        .fi-theme-switcher-btn {
+            border-radius: var(--compact-theme-radius-nested);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-body {
+            --topbar-height: var(--compact-theme-topbar-h);
+        }
+
+        .fi-topbar {
+            padding-inline: calc(var(--spacing) * 3.5);
+        }
+
+        .fi-topbar-start {
+            margin-inline-end: calc(var(--spacing) * 4);
+        }
+
+        .fi-topbar-collapse-sidebar-btn-ctn {
+            width: calc(var(--spacing) * 8);
+        }
+
+        .fi-topbar-nav-groups {
+            column-gap: calc(var(--spacing) * 3);
+            margin-inline-start: calc(var(--spacing) * 3.5);
+            margin-inline-end: calc(var(--spacing) * 3.5);
+        }
+
+        @media (width>=64rem) {
+            .fi-topbar-nav-groups {
+                margin-block: calc(var(--spacing) * 1.5);
+            }
+        }
+
+        .fi-topbar-end {
+            column-gap: calc(var(--spacing) * 3);
+        }
+
+        .fi-topbar-item-btn {
+            column-gap: calc(var(--spacing) * 1.5);
+            border-radius: var(--compact-theme-radius-control);
+            padding-inline: calc(var(--spacing) * 2.5);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-sidebar .fi-user-menu-trigger {
+            column-gap: calc(var(--spacing) * 2);
+            border-radius: var(--compact-theme-radius-control);
+            padding-block: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-account-widget .fi-section-content,
+        .fi-filament-info-widget .fi-section-content {
+            column-gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-filament-info-widget-version {
+            margin-top: calc(var(--spacing) * 1.5);
+        }
+    }
+}

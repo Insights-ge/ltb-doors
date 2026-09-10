@@ -1,23 +1,118 @@
-.fi-badge {
-    @apply rounded-full;
-}
+@layer insights-theme {
+    .fi-badge {
+        --insights-theme-chip-seed: var(--gray-500);
+        --insights-theme-chip-mix: 18%;
+        color: var(--gray-800);
+        border-radius: 2147483647px;
+    }
 
-.fi-badge:not(.fi-color) {
-    @apply bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-white;
-}
+    .fi-badge:where(.dark, .dark *) {
+        color: var(--gray-200);
+    }
 
-.fi-badge.fi-color-primary {
-    @apply bg-primary-400 dark:bg-primary-600 text-gray-900/75 dark:text-white;
-}
+    @supports (color: color-mix(in oklab, red, red)) {
+        .fi-badge {
+            background-color: color-mix(in oklab,
+                    var(--insights-theme-chip-seed) var(--insights-theme-chip-mix),
+                    var(--insights-theme-ground));
+        }
+    }
 
-.fi-badge.fi-color:not(.fi-color-primary) {
-    @apply bg-custom-400 dark:bg-custom-600 !text-gray-900/60 dark:!text-white;
-}
+    .fi-badge:where(.dark, .dark *) {
+        --insights-theme-chip-seed: var(--gray-400);
+        --insights-theme-chip-mix: 30%;
+    }
 
-.fi-badge.fi-color:not(.fi-color-primary) .fi-icon {
-    @apply text-gray-900/60 dark:text-white;
-}
+    .fi-badge.fi-color {
+        --insights-theme-chip-seed: var(--color-500);
+    }
 
-.fi-icon-btn-badge-ctn {
-    @apply -ml-1.5 mt-0.5 bg-transparent;
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-badge.fi-color {
+            --insights-theme-chip-seed: color-mix(in oklab,
+                    var(--color-500) 75%,
+                    var(--gray-500));
+        }
+    }
+
+    .fi-badge.fi-color {
+        color: var(--color-800);
+    }
+
+    .fi-badge.fi-color:where(.dark, .dark *) {
+        color: var(--color-200);
+        --insights-theme-chip-seed: var(--color-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-badge.fi-color:where(.dark, .dark *) {
+            --insights-theme-chip-seed: color-mix(in oklab,
+                    var(--color-400) 75%,
+                    var(--gray-400));
+        }
+    }
+
+    .fi-badge.fi-color .fi-badge-delete-btn:hover,
+    .fi-badge.fi-color .fi-badge-delete-btn:focus-visible {
+        background-color: var(--color-600);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+
+        .fi-badge.fi-color .fi-badge-delete-btn:hover,
+        .fi-badge.fi-color .fi-badge-delete-btn:focus-visible {
+            background-color: color-mix(in oklab,
+                    var(--color-600) 10%,
+                    transparent);
+        }
+    }
+
+    :is(.fi-badge.fi-color .fi-badge-delete-btn:hover,
+        .fi-badge.fi-color .fi-badge-delete-btn:focus-visible):where(.dark, .dark *) {
+        background-color: var(--color-300);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+
+        :is(.fi-badge.fi-color .fi-badge-delete-btn:hover,
+            .fi-badge.fi-color .fi-badge-delete-btn:focus-visible):where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--color-300) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-badge .fi-badge-delete-btn {
+        border-radius: 2147483647px;
+    }
+
+    .fi-badge .fi-badge-delete-btn:hover,
+    .fi-badge .fi-badge-delete-btn:focus-visible {
+        background-color: var(--gray-600);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+
+        .fi-badge .fi-badge-delete-btn:hover,
+        .fi-badge .fi-badge-delete-btn:focus-visible {
+            background-color: color-mix(in oklab,
+                    var(--gray-600) 10%,
+                    transparent);
+        }
+    }
+
+    :is(.fi-badge .fi-badge-delete-btn:hover,
+        .fi-badge .fi-badge-delete-btn:focus-visible):where(.dark, .dark *) {
+        background-color: var(--gray-300);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+
+        :is(.fi-badge .fi-badge-delete-btn:hover,
+            .fi-badge .fi-badge-delete-btn:focus-visible):where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--gray-300) 10%,
+                    transparent);
+        }
+    }
 }

@@ -1,11 +1,20 @@
-.fi-global-search-results-ctn {
-    @apply rounded-l-3xl;
-}
+@layer insights-theme {
+    .fi-global-search-field .fi-input-wrp {
+        border-radius: 2147483647px;
+    }
 
-.fi-global-search-result-group-header {
-    @apply px-6 py-4;
-}
+    .fi-global-search-results-ctn {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+        --tw-ease: var(--ease-out);
+        transition-timing-function: var(--ease-out);
+    }
 
-.fi-global-search-result {
-    @apply px-2;
+    .fi-global-search-results-ctn.fi-transition-enter-start,
+    .fi-global-search-results-ctn.fi-transition-leave-end {
+        scale: 0.98;
+    }
 }

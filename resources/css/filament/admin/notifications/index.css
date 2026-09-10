@@ -1,7 +1,17 @@
-.fi-no-database .fi-modal-content {
-    @apply p-0 m-0;
-}
+@layer insights-theme {
+    .fi-no-notification {
+        --tw-duration: 0.2s;
+        --tw-ease: var(--ease-out);
+        transition-duration: 0.2s;
+        transition-timing-function: var(--ease-out);
+    }
 
-.fi-no-notification {
-    @apply rounded-3xl;
+    .fi-no-notification:not(.fi-inline),
+    .fi-sc-actions.fi-sticky .fi-ac {
+        --tw-shadow: var(--insights-theme-shadow-floating);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
 }

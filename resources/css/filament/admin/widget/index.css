@@ -1,7 +1,149 @@
-.fi-wi-stats-overview-stat {
-    @apply rounded-3xl;
-}
+@layer insights-theme {
+    .fi-wi-chart {
+        --chart-line-tension: 0.4;
+        --chart-bar-border-radius: 6;
+        --chart-legend-border-radius: 3;
+        --chart-tooltip-corner-radius: 8;
+    }
 
-.fi-wi-stats-overview-stat-chart {
-    @apply rounded-b-3xl;
+    .fi-wi-chart .fi-wi-chart-tooltip-bg-color {
+        color: var(--gray-800);
+    }
+
+    .fi-wi-chart .fi-wi-chart-tooltip-bg-color:where(.dark, .dark *) {
+        color: var(--gray-700);
+    }
+
+    .fi-wi-chart .fi-wi-chart-tooltip-text-color {
+        color: var(--gray-50);
+    }
+
+    .fi-wi-stats-overview-stat {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-wi-stats-overview-stat {
+        @apply rounded-xl transition-all duration-200;
+        border-top: 3px solid transparent;
+    }
+
+    .fi-wi-stats-overview-stat:hover {
+        @apply shadow-lg -translate-y-0.5;
+    }
+
+    /* Soft gradient tint matching the stat's accent color, subtle in both light and dark mode
+   since it's blended as a percentage of the accent itself rather than a fixed shade. */
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-primary
+    ) {
+        background-image: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-primary-500) 10%, transparent),
+            transparent 65%
+        );
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-success
+    ) {
+        background-image: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-success-500) 10%, transparent),
+            transparent 65%
+        );
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-danger
+    ) {
+        background-image: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-danger-500) 10%, transparent),
+            transparent 65%
+        );
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-warning
+    ) {
+        background-image: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-warning-500) 10%, transparent),
+            transparent 65%
+        );
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-info
+    ) {
+        background-image: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-info-500) 10%, transparent),
+            transparent 65%
+        );
+    }
+
+    /* Colored icon to match the stat's accent */
+    .fi-wi-stats-overview-stat:has(
+            .fi-wi-stats-overview-stat-description.fi-color-primary
+        )
+        .fi-wi-stats-overview-stat-label-ctn
+        .fi-icon {
+        color: var(--color-primary-500);
+    }
+    .fi-wi-stats-overview-stat:has(
+            .fi-wi-stats-overview-stat-description.fi-color-success
+        )
+        .fi-wi-stats-overview-stat-label-ctn
+        .fi-icon {
+        color: var(--color-success-500);
+    }
+    .fi-wi-stats-overview-stat:has(
+            .fi-wi-stats-overview-stat-description.fi-color-danger
+        )
+        .fi-wi-stats-overview-stat-label-ctn
+        .fi-icon {
+        color: var(--color-danger-500);
+    }
+    .fi-wi-stats-overview-stat:has(
+            .fi-wi-stats-overview-stat-description.fi-color-warning
+        )
+        .fi-wi-stats-overview-stat-label-ctn
+        .fi-icon {
+        color: var(--color-warning-500);
+    }
+    .fi-wi-stats-overview-stat:has(
+            .fi-wi-stats-overview-stat-description.fi-color-info
+        )
+        .fi-wi-stats-overview-stat-label-ctn
+        .fi-icon {
+        color: var(--color-info-500);
+    }
+
+    /* Colored top-border accent to match the stat */
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-primary
+    ) {
+        border-top-color: var(--color-primary-400);
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-success
+    ) {
+        border-top-color: var(--color-success-400);
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-danger
+    ) {
+        border-top-color: var(--color-danger-400);
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-warning
+    ) {
+        border-top-color: var(--color-warning-400);
+    }
+    .fi-wi-stats-overview-stat:has(
+        .fi-wi-stats-overview-stat-description.fi-color-info
+    ) {
+        border-top-color: var(--color-info-400);
+    }
 }

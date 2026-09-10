@@ -1,0 +1,65 @@
+@layer insights-theme {
+    .fi-sc-fused-group>.fi-sc {
+        --tw-shadow: var(--insights-theme-shadow-raised);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-sc-tabs.fi-contained {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+
+    .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-text .fi-sc-wizard-header-step-label {
+        font-family: var(--insights-theme-font-display);
+        --tw-numeric-figure: lining-nums;
+        font-variant-numeric: var(--tw-ordinal, ) var(--tw-slashed-zero, ) var(--tw-numeric-figure, ) var(--tw-numeric-spacing, ) var(--tw-numeric-fraction, );
+    }
+
+    .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-text .fi-sc-wizard-header-step-description {
+        --tw-leading: var(--insights-theme-leading-reading);
+        line-height: var(--insights-theme-leading-reading);
+    }
+
+    .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step .fi-sc-wizard-header-step-separator:where(.dark, .dark *) {
+        color: var(--gray-800);
+    }
+
+    .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-icon-ctn {
+        background-color: var(--primary-500);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-icon-ctn {
+            background-color: color-mix(in oklab,
+                    var(--primary-500) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-icon-ctn:where(.dark, .dark *) {
+        background-color: var(--primary-400);
+    }
+
+    @supports (color: color-mix(in lab, red, red)) {
+        .fi-sc-wizard .fi-sc-wizard-header .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-btn .fi-sc-wizard-header-step-icon-ctn:where(.dark, .dark *) {
+            background-color: color-mix(in oklab,
+                    var(--primary-400) 10%,
+                    transparent);
+        }
+    }
+
+    .fi-sc-wizard.fi-contained,
+    .fi-sc-wizard:not(.fi-contained) .fi-sc-wizard-header {
+        --tw-shadow: var(--insights-theme-shadow-flat);
+        box-shadow:
+            var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow);
+    }
+}

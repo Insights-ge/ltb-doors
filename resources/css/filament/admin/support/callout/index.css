@@ -1,0 +1,6 @@
+@layer insights-theme {
+    .fi-callout .fi-callout-description {
+        --tw-leading: var(--insights-theme-leading-reading);
+        line-height: var(--insights-theme-leading-reading);
+    }
+}

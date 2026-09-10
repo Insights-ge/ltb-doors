@@ -19,6 +19,7 @@
         "laravel/tinker": "^3.0",
         "leandrocfe/filament-apex-charts": "^5.0",
         "livewire/livewire": "^4.4",
+        "mallardduck/blade-lucide-icons": "^2.0",
         "shuvroroy/filament-spatie-laravel-backup": "^4.0",
         "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-permission": "^8.3",

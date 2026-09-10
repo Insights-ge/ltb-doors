@@ -1,0 +1,11 @@
+:root {
+    --insights-theme-radius: 1.5rem;
+    --insights-theme-radius-container: calc(var(--insights-theme-radius) * 2 / 3);
+    --insights-theme-radius-field: calc(var(--insights-theme-radius) / 2);
+    --insights-theme-radius-small: calc(var(--insights-theme-radius) / 3);
+    --insights-theme-radius-xs: calc(var(--insights-theme-radius) / 4);
+    --radius-sm: var(--insights-theme-radius-xs);
+    --radius-md: var(--insights-theme-radius-small);
+    --radius-lg: var(--insights-theme-radius-field);
+    --radius-xl: var(--insights-theme-radius-container);
+}

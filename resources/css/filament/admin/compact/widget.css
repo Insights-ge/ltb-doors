@@ -1,0 +1,52 @@
+@layer compact-theme {
+    @media (width>=40rem) {
+        .fi-wi-chart .fi-wi-chart-filter.fi-input-wrp {
+            margin-block: calc(var(--spacing) * -1.5);
+        }
+
+        .fi-wi-chart
+            .fi-wi-chart-filter.fi-dropdown
+            .fi-wi-chart-filter-content {
+            row-gap: var(--compact-theme-gap-sections);
+            padding: var(--compact-theme-card-p);
+        }
+
+        .fi-wi-chart
+            .fi-wi-chart-filter.fi-dropdown
+            .fi-wi-chart-filter-content-actions-ctn {
+            gap: calc(var(--spacing) * 2);
+        }
+
+        .fi-wi-stats-overview-stat {
+            border-radius: var(--compact-theme-radius-card);
+            padding: var(--compact-theme-card-p);
+        }
+
+        .fi-wi-stats-overview-stat:has(.fi-wi-stats-overview-stat-chart) {
+            padding-bottom: calc(var(--spacing) * 6);
+        }
+
+        .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-value,
+        .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-placeholder {
+            font-size: var(--text-2xl);
+            line-height: var(--tw-leading, var(--text-2xl--line-height));
+        }
+
+        .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-content {
+            row-gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-label-ctn {
+            column-gap: calc(var(--spacing) * 1.5);
+        }
+
+        .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-chart {
+            border-bottom-right-radius: var(--compact-theme-radius-card);
+            border-bottom-left-radius: var(--compact-theme-radius-card);
+        }
+
+        .fi-wi {
+            gap: calc(var(--spacing) * 4);
+        }
+    }
+}

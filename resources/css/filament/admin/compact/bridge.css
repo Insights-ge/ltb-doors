@@ -1,0 +1,68 @@
+@layer compact-theme-bridge {
+    .fi-body {
+        --compact-theme-radius-card: var(--insights-theme-radius-container);
+        --compact-theme-radius-control: var(--insights-theme-radius-field);
+        --compact-theme-radius-nested: var(--insights-theme-radius-small);
+    }
+
+    @media (width>=40rem) {
+
+        .fi-btn,
+        .fi-btn-group,
+        .fi-icon-btn,
+        .fi-tabs:not(.fi-contained),
+        .fi-tabs-item,
+        .fi-pagination .fi-pagination-items,
+        .fi-sidebar-item-btn,
+        .fi-sidebar-group-dropdown-trigger-btn,
+        .fi-sidebar-database-notifications-btn,
+        .fi-sidebar .fi-user-menu-trigger,
+        .fi-tenant-menu-trigger,
+        .fi-topbar-item-btn,
+        .fi-global-search-field .fi-input-wrp,
+        .fi-fo-repeater .fi-fo-repeater-add-between-items,
+        .fi-fo-builder .fi-fo-builder-add-between-items,
+        .fi-fo-rich-editor .fi-fo-rich-editor-tool,
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-trigger,
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-option,
+        .fi-fo-rich-editor .fi-fo-rich-editor-merge-tag-btn,
+        .fi-fo-rich-editor .fi-fo-rich-editor-custom-block-btn {
+            border-radius: 2147483647px;
+        }
+
+        .fi-btn-group>.fi-btn {
+            border-radius: 0;
+        }
+
+        .fi-btn-group>.fi-btn:nth-child(1 of .fi-btn),
+        .fi-pagination .fi-pagination-item:first-of-type .fi-pagination-item-btn {
+            border-start-start-radius: 2147483647px;
+            border-end-start-radius: 2147483647px;
+        }
+
+        .fi-btn-group>.fi-btn:nth-last-child(1 of .fi-btn),
+        .fi-pagination .fi-pagination-item:last-of-type .fi-pagination-item-btn {
+            border-start-end-radius: 2147483647px;
+            border-end-end-radius: 2147483647px;
+        }
+
+        .fi-modal:not(.fi-no-database):not(.fi-modal-slide-over):not(.fi-width-screen)>.fi-modal-window-ctn>.fi-modal-window {
+            border-radius: var(--insights-theme-radius);
+        }
+
+        .fi-modal:not(.fi-modal-slide-over):not(.fi-width-screen).fi-modal-has-sticky-header>.fi-modal-window-ctn>.fi-modal-window>.fi-modal-header {
+            border-top-left-radius: var(--insights-theme-radius);
+            border-top-right-radius: var(--insights-theme-radius);
+        }
+
+        .fi-modal:not(.fi-modal-slide-over):not(.fi-width-screen).fi-modal-has-sticky-footer>.fi-modal-window-ctn>.fi-modal-window>.fi-modal-footer {
+            border-bottom-right-radius: var(--insights-theme-radius);
+            border-bottom-left-radius: var(--insights-theme-radius);
+        }
+
+        .fi-dropdown-list-item,
+        .fi-fo-rich-editor .fi-fo-rich-editor-dropdown-tool-textual .fi-fo-rich-editor-dropdown-tool-option {
+            border-radius: max(0px, calc(var(--insights-theme-radius-field) - 4px));
+        }
+    }
+}
