@@ -48,11 +48,6 @@ class UserResource extends Resource
         ];
     }
 
-    public static function getNavigationGroup(): ?string
-    {
-        return __('panel.navigation_groups.administration');
-    }
-
     public static function getNavigationLabel(): string
     {
         return __('panel.users.layout.users');

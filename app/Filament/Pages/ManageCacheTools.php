@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\HiddenFromNavigation;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Notifications\Notification;
@@ -12,10 +13,13 @@ use Illuminate\Support\Facades\Process;
 class ManageCacheTools extends Page
 {
     use HasPageShield;
+    use HiddenFromNavigation;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCommandLine;
 
     protected static ?int $navigationSort = 30;
+
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?string $commandOutput = null;
 
@@ -24,11 +28,6 @@ class ManageCacheTools extends Page
     public bool $lastCommandFailed = false;
 
     protected string $view = 'filament.admin.pages.manage-cache-tools';
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __('panel.navigation_groups.configuration');
-    }
 
     public static function getNavigationLabel(): string
     {

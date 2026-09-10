@@ -1,10 +1,6 @@
 <?php
 
 return [
-    'navigation_groups' => [
-        'administration' => 'Administration',
-        'configuration' => 'Configuration',
-    ],
     'users' => [
         'layout' => [
             'users' => 'Users',

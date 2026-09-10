@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\Locale;
+use App\Filament\Auth\LoginResponse;
 use App\Policies\LanguageLinePolicy;
 use App\Support\Locales;
 use BezhanSalleh\LanguageSwitch\Enums\ItemStyle;
@@ -10,6 +11,7 @@ use BezhanSalleh\LanguageSwitch\LanguageSwitch;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -25,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(LoginResponseContract::class, LoginResponse::class);
     }
 
     /**

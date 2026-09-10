@@ -21,6 +21,8 @@ class TranslationLineResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Schema $schema): Schema
     {
         return TranslationLineForm::configure($schema);
@@ -42,11 +44,6 @@ class TranslationLineResource extends Resource
             'index' => ListTranslationLines::route('/'),
             'edit' => EditTranslationLine::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __('panel.navigation_groups.configuration');
     }
 
     public static function getNavigationLabel(): string

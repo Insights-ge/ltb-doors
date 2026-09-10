@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\HiddenFromNavigation;
 use App\Settings\GeneralSettings;
 use App\Support\Locales;
 use BackedEnum;
@@ -18,17 +19,15 @@ use Filament\Support\Icons\Heroicon;
 class ManageGeneralSettings extends SettingsPage
 {
     use HasPageShield;
+    use HiddenFromNavigation;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?int $navigationSort = 10;
 
-    protected static string $settings = GeneralSettings::class;
+    protected static bool $shouldRegisterNavigation = false;
 
-    public static function getNavigationGroup(): ?string
-    {
-        return __('panel.navigation_groups.configuration');
-    }
+    protected static string $settings = GeneralSettings::class;
 
     public static function getNavigationLabel(): string
     {

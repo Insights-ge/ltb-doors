@@ -1,10 +1,6 @@
 <?php
 
 return [
-    'navigation_groups' => [
-        'administration' => 'ადმინისტრირება',
-        'configuration' => 'კონფიგურაცია',
-    ],
     'users' => [
         'layout' => [
             'users' => 'მომხმარებლები',

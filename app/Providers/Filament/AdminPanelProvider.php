@@ -3,17 +3,15 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\Users\UserResource;
 use App\Http\Middleware\SyncLocaleFromSession;
 use App\Settings\GeneralSettings;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -28,7 +26,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
-use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
 use Spatie\LaravelSettings\Exceptions\MissingSettings;
 
 class AdminPanelProvider extends PanelProvider
@@ -68,10 +65,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight(fn () => auth()->check() ? '3rem' : '2rem')
             ->favicon(fn () => $this->faviconUrl())
             ->defaultThemeMode(ThemeMode::System)
+            ->homeUrl(fn () => UserResource::getUrl())
 
             ->plugins([
-                FilamentShieldPlugin::make()
-                    ->navigationGroup(fn () => __('panel.navigation_groups.configuration')),
                 BreezyCore::make()
                     ->enableTwoFactorAuthentication()
                     ->myProfile(
@@ -84,20 +80,9 @@ class AdminPanelProvider extends PanelProvider
                     ->formPanelWidth('40%')
                     ->emptyPanelBackgroundImageUrl($this->authPageBgImageUrl()),
                 FilamentApexChartsPlugin::make(),
-                FilamentSpatieLaravelBackupPlugin::make()
-                    ->navigationGroup(fn () => __('panel.navigation_groups.configuration')),
-
-            ])
-
-            ->navigationGroups([
-                NavigationGroup::make(fn () => __('panel.navigation_groups.administration')),
-                NavigationGroup::make(fn () => __('panel.navigation_groups.configuration')),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 // AccountWidget::class,

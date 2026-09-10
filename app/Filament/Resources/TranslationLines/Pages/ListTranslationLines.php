@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TranslationLines\Pages;
 
 use App\Enums\Locale;
+use App\Filament\Concerns\HiddenFromNavigation;
 use App\Filament\Resources\TranslationLines\TranslationLineResource;
 use App\Support\Locales;
 use Filament\Actions\Action;
@@ -16,7 +17,11 @@ use Spatie\TranslationLoader\LanguageLine;
 
 class ListTranslationLines extends ListRecords
 {
+    use HiddenFromNavigation;
+
     protected static string $resource = TranslationLineResource::class;
+
+    protected static bool $shouldRegisterNavigation = false;
 
     public function getTitle(): string
     {
