@@ -43,6 +43,32 @@
         line-height: var(--insights-theme-leading-reading);
     }
 
+    .fi-modal-close-overlay {
+        @apply backdrop-blur-xs;
+    }
+
+    .fi-modal.fi-modal-slide-over>.fi-modal-window-ctn>.fi-modal-window {
+        @apply mt-2 h-[calc(100vh-2rem)] rounded-3xl;
+    }
+
+    .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-end>.fi-modal-window-ctn>.fi-modal-window {
+        @apply me-3;
+
+        &.fi-transition-enter-start,
+        &.fi-transition-leave-end {
+            @apply translate-x-[calc(100%+--spacing(3))] rtl:-translate-x-[calc(100%+--spacing(3))];
+        }
+    }
+
+    .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-start>.fi-modal-window-ctn>.fi-modal-window {
+        @apply ms-3;
+
+        &.fi-transition-enter-start,
+        &.fi-transition-leave-end {
+            @apply -translate-x-[calc(100%+--spacing(3))] rtl:translate-x-[calc(100%+--spacing(3))];
+        }
+    }
+
     .fi-modal>.fi-modal-window-ctn>.fi-modal-window.fi-transition-enter,
     .fi-modal>.fi-modal-window-ctn>.fi-modal-window.fi-transition-leave {
         --tw-duration: 0.2s;
