@@ -32,12 +32,20 @@ class UserPolicy
             return false;
         }
 
+        if ($this->targetsSelfWithoutBeingSuperAdmin($authUser, $user)) {
+            return false;
+        }
+
         return $authUser->can('Update:User');
     }
 
     public function delete(User $authUser, User $user): bool
     {
         if ($this->targetsSuperAdminWithoutBeingOne($authUser, $user)) {
+            return false;
+        }
+
+        if ($this->targetsSelfWithoutBeingSuperAdmin($authUser, $user)) {
             return false;
         }
 
@@ -77,5 +85,10 @@ class UserPolicy
     private function targetsSuperAdminWithoutBeingOne(User $authUser, User $user): bool
     {
         return $user->hasRole(Role::SuperAdmin->value) && ! $authUser->hasRole(Role::SuperAdmin->value);
+    }
+
+    private function targetsSelfWithoutBeingSuperAdmin(User $authUser, User $user): bool
+    {
+        return $authUser->is($user) && ! $authUser->hasRole(Role::SuperAdmin->value);
     }
 }

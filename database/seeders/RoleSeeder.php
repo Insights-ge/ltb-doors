@@ -24,7 +24,13 @@ class RoleSeeder extends Seeder
         ]);
 
         $adminRole = Role::firstOrCreate(['name' => RoleEnum::Admin->value]);
-        $adminRole->givePermissionTo(['ViewAny:User', 'View:User']);
+        $adminRole->givePermissionTo([
+            'ViewAny:User',
+            'View:User',
+            'Create:User',
+            'Update:User',
+            'Delete:User',
+        ]);
 
         User::query()
             ->where('email', 'admin@ltb.ge')
