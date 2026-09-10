@@ -19,6 +19,8 @@ class BasicHeatmapChart extends ApexChartWidget
     /**
      * Chart options (series, labels, types, size, animations...)
      * https://apexcharts.com/docs/options
+     *
+     * @return array<string, mixed>
      */
     protected function getOptions(): array
     {
