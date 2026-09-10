@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Insights Demo Admin',
                 'password' => Hash::make('demo'),
+                'email_verified_at' => now(),
             ]
         );
 
