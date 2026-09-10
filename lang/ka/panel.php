@@ -26,6 +26,10 @@ return [
             'roles_no_options' => 'როლები ვერ მოიძებნა',
         ],
     ],
+    'roles' => [
+        'super_admin' => 'სუპერ ადმინი',
+        'admin' => 'ადმინი',
+    ],
     'cache_tools' => [
         'navigation_label' => 'Cache',
         'title' => 'ქეშ ინსტრუმენტები',

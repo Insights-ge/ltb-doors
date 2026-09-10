@@ -26,6 +26,10 @@ return [
             'roles_no_options' => 'No roles available',
         ],
     ],
+    'roles' => [
+        'super_admin' => 'Super Admin',
+        'admin' => 'Admin',
+    ],
     'cache_tools' => [
         'navigation_label' => 'Cache Tools',
         'title' => 'Cache Tools',

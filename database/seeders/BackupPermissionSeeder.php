@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role as RoleEnum;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -20,7 +21,7 @@ class BackupPermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        $role = Role::firstOrCreate(['name' => 'super_admin']);
+        $role = Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value]);
         $role->givePermissionTo($permissions);
     }
 }

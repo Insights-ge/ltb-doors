@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
@@ -27,7 +28,7 @@ class UserPolicy
 
     public function update(User $authUser, User $user): bool
     {
-        if ($user->hasRole('super_admin') && ! $authUser->hasRole('super_admin')) {
+        if ($user->hasRole(Role::SuperAdmin->value) && ! $authUser->hasRole(Role::SuperAdmin->value)) {
             return false;
         }
 
