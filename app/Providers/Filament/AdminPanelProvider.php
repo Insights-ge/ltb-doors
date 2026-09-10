@@ -60,7 +60,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('15rem')
             ->brandLogo(fn () => $this->brandLogoUrl())
             ->darkModeBrandLogo(fn () => $this->darkModeBrandLogoUrl())
-            ->brandLogoHeight(fn () => auth()->check() ? '3rem' : '2rem')
+            ->brandLogoHeight(fn () => auth()->check() ? '3.5rem' : '2.5rem')
             ->favicon(fn () => $this->faviconUrl())
             ->defaultThemeMode(ThemeMode::System)
             ->homeUrl(fn () => UserResource::getUrl())
