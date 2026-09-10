@@ -35,7 +35,7 @@
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="{{ route('home', ['locale' => $currentLocale]) }}" class="flex items-center gap-2 group">
                 @if ($settings->branding_logo_header)
-                    <img src="{{ asset($settings->branding_logo_header) }}" alt="{{ $settings->site_name }}"
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->branding_logo_header) }}" alt="{{ $settings->site_name }}"
                         class="h-10 w-auto">
                 @else
                     <span class="text-lg font-bold">{{ $settings->site_name }}</span>
@@ -78,7 +78,7 @@
             <div class="flex items-center gap-4">
                 <a href="{{ route('home', ['locale' => $currentLocale]) }}" class="opacity-50 hover:opacity-100 transition-opacity">
                     @if ($settings->branding_logo_footer)
-                        <img src="{{ asset($settings->branding_logo_footer) }}" alt="{{ $settings->site_name }}"
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->branding_logo_footer) }}" alt="{{ $settings->site_name }}"
                             class="size-8">
                     @endif
                 </a>

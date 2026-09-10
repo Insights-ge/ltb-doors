@@ -20,7 +20,7 @@
     $description = $description ?? trim($__env->yieldContent('meta_description', $settings->default_meta_description ?? ''));
     $keywords    = $keywords    ?? trim($__env->yieldContent('meta_keywords', $settings->default_meta_keywords ?? ''));
 
-    $ogImage  = $ogImage  ?? ($settings->og_image ? asset($settings->og_image) : null);
+    $ogImage  = $ogImage  ?? ($settings->og_image ? \Illuminate\Support\Facades\Storage::disk('public')->url($settings->og_image) : null);
     $nowIso   = \Illuminate\Support\Carbon::now()->toIso8601String();
 
     $base   = url('/');
@@ -42,7 +42,7 @@
                 'url'    => $base,
                 'logo'   => [
                     '@type' => 'ImageObject',
-                    'url'   => $settings->branding_logo_main ? asset($settings->branding_logo_main) : null,
+                    'url'   => $settings->branding_logo_main ? \Illuminate\Support\Facades\Storage::disk('public')->url($settings->branding_logo_main) : null,
                 ],
             ],
             [
