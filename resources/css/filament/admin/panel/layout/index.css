@@ -36,6 +36,18 @@
         font-family: var(--insights-theme-font-display);
     }
 
+    .fi-sliding-doors-brand-text {
+        font-family: var(--insights-theme-font-display);
+        font-size: 1.125rem;
+        font-weight: var(--font-weight-semibold);
+        color: var(--gray-900);
+        white-space: nowrap;
+    }
+
+    .fi-sliding-doors-brand-text:where(.dark, .dark *) {
+        color: var(--gray-100);
+    }
+
     .fi-page-header-main-ctn .fi-header .fi-header-heading {
         @apply relative inline-block after:content-[''] after:absolute after:-z-10 after:-left-1 after:-right-1 after:bottom-1 after:rounded-full after:bg-primary-400/75 dark:after:bg-primary-600/75 after:h-1.5;
     }

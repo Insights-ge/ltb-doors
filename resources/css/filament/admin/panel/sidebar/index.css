@@ -45,17 +45,8 @@
         flex: 0 1 auto;
     }
 
-    .fi-sliding-doors-brand-text {
+    .fi-sidebar-header .fi-sliding-doors-brand-text {
         padding-top: 0.75rem;
-        font-family: var(--insights-theme-font-display);
-        font-size: 1.125rem;
-        font-weight: var(--font-weight-semibold);
-        color: var(--gray-900);
-        white-space: nowrap;
-    }
-
-    .fi-sliding-doors-brand-text:where(.dark, .dark *) {
-        color: var(--gray-100);
     }
 
     .fi-sidebar-header-controls:after {

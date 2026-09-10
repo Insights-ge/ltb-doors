@@ -25,6 +25,17 @@
         line-height: var(--insights-theme-leading-reading);
     }
 
+    .fi-simple-header-logo-ctn {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin-bottom: 1rem;
+    }
+
+    .fi-simple-header .fi-logo {
+        margin-bottom: 0;
+    }
+
     .fi-simple-header-heading {
         font-family: var(--insights-theme-font-display);
         --tw-font-weight: var(--font-weight-semibold);
