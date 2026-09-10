@@ -39,8 +39,6 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->profile()
             ->spa(hasPrefetching: true)
-            ->registration()
-            ->passwordReset()
             ->emailVerification()
             ->databaseNotifications()
 
