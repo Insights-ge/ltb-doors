@@ -4,6 +4,7 @@
         --tw-ease: var(--ease-out);
         transition-duration: 0.2s;
         transition-timing-function: var(--ease-out);
+        @apply rounded-3xl;
     }
 
     .fi-no-notification:not(.fi-inline),
@@ -13,5 +14,8 @@
             var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
             var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
             var(--tw-shadow);
+    }
+    .fi-no-database .fi-modal-content {
+        @apply p-0 m-0;
     }
 }
