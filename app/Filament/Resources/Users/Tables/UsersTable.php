@@ -18,10 +18,6 @@ class UsersTable
                 TextColumn::make('email')
                     ->label(__('panel.users.table.email'))
                     ->searchable(),
-                TextColumn::make('roles.name')
-                    ->label(__('panel.users.table.role'))
-                    ->badge()
-                    ->searchable(),
                 TextColumn::make('email_verified_at')
                     ->label(__('panel.users.table.email_verified_at'))
                     ->dateTime()

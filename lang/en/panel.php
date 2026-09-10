@@ -10,7 +10,6 @@ return [
         'table' => [
             'name' => 'Name',
             'email' => 'Email',
-            'role' => 'Role',
             'email_verified_at' => 'Email verified at',
             'created_at' => 'Created at',
             'updated_at' => 'Updated at',
