@@ -1,0 +1,31 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/sites/ltb-doors
+            git pull origin main
+
+            composer install --optimize-autoloader --no-dev
+
+            npm install --legacy-peer-deps
+            npm run build
+
+            php artisan migrate --force
+            php artisan optimize
+
+            sudo supervisorctl restart ltb-doors-worker:*

@@ -27,7 +27,6 @@ boost.json
 /.agents
 settings.json
 AGENTS.md
-/.github
 /metronic_reference
 /.claude
 /.codex
