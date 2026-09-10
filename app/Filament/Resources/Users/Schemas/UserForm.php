@@ -32,6 +32,7 @@ class UserForm
                     ->unique(ignoreRecord: true)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn (Set $set) => $set('email_verified', false))
+                    ->autocomplete('off')
                     ->required(),
                 Toggle::make('email_verified')
                     ->label(__('panel.users.form.email_verified'))
@@ -40,6 +41,7 @@ class UserForm
                 TextInput::make('password')
                     ->label(__('panel.users.form.password'))
                     ->password()
+                    ->autocomplete('new-password')
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state)),
                 Select::make('roles')
