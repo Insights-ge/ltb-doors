@@ -1,7 +1,10 @@
 <?php
 
 declare(strict_types=1);
-use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
+use App\Filament\Pages\ManageCacheTools;
+use App\Filament\Pages\ManageGeneralSettings;
+use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\TranslationLines\TranslationLineResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -178,7 +181,7 @@ return [
             ],
         ],
         'exclude' => [
-            //
+            TranslationLineResource::class,
         ],
     ],
 
@@ -198,6 +201,8 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
+            ManageCacheTools::class,
+            ManageGeneralSettings::class,
         ],
     ],
 
