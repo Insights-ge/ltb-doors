@@ -7,6 +7,7 @@ use App\Filament\Resources\Users\UserResource;
 use App\Http\Middleware\SyncLocaleFromSession;
 use App\Settings\GeneralSettings;
 use App\Support\AdminTheme;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -74,6 +75,9 @@ class AdminPanelProvider extends PanelProvider
             )
 
             ->plugins([
+                FilamentShieldPlugin::make()
+                    ->navigationGroup(null)
+                    ->navigationSort(2),
                 BreezyCore::make()
                     ->enableTwoFactorAuthentication()
                     ->myProfile(

@@ -30,6 +30,11 @@ class RoleSeeder extends Seeder
             'Create:User',
             'Update:User',
             'Delete:User',
+            'ViewAny:Role',
+            'View:Role',
+            'Create:Role',
+            'Update:Role',
+            'Delete:Role',
         ]);
 
         User::query()
