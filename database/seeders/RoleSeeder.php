@@ -41,5 +41,7 @@ class RoleSeeder extends Seeder
             ->where('email', 'admin@ltb.ge')
             ->first()
             ?->assignRole(RoleEnum::Admin->value);
+
+        Role::firstOrCreate(['name' => RoleEnum::User->value]);
     }
 }

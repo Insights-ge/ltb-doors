@@ -31,6 +31,7 @@ return [
     'roles' => [
         'super_admin' => 'სუპერ ადმინი',
         'admin' => 'ადმინი',
+        'user' => 'მომხმარებელი',
     ],
     'cache_tools' => [
         'navigation_label' => 'Cache',

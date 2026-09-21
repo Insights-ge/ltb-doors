@@ -31,6 +31,7 @@ return [
     'roles' => [
         'super_admin' => 'Super Admin',
         'admin' => 'Admin',
+        'user' => 'User',
     ],
     'cache_tools' => [
         'navigation_label' => 'Cache Tools',
