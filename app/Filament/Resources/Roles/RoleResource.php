@@ -57,7 +57,7 @@ class RoleResource extends ShieldRoleResource
             TextColumn::make('team.name')
                 ->default('Global')
                 ->badge()
-                ->color(fn (mixed $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
+                ->color(fn (?string $state): string => str($state)->contains('Global') ? 'gray' : 'primary')
                 ->label(__('filament-shield::filament-shield.column.team'))
                 ->searchable()
                 ->visible(fn (): bool => static::shield()->isCentralApp() && Utils::isTenancyEnabled()),

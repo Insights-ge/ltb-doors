@@ -6,6 +6,7 @@ use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -169,7 +170,7 @@ test('admin can delete another admin', function () {
     $this->actingAs($this->admin);
 
     Livewire::test(ListUsers::class)
-        ->callTableAction('delete', $otherAdmin);
+        ->callAction(TestAction::make('delete')->table($otherAdmin));
 
     $this->assertModelMissing($otherAdmin);
 });
@@ -178,8 +179,8 @@ test('edit and delete actions are hidden for an admin viewing their own row', fu
     $this->actingAs($this->admin);
 
     Livewire::test(ListUsers::class)
-        ->assertTableActionHidden('edit', $this->admin)
-        ->assertTableActionHidden('delete', $this->admin);
+        ->assertActionHidden(TestAction::make('edit')->table($this->admin))
+        ->assertActionHidden(TestAction::make('delete')->table($this->admin));
 });
 
 test('edit and delete actions are visible for an admin viewing another admin\'s row', function () {
@@ -189,6 +190,6 @@ test('edit and delete actions are visible for an admin viewing another admin\'s 
     $this->actingAs($this->admin);
 
     Livewire::test(ListUsers::class)
-        ->assertTableActionVisible('edit', $otherAdmin)
-        ->assertTableActionVisible('delete', $otherAdmin);
+        ->assertActionVisible(TestAction::make('edit')->table($otherAdmin))
+        ->assertActionVisible(TestAction::make('delete')->table($otherAdmin));
 });
