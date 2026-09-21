@@ -12,10 +12,24 @@ use BezhanSalleh\FilamentShield\Support\Utils;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Override;
 
 class RoleResource extends ShieldRoleResource
 {
+    #[Override]
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (Auth::user()?->hasRole(RoleEnum::SuperAdmin->value)) {
+            return $query;
+        }
+
+        return $query->where('name', '!=', RoleEnum::SuperAdmin->value);
+    }
+
     #[Override]
     public static function getPages(): array
     {
