@@ -24,12 +24,10 @@ class ComponentsTable
             ->columns([
                 TextColumn::make('type')
                     ->label(__('panel.catalog.components.table.type'))
-                    ->badge()
-                    ->sortable(),
+                    ->badge(),
                 TextColumn::make('code')
                     ->label(__('panel.catalog.components.table.code'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('description')
                     ->label(__('panel.catalog.components.table.description'))
                     ->searchable()
@@ -37,8 +35,7 @@ class ComponentsTable
                     ->tooltip(fn (?string $state): ?string => $state),
                 TextColumn::make('color')
                     ->label(__('panel.catalog.components.table.color'))
-                    ->badge()
-                    ->sortable(),
+                    ->badge(),
                 TextColumn::make('unique_code')
                     ->label(__('panel.catalog.components.table.unique_code'))
                     ->searchable()

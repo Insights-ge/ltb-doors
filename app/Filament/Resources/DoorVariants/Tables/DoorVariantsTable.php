@@ -23,15 +23,12 @@ class DoorVariantsTable
             ->columns([
                 TextColumn::make('product_code')
                     ->label(__('panel.catalog.door_variants.table.product_code'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('doorModel.name')
-                    ->label(__('panel.catalog.door_variants.table.door_model'))
-                    ->sortable(),
+                    ->label(__('panel.catalog.door_variants.table.door_model')),
                 TextColumn::make('color')
                     ->label(__('panel.catalog.door_variants.table.color'))
-                    ->badge()
-                    ->sortable(),
+                    ->badge(),
                 TextColumn::make('height_range')
                     ->label(__('panel.catalog.door_variants.table.height_range'))
                     ->state(fn (DoorVariant $record): string => "{$record->height_range_min}–{$record->height_range_max}"),

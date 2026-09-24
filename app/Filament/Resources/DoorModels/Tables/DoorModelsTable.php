@@ -18,8 +18,7 @@ class DoorModelsTable
             ->columns([
                 TextColumn::make('name')
                     ->label(__('panel.catalog.door_models.table.name'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 TextColumn::make('height_range')
                     ->label(__('panel.catalog.door_models.table.height_range'))
                     ->state(fn (DoorModel $record): string => "{$record->min_height}–{$record->max_height}"),
@@ -40,7 +39,6 @@ class DoorModelsTable
                 TextColumn::make('created_at')
                     ->label(__('panel.catalog.door_models.table.created_at'))
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
