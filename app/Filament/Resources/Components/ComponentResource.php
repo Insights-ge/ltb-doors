@@ -20,6 +20,8 @@ class ComponentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
 
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::PuzzlePiece;
+
     protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
