@@ -60,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
         ViewAction::configureUsing(fn (ViewAction $action) => $action->iconButton());
         EditAction::configureUsing(fn (EditAction $action) => $action->iconButton());
         DeleteAction::configureUsing(fn (DeleteAction $action) => $action->iconButton());
-        TextColumn::configureUsing(fn (TextColumn $column) => $column->toggleable());
+        TextColumn::configureUsing(fn (TextColumn $column) => $column->toggleable()->alignCenter());
         ImageColumn::configureUsing(fn (ImageColumn $column) => $column->toggleable());
         IconColumn::configureUsing(fn (IconColumn $column) => $column->toggleable());
     }
