@@ -24,31 +24,49 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class DoorVariant extends Model
 {
+    /**
+     * @return BelongsTo<DoorModel, $this>
+     */
     public function doorModel(): BelongsTo
     {
         return $this->belongsTo(DoorModel::class);
     }
 
+    /**
+     * @return BelongsTo<Component, $this>
+     */
     public function sideProfile(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'side_profile_component_id');
     }
 
+    /**
+     * @return BelongsTo<Component, $this>
+     */
     public function topRail(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'top_rail_component_id');
     }
 
+    /**
+     * @return BelongsTo<Component, $this>
+     */
     public function bottomRail(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'bottom_rail_component_id');
     }
 
+    /**
+     * @return BelongsTo<Component, $this>
+     */
     public function partition(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'partition_component_id');
     }
 
+    /**
+     * @return BelongsTo<Component, $this>
+     */
     public function softCloseMechanism(): BelongsTo
     {
         return $this->belongsTo(Component::class, 'soft_close_mechanism_component_id');
