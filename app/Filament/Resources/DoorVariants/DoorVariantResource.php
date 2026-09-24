@@ -35,6 +35,11 @@ class DoorVariantResource extends Resource
         ]);
     }
 
+    public static function getRecordRouteBindingEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('doorModel');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return DoorVariantForm::configure($schema);
