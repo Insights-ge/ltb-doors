@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Catalog\Enums\ComponentType;
-use App\Domains\Catalog\Enums\DoorColor;
-use App\Domains\Catalog\Models\Component;
-use App\Domains\Catalog\Models\DoorModel;
-use App\Domains\Catalog\Models\DoorVariant;
+use App\Enums\ComponentType;
+use App\Enums\DoorColor;
+use App\Models\Component;
+use App\Models\DoorModel;
+use App\Models\DoorVariant;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 

@@ -71,4 +71,9 @@ class UserResource extends Resource
     {
         return __('panel.users.layout.users');
     }
+
+    public static function hasTitleCaseModelLabel(): bool
+    {
+        return false;
+    }
 }

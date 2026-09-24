@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
         $this->call(GeneralSettingsSeeder::class);
         $this->call(BackupPermissionSeeder::class);
-        $this->call(DoorCatalogSeeder::class);
+
+        // Not part of the default chain: it's a ~450-row catalog import, not
+        // app bootstrap data, and every test calling $this->seed() would pay
+        // for it. Run explicitly: php artisan db:seed --class=DoorCatalogSeeder
+        // $this->call(DoorCatalogSeeder::class);
     }
 }

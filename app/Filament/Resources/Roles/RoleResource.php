@@ -19,6 +19,12 @@ use Override;
 class RoleResource extends ShieldRoleResource
 {
     #[Override]
+    public static function hasTitleCaseModelLabel(): bool
+    {
+        return false;
+    }
+
+    #[Override]
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();

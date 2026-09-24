@@ -18,8 +18,10 @@ class RoleSeeder extends Seeder
             '--ignore-existing-policies' => true,
         ]);
 
+        $superAdmin = User::query()->where('email', 'demo@demo.com')->first();
+
         $this->command->call('shield:super-admin', [
-            '--user' => 1,
+            '--user' => $superAdmin->id,
             '--panel' => 'admin',
         ]);
 
@@ -35,6 +37,21 @@ class RoleSeeder extends Seeder
             'Create:Role',
             'Update:Role',
             'Delete:Role',
+            'ViewAny:DoorModel',
+            'View:DoorModel',
+            'Create:DoorModel',
+            'Update:DoorModel',
+            'Delete:DoorModel',
+            'ViewAny:Component',
+            'View:Component',
+            'Create:Component',
+            'Update:Component',
+            'Delete:Component',
+            'ViewAny:DoorVariant',
+            'View:DoorVariant',
+            'Create:DoorVariant',
+            'Update:DoorVariant',
+            'Delete:DoorVariant',
         ]);
 
         User::query()

@@ -55,4 +55,9 @@ class TranslationLineResource extends Resource
     {
         return __('panel.translation_lines.layout.translation_line');
     }
+
+    public static function hasTitleCaseModelLabel(): bool
+    {
+        return false;
+    }
 }
