@@ -61,7 +61,8 @@ class TranslationLinesTable
                         ->distinct()
                         ->orderBy('group')
                         ->pluck('group', 'group')
-                        ->toArray()),
+                        ->toArray())
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -44,10 +44,12 @@ class ComponentsTable
             ->filters([
                 SelectFilter::make('type')
                     ->label(__('panel.catalog.components.table.type'))
-                    ->options(ComponentType::class),
+                    ->options(ComponentType::class)
+                    ->searchable(),
                 SelectFilter::make('color')
                     ->label(__('panel.catalog.components.table.color'))
-                    ->options(DoorColor::class),
+                    ->options(DoorColor::class)
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),

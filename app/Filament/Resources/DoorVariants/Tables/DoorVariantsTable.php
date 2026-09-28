@@ -69,7 +69,8 @@ class DoorVariantsTable
                     ->searchable(),
                 SelectFilter::make('color')
                     ->label(__('panel.catalog.door_variants.table.color'))
-                    ->options(DoorColor::class),
+                    ->options(DoorColor::class)
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),
