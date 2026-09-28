@@ -9,6 +9,7 @@ use App\Models\Component;
 use App\Models\DoorModel;
 use App\Models\DoorVariant;
 use App\Models\User;
+use Filament\Forms\Components\Select;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -79,4 +80,15 @@ test('a door variant can be edited', function () {
         ->assertHasNoFormErrors();
 
     expect($variant->refresh()->product_code)->toBe('პნლა000001');
+});
+
+test('the edit form shows a selected component whose type differs from the field', function () {
+    $topRail = Component::factory()->ofType(ComponentType::TopRail)->create();
+    $variant = DoorVariant::factory()->create(['partition_component_id' => $topRail->id]);
+
+    Livewire::test(EditDoorVariant::class, ['record' => $variant->getKey()])
+        ->assertFormFieldExists(
+            'partition_component_id',
+            fn (Select $field): bool => array_key_exists($topRail->id, $field->getOptions()),
+        );
 });
