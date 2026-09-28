@@ -26,6 +26,7 @@ class GeneralInformationSection
                         Select::make('color')
                             ->label(__('panel.catalog.door_variants.form.color'))
                             ->options(DoorColor::class)
+                            ->searchable()
                             ->required(),
                         TextInput::make('product_code')
                             ->label(__('panel.catalog.door_variants.form.product_code'))

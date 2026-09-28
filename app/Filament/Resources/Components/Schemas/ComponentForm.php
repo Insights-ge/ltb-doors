@@ -18,6 +18,7 @@ class ComponentForm
                 Select::make('type')
                     ->label(__('panel.catalog.components.form.type'))
                     ->options(ComponentType::class)
+                    ->searchable()
                     ->required(),
                 TextInput::make('code')
                     ->label(__('panel.catalog.components.form.code'))
@@ -31,7 +32,8 @@ class ComponentForm
                     ->required(),
                 Select::make('color')
                     ->label(__('panel.catalog.components.form.color'))
-                    ->options(DoorColor::class),
+                    ->options(DoorColor::class)
+                    ->searchable(),
                 TextInput::make('unique_code')
                     ->label(__('panel.catalog.components.form.unique_code'))
                     ->maxLength(255)
