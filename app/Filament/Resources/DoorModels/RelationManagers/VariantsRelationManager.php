@@ -47,7 +47,9 @@ class VariantsRelationManager extends RelationManager
                 Action::make('view')
                     ->label(__('panel.catalog.door_variants.layout.edit_door_variant'))
                     ->url(fn (DoorVariant $record): string => DoorVariantResource::getUrl('edit', ['record' => $record]))
-                    ->icon('heroicon-o-pencil-square'),
+                    ->icon('heroicon-o-pencil-square')
+                    ->iconButton()
+                    ->tooltip(__('panel.catalog.door_variants.layout.edit_door_variant')),
             ])
             ->headerActions([
                 Action::make('create')
