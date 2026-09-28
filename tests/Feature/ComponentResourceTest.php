@@ -71,3 +71,15 @@ test('a component in use cannot be deleted', function () {
 
     $this->assertModelExists($component);
 });
+
+test('components can be filtered by multiple types', function () {
+    $filteredTypes = Livewire::test(ListComponents::class)
+        ->filterTable('type', [ComponentType::SideProfile->value, ComponentType::TopRail->value])
+        ->instance()
+        ->getFilteredTableQuery()
+        ->pluck('type')
+        ->unique();
+
+    expect($filteredTypes)->toHaveCount(2)
+        ->and($filteredTypes->all())->toEqualCanonicalizing([ComponentType::SideProfile, ComponentType::TopRail]);
+});

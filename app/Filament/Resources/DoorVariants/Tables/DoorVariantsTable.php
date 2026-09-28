@@ -66,10 +66,12 @@ class DoorVariantsTable
                 SelectFilter::make('door_model_id')
                     ->label(__('panel.catalog.door_variants.table.door_model'))
                     ->options(fn (): array => DoorModel::query()->pluck('name', 'id')->all())
+                    ->multiple()
                     ->searchable(),
                 SelectFilter::make('color')
                     ->label(__('panel.catalog.door_variants.table.color'))
                     ->options(DoorColor::class)
+                    ->multiple()
                     ->searchable(),
             ])
             ->recordActions([
