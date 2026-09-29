@@ -24,6 +24,7 @@ test('components list page shows records', function () {
     $component = Component::factory()->create();
 
     Livewire::test(ListComponents::class)
+        ->searchTable($component->unique_code)
         ->assertCanSeeTableRecords([$component]);
 });
 
