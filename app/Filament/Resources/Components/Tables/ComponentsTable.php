@@ -4,12 +4,12 @@ namespace App\Filament\Resources\Components\Tables;
 
 use App\Enums\ComponentType;
 use App\Enums\DoorColor;
+use App\Filament\Resources\Components\ComponentResource;
 use App\Models\Component;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -56,12 +56,7 @@ class ComponentsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->before(function (Component $record, DeleteAction $action): void {
-                        if ($record->isInUse()) {
-                            self::notifyInUse();
-                            $action->cancel();
-                        }
-                    }),
+                    ->before(ComponentResource::preventDeletingComponentInUse(...)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -72,7 +67,7 @@ class ComponentsTable
                             );
 
                             if ($hasComponentInUse) {
-                                self::notifyInUse();
+                                ComponentResource::notifyComponentInUse();
                                 $action->cancel();
                             }
                         }),
@@ -81,14 +76,5 @@ class ComponentsTable
             ->striped()
             ->emptyStateHeading(__('panel.catalog.components.table.empty_heading'))
             ->emptyStateDescription(__('panel.catalog.components.table.empty_description'));
-    }
-
-    private static function notifyInUse(): void
-    {
-        Notification::make()
-            ->title(__('panel.catalog.components.table.delete_in_use_title'))
-            ->body(__('panel.catalog.components.table.delete_in_use_body'))
-            ->danger()
-            ->send();
     }
 }
