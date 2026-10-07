@@ -105,3 +105,11 @@ test('components can be filtered by multiple types', function () {
     expect($filteredTypes)->toHaveCount(2)
         ->and($filteredTypes->all())->toEqualCanonicalizing([ComponentType::SideProfile, ComponentType::TopRail]);
 });
+
+test('the type field is disabled on the edit page', function () {
+    $component = Component::factory()->create();
+
+    Livewire::test(EditComponent::class, ['record' => $component->getKey()])
+        ->assertFormFieldDisabled('type')
+        ->assertFormFieldEnabled('code');
+});

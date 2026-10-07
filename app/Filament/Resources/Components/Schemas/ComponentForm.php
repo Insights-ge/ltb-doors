@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Operation;
 
 class ComponentForm
 {
@@ -19,6 +20,7 @@ class ComponentForm
                     ->label(__('panel.catalog.components.form.type'))
                     ->options(ComponentType::class)
                     ->searchable()
+                    ->disabledOn(Operation::Edit)
                     ->required(),
                 TextInput::make('code')
                     ->label(__('panel.catalog.components.form.code'))
