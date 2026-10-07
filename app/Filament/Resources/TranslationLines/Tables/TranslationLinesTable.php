@@ -19,12 +19,12 @@ class TranslationLinesTable
         return $table
             ->columns([
                 TextColumn::make('group')
-                    ->label(__('panel.translation_lines.table.group'))
+                    ->label(__('translation_lines.table.group'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('key')
-                    ->label(__('panel.translation_lines.table.key'))
+                    ->label(__('translation_lines.table.key'))
                     ->searchable()
                     ->sortable(),
 
@@ -37,14 +37,14 @@ class TranslationLinesTable
                 ),
 
                 TextColumn::make('updated_at')
-                    ->label(__('panel.translation_lines.table.updated_at'))
+                    ->label(__('translation_lines.table.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Filter::make('missing_translations')
-                    ->label(__('panel.translation_lines.table.missing_translations'))
+                    ->label(__('translation_lines.table.missing_translations'))
                     ->query(function (Builder $query): Builder {
                         $locales = self::supportedLocales();
 
@@ -56,7 +56,7 @@ class TranslationLinesTable
                         });
                     }),
                 SelectFilter::make('group')
-                    ->label(__('panel.translation_lines.table.group'))
+                    ->label(__('translation_lines.table.group'))
                     ->options(fn () => LanguageLine::query()
                         ->distinct()
                         ->orderBy('group')
@@ -70,8 +70,8 @@ class TranslationLinesTable
             ])
             ->striped()
             ->defaultSort('group')
-            ->emptyStateHeading(__('panel.translation_lines.table.empty_heading'))
-            ->emptyStateDescription(__('panel.translation_lines.table.empty_description'));
+            ->emptyStateHeading(__('translation_lines.table.empty_heading'))
+            ->emptyStateDescription(__('translation_lines.table.empty_description'));
     }
 
     /** @return list<string> */

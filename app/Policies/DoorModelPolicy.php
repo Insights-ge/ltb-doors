@@ -32,24 +32,9 @@ class DoorModelPolicy
         return $authUser->can('Update:DoorModel');
     }
 
-    public function delete(AuthUser $authUser, DoorModel $doorModel): bool
-    {
-        return $authUser->can('Delete:DoorModel');
-    }
-
     public function restore(AuthUser $authUser, DoorModel $doorModel): bool
     {
         return $authUser->can('Restore:DoorModel');
-    }
-
-    public function forceDelete(AuthUser $authUser, DoorModel $doorModel): bool
-    {
-        return $authUser->can('ForceDelete:DoorModel');
-    }
-
-    public function forceDeleteAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('ForceDeleteAny:DoorModel');
     }
 
     public function restoreAny(AuthUser $authUser): bool

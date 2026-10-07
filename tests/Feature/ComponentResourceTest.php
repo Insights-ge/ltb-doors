@@ -24,6 +24,7 @@ test('components list page shows records', function () {
     $component = Component::factory()->create();
 
     Livewire::test(ListComponents::class)
+        ->searchTable($component->unique_code)
         ->assertCanSeeTableRecords([$component]);
 });
 
@@ -72,6 +73,27 @@ test('a component in use cannot be deleted', function () {
     $this->assertModelExists($component);
 });
 
+test('a component not in use can be deleted from the edit page', function () {
+    $component = Component::factory()->create();
+
+    Livewire::test(EditComponent::class, ['record' => $component->getKey()])
+        ->callAction('delete')
+        ->assertRedirect();
+
+    $this->assertModelMissing($component);
+});
+
+test('a component in use cannot be deleted from the edit page', function () {
+    $variant = DoorVariant::factory()->create();
+    $component = $variant->sideProfile;
+
+    Livewire::test(EditComponent::class, ['record' => $component->getKey()])
+        ->callAction('delete')
+        ->assertNotified(__('components.table.delete_in_use_title'));
+
+    $this->assertModelExists($component);
+});
+
 test('components can be filtered by multiple types', function () {
     $filteredTypes = Livewire::test(ListComponents::class)
         ->filterTable('type', [ComponentType::SideProfile->value, ComponentType::TopRail->value])
@@ -82,4 +104,12 @@ test('components can be filtered by multiple types', function () {
 
     expect($filteredTypes)->toHaveCount(2)
         ->and($filteredTypes->all())->toEqualCanonicalizing([ComponentType::SideProfile, ComponentType::TopRail]);
+});
+
+test('the type field is disabled on the edit page', function () {
+    $component = Component::factory()->create();
+
+    Livewire::test(EditComponent::class, ['record' => $component->getKey()])
+        ->assertFormFieldDisabled('type')
+        ->assertFormFieldEnabled('code');
 });

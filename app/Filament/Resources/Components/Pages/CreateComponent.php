@@ -12,6 +12,6 @@ class CreateComponent extends CreateRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.components.layout.create_component');
+        return __('components.layout.create_component');
     }
 }

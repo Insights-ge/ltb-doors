@@ -22,11 +22,11 @@ class UserForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label(__('panel.users.form.name'))
+                    ->label(__('users.form.name'))
                     ->maxLength(255)
                     ->required(),
                 TextInput::make('email')
-                    ->label(__('panel.users.form.email'))
+                    ->label(__('users.form.email'))
                     ->email()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
@@ -35,17 +35,17 @@ class UserForm
                     ->autocomplete('off')
                     ->required(),
                 Toggle::make('email_verified')
-                    ->label(__('panel.users.form.email_verified'))
-                    ->helperText(__('panel.users.form.email_verified_help'))
+                    ->label(__('users.form.email_verified'))
+                    ->helperText(__('users.form.email_verified_help'))
                     ->formatStateUsing(fn (?User $record): bool => $record?->email_verified_at !== null),
                 TextInput::make('password')
-                    ->label(__('panel.users.form.password'))
+                    ->label(__('users.form.password'))
                     ->password()
                     ->autocomplete('new-password')
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state)),
                 Select::make('roles')
-                    ->label(__('panel.users.form.role'))
+                    ->label(__('users.form.role'))
                     ->relationship(
                         name: 'roles',
                         titleAttribute: 'name',
@@ -57,7 +57,7 @@ class UserForm
                     ->preload()
                     ->searchable()
                     ->getOptionLabelFromRecordUsing(fn (Role $record): string => RoleEnum::tryFrom($record->name)?->getLabel() ?? $record->name)
-                    ->noOptionsMessage(__('panel.users.form.roles_no_options'))
+                    ->noOptionsMessage(__('users.form.roles_no_options'))
                     ->rule(fn () => function (string $attribute, mixed $value, Closure $fail): void {
                         if (Auth::user()?->hasRole(RoleEnum::SuperAdmin->value)) {
                             return;
@@ -69,7 +69,7 @@ class UserForm
                             ->exists();
 
                         if ($isAssigningSuperAdmin) {
-                            $fail(__('panel.users.form.roles_super_admin_forbidden'));
+                            $fail(__('users.form.roles_super_admin_forbidden'));
                         }
                     }),
             ]);

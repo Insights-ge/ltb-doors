@@ -15,10 +15,10 @@ enum DoorColor: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Black => __('panel.catalog.colors.black'),
-            self::Inox => __('panel.catalog.colors.inox'),
-            self::Graphite => __('panel.catalog.colors.graphite'),
-            self::Silver => __('panel.catalog.colors.silver'),
+            self::Black => __('catalog.colors.black'),
+            self::Inox => __('catalog.colors.inox'),
+            self::Graphite => __('catalog.colors.graphite'),
+            self::Silver => __('catalog.colors.silver'),
         };
     }
 

@@ -22,54 +22,54 @@ class DoorVariantsTable
         return $table
             ->columns([
                 TextColumn::make('product_code')
-                    ->label(__('panel.catalog.door_variants.table.product_code'))
+                    ->label(__('door_variants.table.product_code'))
                     ->searchable(),
                 TextColumn::make('doorModel.name')
-                    ->label(__('panel.catalog.door_variants.table.door_model')),
+                    ->label(__('door_variants.table.door_model')),
                 TextColumn::make('color')
-                    ->label(__('panel.catalog.door_variants.table.color'))
+                    ->label(__('door_variants.table.color'))
                     ->badge(),
                 TextColumn::make('height_range')
-                    ->label(__('panel.catalog.door_variants.table.height_range'))
+                    ->label(__('door_variants.table.height_range'))
                     ->state(fn (DoorVariant $record): string => "{$record->height_range_min}–{$record->height_range_max}"),
                 TextColumn::make('frame_design_code')
-                    ->label(__('panel.catalog.door_variants.table.frame_design_code'))
+                    ->label(__('door_variants.table.frame_design_code'))
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('unique_code')
-                    ->label(__('panel.catalog.door_variants.table.unique_code'))
+                    ->label(__('door_variants.table.unique_code'))
                     ->searchable()
                     ->copyable(),
                 TextColumn::make('sideProfile.code')
-                    ->label(__('panel.catalog.door_variants.table.side_profile'))
+                    ->label(__('door_variants.table.side_profile'))
                     ->tooltip(self::componentDescriptionTooltip(fn (DoorVariant $record): ?Component => $record->sideProfile))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('topRail.code')
-                    ->label(__('panel.catalog.door_variants.table.top_rail'))
+                    ->label(__('door_variants.table.top_rail'))
                     ->tooltip(self::componentDescriptionTooltip(fn (DoorVariant $record): ?Component => $record->topRail))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('bottomRail.code')
-                    ->label(__('panel.catalog.door_variants.table.bottom_rail'))
+                    ->label(__('door_variants.table.bottom_rail'))
                     ->tooltip(self::componentDescriptionTooltip(fn (DoorVariant $record): ?Component => $record->bottomRail))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('partition.code')
-                    ->label(__('panel.catalog.door_variants.table.partition'))
+                    ->label(__('door_variants.table.partition'))
                     ->tooltip(self::componentDescriptionTooltip(fn (DoorVariant $record): ?Component => $record->partition))
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('—'),
                 TextColumn::make('softCloseMechanism.code')
-                    ->label(__('panel.catalog.door_variants.table.soft_close_mechanism'))
+                    ->label(__('door_variants.table.soft_close_mechanism'))
                     ->tooltip(self::componentDescriptionTooltip(fn (DoorVariant $record): ?Component => $record->softCloseMechanism))
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('door_model_id')
-                    ->label(__('panel.catalog.door_variants.table.door_model'))
+                    ->label(__('door_variants.table.door_model'))
                     ->options(fn (): array => DoorModel::query()->pluck('name', 'id')->all())
                     ->multiple()
                     ->searchable(),
                 SelectFilter::make('color')
-                    ->label(__('panel.catalog.door_variants.table.color'))
+                    ->label(__('door_variants.table.color'))
                     ->options(DoorColor::class)
                     ->multiple()
                     ->searchable(),
@@ -84,8 +84,8 @@ class DoorVariantsTable
                 ]),
             ])
             ->striped()
-            ->emptyStateHeading(__('panel.catalog.door_variants.table.empty_heading'))
-            ->emptyStateDescription(__('panel.catalog.door_variants.table.empty_description'));
+            ->emptyStateHeading(__('door_variants.table.empty_heading'))
+            ->emptyStateDescription(__('door_variants.table.empty_description'));
     }
 
     /**

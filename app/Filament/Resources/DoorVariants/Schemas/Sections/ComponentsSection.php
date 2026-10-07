@@ -15,7 +15,7 @@ class ComponentsSection
     {
         $components = Component::query()->get();
 
-        return Section::make(__('panel.catalog.door_variants.form.components_section'))
+        return Section::make(__('door_variants.form.components_section'))
             ->schema([
                 Grid::make(2)
                     ->schema([
@@ -35,7 +35,7 @@ class ComponentsSection
     private static function componentSelect(string $foreignKey, string $labelKey, Collection $components, ComponentType $type, bool $required): Select
     {
         return Select::make($foreignKey)
-            ->label(__("panel.catalog.door_variants.form.{$labelKey}"))
+            ->label(__("door_variants.form.{$labelKey}"))
             ->options(fn (int|string|null $state): array => self::componentOptions($components, $type, filled($state) ? (int) $state : null))
             ->searchable()
             ->required($required);

@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'layout' => [
+        'door_variants' => 'კარის ვარიანტები',
+        'create_door_variant' => 'ვარიანტის შექმნა',
+        'edit_door_variant' => 'ვარიანტის რედაქტირება',
+    ],
+    'table' => [
+        'product_code' => 'პროდუქტის კოდი',
+        'door_model' => 'მოდელი',
+        'color' => 'ფერი',
+        'height_range' => 'სიმაღლის დიაპაზონი',
+        'frame_design_code' => 'ჩარჩოს დიზაინი',
+        'unique_code' => 'არტიკული',
+        'side_profile' => 'პროფილი გვერდითა',
+        'top_rail' => 'შემკვრელი ზედა',
+        'bottom_rail' => 'შემკვრელი ქვედა',
+        'partition' => 'ტიხარი',
+        'soft_close_mechanism' => 'ნელი დაკეტვის მექანიზმი',
+        'empty_heading' => 'ვარიანტები ვერ მოიძებნა',
+        'empty_description' => 'ვარიანტები იტვირთება პროდუქტის იმპორტიდან.',
+    ],
+    'form' => [
+        'general_section' => 'ზოგადი',
+        'sizing_section' => 'ზომები',
+        'components_section' => 'კომპონენტები',
+        'door_model' => 'მოდელი',
+        'product_code' => 'პროდუქტის კოდი',
+        'product_full_name' => 'სრული სახელი',
+        'color' => 'ფერი',
+        'frame_design_code' => 'ჩარჩოს დიზაინის კოდი',
+        'unique_code' => 'არტიკული',
+        'height_range_min' => 'სიმაღლის დიაპაზონი - დან (მმ)',
+        'height_range_max' => 'სიმაღლის დიაპაზონი - მდე (მმ)',
+        'side_profile' => 'პროფილი გვერდითა',
+        'top_rail' => 'შემკვრელი ზედა',
+        'bottom_rail' => 'შემკვრელი ქვედა',
+        'partition' => 'ტიხარი',
+        'soft_close_mechanism' => 'ნელი დაკეტვის მექანიზმი',
+    ],
+];

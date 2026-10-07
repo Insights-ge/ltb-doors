@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DoorModelStatus;
 use App\Models\DoorModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,6 +18,7 @@ class DoorModelFactory extends Factory
     {
         return [
             'name' => fake()->unique()->word(),
+            'status' => DoorModelStatus::Active,
             'min_height' => 800,
             'max_height' => 2600,
             'min_width' => 500,

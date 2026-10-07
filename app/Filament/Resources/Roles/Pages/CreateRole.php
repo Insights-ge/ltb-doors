@@ -14,6 +14,6 @@ class CreateRole extends ShieldCreateRole
     #[Override]
     public function getTitle(): string|Htmlable
     {
-        return __('panel.roles.layout.create_role');
+        return __('roles.layout.create_role');
     }
 }

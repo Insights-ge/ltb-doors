@@ -25,6 +25,7 @@ test('door variants list page shows records', function () {
     $variant = DoorVariant::factory()->create();
 
     Livewire::test(ListDoorVariants::class)
+        ->searchTable($variant->unique_code)
         ->assertCanSeeTableRecords([$variant]);
 });
 

@@ -15,27 +15,27 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('panel.users.table.name'))
+                    ->label(__('users.table.name'))
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label(__('panel.users.table.email'))
+                    ->label(__('users.table.email'))
                     ->searchable(),
                 TextColumn::make('roles.name')
-                    ->label(__('panel.users.table.role'))
+                    ->label(__('users.table.role'))
                     ->badge()
                     ->color(fn (string $state): ?string => RoleEnum::tryFrom($state)?->getColor())
                     ->formatStateUsing(fn (string $state): string => RoleEnum::tryFrom($state)?->getLabel() ?? $state),
                 TextColumn::make('email_verified_at')
-                    ->label(__('panel.users.table.email_verified_at'))
+                    ->label(__('users.table.email_verified_at'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->label(__('panel.users.table.created_at'))
+                    ->label(__('users.table.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label(__('panel.users.table.updated_at'))
+                    ->label(__('users.table.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -49,7 +49,7 @@ class UsersTable
             ])
             // Nice To have stuff
             ->striped()
-            ->emptyStateHeading(__('panel.users.table.empty_heading'))
-            ->emptyStateDescription(__('panel.users.table.empty_description'));
+            ->emptyStateHeading(__('users.table.empty_heading'))
+            ->emptyStateDescription(__('users.table.empty_description'));
     }
 }

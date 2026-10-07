@@ -66,12 +66,12 @@ class UserResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.users.layout.users');
+        return __('users.layout.users');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.users.layout.users');
+        return __('users.layout.users');
     }
 
     public static function hasTitleCaseModelLabel(): bool

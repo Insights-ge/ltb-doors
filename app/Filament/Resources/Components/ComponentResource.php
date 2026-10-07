@@ -9,6 +9,8 @@ use App\Filament\Resources\Components\Schemas\ComponentForm;
 use App\Filament\Resources\Components\Tables\ComponentsTable;
 use App\Models\Component;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -52,21 +54,41 @@ class ComponentResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('panel.catalog.navigation_group');
+        return __('catalog.navigation_group');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.catalog.components.layout.components');
+        return __('components.layout.components');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.catalog.components.layout.components');
+        return __('components.layout.components');
     }
 
     public static function hasTitleCaseModelLabel(): bool
     {
         return false;
+    }
+
+    /**
+     * Cancels a delete action when the component is still referenced by a door variant.
+     */
+    public static function preventDeletingComponentInUse(Component $record, Action $action): void
+    {
+        if ($record->isInUse()) {
+            self::notifyComponentInUse();
+            $action->cancel();
+        }
+    }
+
+    public static function notifyComponentInUse(): void
+    {
+        Notification::make()
+            ->title(__('components.table.delete_in_use_title'))
+            ->body(__('components.table.delete_in_use_body'))
+            ->danger()
+            ->send();
     }
 }

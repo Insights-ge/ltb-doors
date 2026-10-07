@@ -31,17 +31,17 @@ class ManageGeneralSettings extends SettingsPage
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.settings.general.layout.general_settings');
+        return __('settings.general.layout.general_settings');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.settings.general.layout.general_settings');
+        return __('settings.general.layout.general_settings');
     }
 
     public function getTitle(): string
     {
-        return __('panel.settings.general.layout.general_settings');
+        return __('settings.general.layout.general_settings');
     }
 
     public function form(Schema $schema): Schema
@@ -49,53 +49,53 @@ class ManageGeneralSettings extends SettingsPage
         return $schema
             ->components([
                 // ── 1. General ────────────────────────────────────────────────
-                Section::make(__('panel.settings.general.sections.general'))
+                Section::make(__('settings.general.sections.general'))
                     ->columns(2)
                     ->schema([
                         TextInput::make('site_name')
-                            ->label(__('panel.settings.general.fields.site_name'))
+                            ->label(__('settings.general.fields.site_name'))
                             ->required()
                             ->columnSpan(1),
                         TextInput::make('site_tagline')
-                            ->label(__('panel.settings.general.fields.site_tagline'))
+                            ->label(__('settings.general.fields.site_tagline'))
                             ->columnSpan(1),
                         TextInput::make('contact_email')
-                            ->label(__('panel.settings.general.fields.contact_email'))
+                            ->label(__('settings.general.fields.contact_email'))
                             ->email()
                             ->required()
                             ->columnSpanFull(),
                     ]),
 
                 // ── 2. Localization ───────────────────────────────────────────
-                Section::make(__('panel.settings.general.sections.locales'))
+                Section::make(__('settings.general.sections.locales'))
                     ->columns(2)
                     ->schema([
                         Select::make('enabled_locales')
-                            ->label(__('panel.settings.general.fields.enabled_locales'))
+                            ->label(__('settings.general.fields.enabled_locales'))
                             ->options(Locales::options())
                             ->multiple()
                             ->searchable()
                             ->required()
                             ->live()
-                            ->noOptionsMessage(__('panel.settings.general.fields.enabled_locales_no_options'))
+                            ->noOptionsMessage(__('settings.general.fields.enabled_locales_no_options'))
                             ->columnSpan(1),
                         Select::make('default_locale')
-                            ->label(__('panel.settings.general.fields.default_locale'))
+                            ->label(__('settings.general.fields.default_locale'))
                             ->options(fn (Get $get): array => array_intersect_key(
                                 Locales::options(),
                                 array_flip(array_filter((array) ($get('enabled_locales') ?? []), 'is_string')),
                             ))
                             ->required()
-                            ->noOptionsMessage(__('panel.settings.general.fields.default_locale_no_options'))
+                            ->noOptionsMessage(__('settings.general.fields.default_locale_no_options'))
                             ->columnSpan(1),
                     ]),
 
                 // ── 3. Branding ───────────────────────────────────────────────
-                Section::make(__('panel.settings.general.sections.branding'))
+                Section::make(__('settings.general.sections.branding'))
                     ->columns(3)
                     ->schema([
                         FileUpload::make('branding_logo_main')
-                            ->label(__('panel.settings.general.fields.branding_logo_main'))
+                            ->label(__('settings.general.fields.branding_logo_main'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -104,7 +104,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('branding_logo_header')
-                            ->label(__('panel.settings.general.fields.branding_logo_header'))
+                            ->label(__('settings.general.fields.branding_logo_header'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -113,7 +113,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('branding_logo_footer')
-                            ->label(__('panel.settings.general.fields.branding_logo_footer'))
+                            ->label(__('settings.general.fields.branding_logo_footer'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -122,7 +122,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('filament_brand_logo')
-                            ->label(__('panel.settings.general.fields.filament_brand_logo'))
+                            ->label(__('settings.general.fields.filament_brand_logo'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -131,7 +131,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('filament_dark_mode_brand_logo')
-                            ->label(__('panel.settings.general.fields.filament_dark_mode_brand_logo'))
+                            ->label(__('settings.general.fields.filament_dark_mode_brand_logo'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -140,7 +140,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('filament_favicon')
-                            ->label(__('panel.settings.general.fields.filament_favicon'))
+                            ->label(__('settings.general.fields.filament_favicon'))
                             ->acceptedFileTypes(['image/x-icon', 'image/vnd.microsoft.icon', 'image/png', 'image/svg+xml'])
                             ->disk('public')
                             ->previewable()
@@ -149,7 +149,7 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpan(1),
                         FileUpload::make('filament_auth_page_bg_image')
-                            ->label(__('panel.settings.general.fields.filament_auth_page_bg_image'))
+                            ->label(__('settings.general.fields.filament_auth_page_bg_image'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -160,33 +160,33 @@ class ManageGeneralSettings extends SettingsPage
                     ]),
 
                 // ── 4. SEO ────────────────────────────────────────────────────
-                Section::make(__('panel.settings.general.sections.seo'))
+                Section::make(__('settings.general.sections.seo'))
                     ->columns(2)
                     ->schema([
                         TextInput::make('gtm_id')
-                            ->label(__('panel.settings.general.fields.gtm_id'))
+                            ->label(__('settings.general.fields.gtm_id'))
                             ->columnSpan(1),
                         TextInput::make('social_facebook')
-                            ->label(__('panel.settings.general.fields.social_facebook'))
+                            ->label(__('settings.general.fields.social_facebook'))
                             ->url()
                             ->columnSpan(1),
                         TextInput::make('social_instagram')
-                            ->label(__('panel.settings.general.fields.social_instagram'))
+                            ->label(__('settings.general.fields.social_instagram'))
                             ->url()
                             ->columnSpan(1),
                         TextInput::make('social_whatsapp')
-                            ->label(__('panel.settings.general.fields.social_whatsapp'))
+                            ->label(__('settings.general.fields.social_whatsapp'))
                             ->tel()
                             ->prefix('+')
                             ->columnSpan(1),
                         TextInput::make('default_meta_description')
-                            ->label(__('panel.settings.general.fields.default_meta_description'))
+                            ->label(__('settings.general.fields.default_meta_description'))
                             ->columnSpanFull(),
                         TextInput::make('default_meta_keywords')
-                            ->label(__('panel.settings.general.fields.default_meta_keywords'))
+                            ->label(__('settings.general.fields.default_meta_keywords'))
                             ->columnSpanFull(),
                         FileUpload::make('og_image')
-                            ->label(__('panel.settings.general.fields.og_image'))
+                            ->label(__('settings.general.fields.og_image'))
                             ->image()
                             ->previewable()
                             ->moveFiles()
@@ -195,26 +195,26 @@ class ManageGeneralSettings extends SettingsPage
                             ->visibility('public')
                             ->columnSpanFull(),
                         TextInput::make('og_image_width')
-                            ->label(__('panel.settings.general.fields.og_image_width'))
+                            ->label(__('settings.general.fields.og_image_width'))
                             ->numeric()
                             ->integer()
                             ->required()
                             ->columnSpan(1),
                         TextInput::make('og_image_height')
-                            ->label(__('panel.settings.general.fields.og_image_height'))
+                            ->label(__('settings.general.fields.og_image_height'))
                             ->numeric()
                             ->integer()
                             ->required()
                             ->columnSpan(1),
                         Select::make('og_type')
-                            ->label(__('panel.settings.general.fields.og_type'))
+                            ->label(__('settings.general.fields.og_type'))
                             ->options([
                                 'website' => 'Website',
                                 'article' => 'Article',
                                 'profile' => 'Profile',
                             ])
                             ->required()
-                            ->noOptionsMessage(__('panel.settings.general.fields.og_type_no_options'))
+                            ->noOptionsMessage(__('settings.general.fields.og_type_no_options'))
                             ->columnSpan(1),
                     ]),
             ]);

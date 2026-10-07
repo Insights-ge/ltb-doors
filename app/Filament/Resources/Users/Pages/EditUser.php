@@ -15,7 +15,7 @@ class EditUser extends EditRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.users.layout.edit_user');
+        return __('users.layout.edit_user');
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model

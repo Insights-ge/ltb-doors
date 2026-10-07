@@ -48,12 +48,12 @@ class TranslationLineResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.translation_lines.layout.translation_lines');
+        return __('translation_lines.layout.translation_lines');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.translation_lines.layout.translation_line');
+        return __('translation_lines.layout.translation_line');
     }
 
     public static function hasTitleCaseModelLabel(): bool

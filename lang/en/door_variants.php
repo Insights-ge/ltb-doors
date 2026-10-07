@@ -1,0 +1,42 @@
+<?php
+
+return [
+    'layout' => [
+        'door_variants' => 'Door Variants',
+        'create_door_variant' => 'Create Door Variant',
+        'edit_door_variant' => 'Edit Door Variant',
+    ],
+    'table' => [
+        'product_code' => 'Product code',
+        'door_model' => 'Model',
+        'color' => 'Color',
+        'height_range' => 'Height range',
+        'frame_design_code' => 'Frame design',
+        'unique_code' => 'Unique code',
+        'side_profile' => 'Side profile',
+        'top_rail' => 'Top rail',
+        'bottom_rail' => 'Bottom rail',
+        'partition' => 'Partition',
+        'soft_close_mechanism' => 'Soft-close mechanism',
+        'empty_heading' => 'No door variants found',
+        'empty_description' => 'Door variants are seeded from the catalog import.',
+    ],
+    'form' => [
+        'general_section' => 'General',
+        'sizing_section' => 'Sizing',
+        'components_section' => 'Components',
+        'door_model' => 'Model',
+        'product_code' => 'Product code',
+        'product_full_name' => 'Full name',
+        'color' => 'Color',
+        'frame_design_code' => 'Frame design code',
+        'unique_code' => 'Unique code',
+        'height_range_min' => 'Height range from (mm)',
+        'height_range_max' => 'Height range to (mm)',
+        'side_profile' => 'Side profile',
+        'top_rail' => 'Top rail',
+        'bottom_rail' => 'Bottom rail',
+        'partition' => 'Partition',
+        'soft_close_mechanism' => 'Soft-close mechanism',
+    ],
+];

@@ -59,17 +59,17 @@ class DoorModelResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('panel.catalog.navigation_group');
+        return __('catalog.navigation_group');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.catalog.door_models.layout.door_models');
+        return __('door_models.layout.door_models');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.catalog.door_models.layout.door_models');
+        return __('door_models.layout.door_models');
     }
 
     public static function hasTitleCaseModelLabel(): bool

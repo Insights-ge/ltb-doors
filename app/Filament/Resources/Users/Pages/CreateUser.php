@@ -14,7 +14,7 @@ class CreateUser extends CreateRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.users.layout.create_user');
+        return __('users.layout.create_user');
     }
 
     protected function handleRecordCreation(array $data): Model

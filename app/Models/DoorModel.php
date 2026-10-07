@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DoorModelStatus;
 use Database\Factories\DoorModelFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
+    'status',
     'min_height',
     'max_height',
     'min_width',
@@ -35,6 +37,7 @@ class DoorModel extends Model
     protected function casts(): array
     {
         return [
+            'status' => DoorModelStatus::class,
             'min_height' => 'integer',
             'max_height' => 'integer',
             'min_width' => 'integer',

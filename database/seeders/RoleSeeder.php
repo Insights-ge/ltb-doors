@@ -41,7 +41,6 @@ class RoleSeeder extends Seeder
             'View:DoorModel',
             'Create:DoorModel',
             'Update:DoorModel',
-            'Delete:DoorModel',
             'ViewAny:Component',
             'View:Component',
             'Create:Component',
