@@ -57,3 +57,16 @@ test('a door model can be edited', function () {
 
     expect($doorModel->refresh()->name)->toBe('ახალი');
 });
+
+test('sizing fields are disabled on the edit page', function () {
+    $doorModel = DoorModel::factory()->create();
+
+    Livewire::test(EditDoorModel::class, ['record' => $doorModel->getKey()])
+        ->assertFormFieldDisabled('min_height')
+        ->assertFormFieldDisabled('max_height')
+        ->assertFormFieldDisabled('min_width')
+        ->assertFormFieldDisabled('max_width')
+        ->assertFormFieldDisabled('not_recommended_height_min')
+        ->assertFormFieldDisabled('not_recommended_height_max')
+        ->assertFormFieldEnabled('name');
+});
