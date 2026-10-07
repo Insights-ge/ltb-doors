@@ -23,32 +23,32 @@ class ComponentsTable
         return $table
             ->columns([
                 TextColumn::make('type')
-                    ->label(__('panel.catalog.components.table.type'))
+                    ->label(__('components.table.type'))
                     ->badge(),
                 TextColumn::make('code')
-                    ->label(__('panel.catalog.components.table.code'))
+                    ->label(__('components.table.code'))
                     ->searchable(),
                 TextColumn::make('description')
-                    ->label(__('panel.catalog.components.table.description'))
+                    ->label(__('components.table.description'))
                     ->searchable()
                     ->limit(60)
                     ->tooltip(fn (?string $state): ?string => $state),
                 TextColumn::make('color')
-                    ->label(__('panel.catalog.components.table.color'))
+                    ->label(__('components.table.color'))
                     ->badge(),
                 TextColumn::make('unique_code')
-                    ->label(__('panel.catalog.components.table.unique_code'))
+                    ->label(__('components.table.unique_code'))
                     ->searchable()
                     ->copyable(),
             ])
             ->filters([
                 SelectFilter::make('type')
-                    ->label(__('panel.catalog.components.table.type'))
+                    ->label(__('components.table.type'))
                     ->options(ComponentType::class)
                     ->multiple()
                     ->searchable(),
                 SelectFilter::make('color')
-                    ->label(__('panel.catalog.components.table.color'))
+                    ->label(__('components.table.color'))
                     ->options(DoorColor::class)
                     ->multiple()
                     ->searchable(),
@@ -74,7 +74,7 @@ class ComponentsTable
                 ]),
             ])
             ->striped()
-            ->emptyStateHeading(__('panel.catalog.components.table.empty_heading'))
-            ->emptyStateDescription(__('panel.catalog.components.table.empty_description'));
+            ->emptyStateHeading(__('components.table.empty_heading'))
+            ->emptyStateDescription(__('components.table.empty_description'));
     }
 }

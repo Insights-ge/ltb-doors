@@ -13,7 +13,7 @@ class EditDoorVariant extends EditRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.door_variants.layout.edit_door_variant');
+        return __('door_variants.layout.edit_door_variant');
     }
 
     protected function getHeaderActions(): array

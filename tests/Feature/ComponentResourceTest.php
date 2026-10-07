@@ -89,7 +89,7 @@ test('a component in use cannot be deleted from the edit page', function () {
 
     Livewire::test(EditComponent::class, ['record' => $component->getKey()])
         ->callAction('delete')
-        ->assertNotified(__('panel.catalog.components.table.delete_in_use_title'));
+        ->assertNotified(__('components.table.delete_in_use_title'));
 
     $this->assertModelExists($component);
 });

@@ -12,6 +12,6 @@ class CreateDoorVariant extends CreateRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.door_variants.layout.create_door_variant');
+        return __('door_variants.layout.create_door_variant');
     }
 }

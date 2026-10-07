@@ -16,11 +16,11 @@ enum ComponentType: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::SideProfile => __('panel.catalog.component_types.side_profile'),
-            self::TopRail => __('panel.catalog.component_types.top_rail'),
-            self::BottomRail => __('panel.catalog.component_types.bottom_rail'),
-            self::Partition => __('panel.catalog.component_types.partition'),
-            self::SoftCloseMechanism => __('panel.catalog.component_types.soft_close_mechanism'),
+            self::SideProfile => __('catalog.component_types.side_profile'),
+            self::TopRail => __('catalog.component_types.top_rail'),
+            self::BottomRail => __('catalog.component_types.bottom_rail'),
+            self::Partition => __('catalog.component_types.partition'),
+            self::SoftCloseMechanism => __('catalog.component_types.soft_close_mechanism'),
         };
     }
 

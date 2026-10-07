@@ -25,16 +25,16 @@ class TranslationLineForm
         return $schema
             ->components([
                 TextInput::make('group')
-                    ->label(__('panel.translation_lines.form.group'))
+                    ->label(__('translation_lines.form.group'))
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('key')
-                    ->label(__('panel.translation_lines.form.key'))
+                    ->label(__('translation_lines.form.key'))
                     ->required()
                     ->maxLength(255),
 
-                Section::make(__('panel.translation_lines.form.translations'))
+                Section::make(__('translation_lines.form.translations'))
                     ->schema($localeFields)
                     ->columns(count($locales)),
             ]);

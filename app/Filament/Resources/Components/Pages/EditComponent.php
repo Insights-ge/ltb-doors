@@ -13,7 +13,7 @@ class EditComponent extends EditRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.components.layout.edit_component');
+        return __('components.layout.edit_component');
     }
 
     protected function getHeaderActions(): array

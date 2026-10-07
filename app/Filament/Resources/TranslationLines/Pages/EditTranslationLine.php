@@ -18,7 +18,7 @@ class EditTranslationLine extends EditRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.translation_lines.layout.edit_translation_line');
+        return __('translation_lines.layout.edit_translation_line');
     }
 
     protected function getHeaderActions(): array

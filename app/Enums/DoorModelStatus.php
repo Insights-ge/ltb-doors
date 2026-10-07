@@ -13,8 +13,8 @@ enum DoorModelStatus: string implements HasColor, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Active => __('panel.catalog.door_model_statuses.active'),
-            self::Passive => __('panel.catalog.door_model_statuses.passive'),
+            self::Active => __('catalog.door_model_statuses.active'),
+            self::Passive => __('catalog.door_model_statuses.passive'),
         };
     }
 

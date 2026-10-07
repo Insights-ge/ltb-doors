@@ -12,6 +12,6 @@ class CreateDoorModel extends CreateRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.door_models.layout.create_door_model');
+        return __('door_models.layout.create_door_model');
     }
 }

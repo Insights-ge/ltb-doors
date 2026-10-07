@@ -31,17 +31,17 @@ class ManageCacheTools extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.cache_tools.navigation_label');
+        return __('cache_tools.navigation_label');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.cache_tools.navigation_label');
+        return __('cache_tools.navigation_label');
     }
 
     public function getTitle(): string
     {
-        return __('panel.cache_tools.title');
+        return __('cache_tools.title');
     }
 
     public function runCommand(string $command): void
@@ -60,13 +60,13 @@ class ManageCacheTools extends Page
         if ($result->successful()) {
             Notification::make()
                 ->success()
-                ->title(__('panel.cache_tools.notifications.success_title'))
-                ->body(__('panel.cache_tools.notifications.success_body', ['command' => $command]))
+                ->title(__('cache_tools.notifications.success_title'))
+                ->body(__('cache_tools.notifications.success_body', ['command' => $command]))
                 ->send();
         } else {
             Notification::make()
                 ->danger()
-                ->title(__('panel.cache_tools.notifications.error_title'))
+                ->title(__('cache_tools.notifications.error_title'))
                 ->body($output)
                 ->send();
         }

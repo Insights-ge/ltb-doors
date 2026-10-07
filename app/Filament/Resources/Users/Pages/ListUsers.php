@@ -13,13 +13,13 @@ class ListUsers extends ListRecords
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.users.layout.users');
+        return __('users.layout.users');
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label(__('panel.users.layout.create_user')),
+            CreateAction::make()->label(__('users.layout.create_user')),
         ];
     }
 }

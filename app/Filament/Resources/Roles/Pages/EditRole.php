@@ -14,6 +14,6 @@ class EditRole extends ShieldEditRole
     #[Override]
     public function getTitle(): string|Htmlable
     {
-        return __('panel.roles.layout.edit_role');
+        return __('roles.layout.edit_role');
     }
 }

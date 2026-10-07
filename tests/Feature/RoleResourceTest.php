@@ -24,8 +24,8 @@ test('role names are translated in the roles table', function () {
     $this->actingAs($this->superAdmin);
 
     Livewire::test(ListRoles::class)
-        ->assertSee(__('panel.roles.super_admin'))
-        ->assertSee(__('panel.roles.admin'))
+        ->assertSee(__('roles.super_admin'))
+        ->assertSee(__('roles.admin'))
         ->assertDontSee('super_admin');
 });
 

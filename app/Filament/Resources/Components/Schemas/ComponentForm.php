@@ -17,27 +17,27 @@ class ComponentForm
         return $schema
             ->components([
                 Select::make('type')
-                    ->label(__('panel.catalog.components.form.type'))
+                    ->label(__('components.form.type'))
                     ->options(ComponentType::class)
                     ->searchable()
                     ->disabledOn(Operation::Edit)
                     ->required(),
                 TextInput::make('code')
-                    ->label(__('panel.catalog.components.form.code'))
+                    ->label(__('components.form.code'))
                     ->maxLength(255)
                     ->required(),
                 Textarea::make('description')
-                    ->label(__('panel.catalog.components.form.description'))
+                    ->label(__('components.form.description'))
                     ->maxLength(255)
                     ->rows(2)
                     ->columnSpanFull()
                     ->required(),
                 Select::make('color')
-                    ->label(__('panel.catalog.components.form.color'))
+                    ->label(__('components.form.color'))
                     ->options(DoorColor::class)
                     ->searchable(),
                 TextInput::make('unique_code')
-                    ->label(__('panel.catalog.components.form.unique_code'))
+                    ->label(__('components.form.unique_code'))
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
                     ->required(),

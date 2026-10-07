@@ -12,6 +12,6 @@ class EditDoorModel extends EditRecord
 
     public function getTitle(): string|Htmlable
     {
-        return __('panel.catalog.door_models.layout.edit_door_model');
+        return __('door_models.layout.edit_door_model');
     }
 }

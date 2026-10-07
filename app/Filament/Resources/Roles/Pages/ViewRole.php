@@ -14,6 +14,6 @@ class ViewRole extends ShieldViewRole
     #[Override]
     public function getTitle(): string|Htmlable
     {
-        return __('panel.roles.layout.view_role');
+        return __('roles.layout.view_role');
     }
 }

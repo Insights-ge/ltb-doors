@@ -54,17 +54,17 @@ class ComponentResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('panel.catalog.navigation_group');
+        return __('catalog.navigation_group');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('panel.catalog.components.layout.components');
+        return __('components.layout.components');
     }
 
     public static function getLabel(): ?string
     {
-        return __('panel.catalog.components.layout.components');
+        return __('components.layout.components');
     }
 
     public static function hasTitleCaseModelLabel(): bool
@@ -86,8 +86,8 @@ class ComponentResource extends Resource
     public static function notifyComponentInUse(): void
     {
         Notification::make()
-            ->title(__('panel.catalog.components.table.delete_in_use_title'))
-            ->body(__('panel.catalog.components.table.delete_in_use_body'))
+            ->title(__('components.table.delete_in_use_title'))
+            ->body(__('components.table.delete_in_use_body'))
             ->danger()
             ->send();
     }

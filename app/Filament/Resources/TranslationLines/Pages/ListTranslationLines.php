@@ -25,7 +25,7 @@ class ListTranslationLines extends ListRecords
 
     public function getTitle(): string
     {
-        return __('panel.translation_lines.layout.translation_lines');
+        return __('translation_lines.layout.translation_lines');
     }
 
     public function getTabs(): array
@@ -41,7 +41,7 @@ class ListTranslationLines extends ListRecords
         }
 
         $tabs = [
-            'all' => Tab::make(__('panel.translation_lines.tabs.all')),
+            'all' => Tab::make(__('translation_lines.tabs.all')),
         ];
 
         foreach ($groups as $group) {
@@ -50,8 +50,8 @@ class ListTranslationLines extends ListRecords
             }
 
             $tabs[$group] = Tab::make(
-                Lang::has("panel.translation_lines.tabs.{$group}")
-                    ? __("panel.translation_lines.tabs.{$group}")
+                Lang::has("translation_lines.tabs.{$group}")
+                    ? __("translation_lines.tabs.{$group}")
                     : ucfirst($group)
             )->modifyQueryUsing(fn (Builder $query) => $query->where('group', $group));
         }
@@ -63,12 +63,12 @@ class ListTranslationLines extends ListRecords
     {
         return [
             Action::make('sync_from_files')
-                ->label(__('panel.translation_lines.actions.sync_from_files'))
+                ->label(__('translation_lines.actions.sync_from_files'))
                 ->icon(Heroicon::ArrowDownTray)
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalHeading(__('panel.translation_lines.actions.sync_modal_heading'))
-                ->modalDescription(__('panel.translation_lines.actions.sync_modal_description'))
+                ->modalHeading(__('translation_lines.actions.sync_modal_heading'))
+                ->modalDescription(__('translation_lines.actions.sync_modal_description'))
                 ->action(fn () => $this->syncFromFiles()),
         ];
     }
@@ -108,7 +108,7 @@ class ListTranslationLines extends ListRecords
         }
 
         Notification::make()
-            ->title(__('panel.translation_lines.actions.sync_success', ['count' => $synced]))
+            ->title(__('translation_lines.actions.sync_success', ['count' => $synced]))
             ->success()
             ->send();
     }
