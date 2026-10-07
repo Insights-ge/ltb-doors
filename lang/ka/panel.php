@@ -126,6 +126,10 @@ return [
             'partition' => 'ტიხარი',
             'soft_close_mechanism' => 'ნელი დაკეტვის მექანიზმი',
         ],
+        'door_model_statuses' => [
+            'active' => 'აქტიური',
+            'passive' => 'პასიური',
+        ],
         'door_models' => [
             'layout' => [
                 'door_models' => 'კარის მოდელები',
@@ -133,6 +137,7 @@ return [
                 'edit_door_model' => 'მოდელის რედაქტირება',
             ],
             'table' => [
+                'status' => 'სტატუსი',
                 'name' => 'სახელი',
                 'height_range' => 'სიმაღლის დიაპაზონი',
                 'width_range' => 'სიგანის დიაპაზონი',
@@ -143,6 +148,7 @@ return [
                 'empty_description' => 'მოდელები იტვირთება პროდუქტის იმპორტიდან.',
             ],
             'form' => [
+                'status' => 'სტატუსი',
                 'name' => 'სახელი',
                 'sizing_section' => 'ზომები',
                 'min_height' => 'მინ. სიმაღლე (მმ)',

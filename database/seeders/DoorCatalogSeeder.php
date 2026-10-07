@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ComponentType;
 use App\Enums\DoorColor;
+use App\Enums\DoorModelStatus;
 use App\Models\Component;
 use App\Models\DoorModel;
 use App\Models\DoorVariant;
@@ -90,6 +91,7 @@ class DoorCatalogSeeder extends Seeder
         return DoorModel::query()->firstOrCreate(
             ['name' => $data['model_name']],
             [
+                'status' => DoorModelStatus::Active,
                 'min_height' => (int) $data['min_height'],
                 'max_height' => (int) $data['max_height'],
                 'min_width' => (int) $data['min_width'],

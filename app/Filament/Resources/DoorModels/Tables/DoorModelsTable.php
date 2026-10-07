@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\DoorModels\Tables;
 
+use App\Enums\DoorModelStatus;
 use App\Models\DoorModel;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class DoorModelsTable
@@ -19,6 +18,9 @@ class DoorModelsTable
                 TextColumn::make('name')
                     ->label(__('panel.catalog.door_models.table.name'))
                     ->searchable(),
+                TextColumn::make('status')
+                    ->label(__('panel.catalog.door_models.table.status'))
+                    ->badge(),
                 TextColumn::make('height_range')
                     ->label(__('panel.catalog.door_models.table.height_range'))
                     ->state(fn (DoorModel $record): string => "{$record->min_height}–{$record->max_height}"),
@@ -42,16 +44,12 @@ class DoorModelsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label(__('panel.catalog.door_models.table.status'))
+                    ->options(DoorModelStatus::class),
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ])
             ->striped()
             ->emptyStateHeading(__('panel.catalog.door_models.table.empty_heading'))

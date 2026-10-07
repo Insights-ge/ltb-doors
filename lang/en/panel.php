@@ -126,6 +126,10 @@ return [
             'partition' => 'Partition',
             'soft_close_mechanism' => 'Soft-close mechanism',
         ],
+        'door_model_statuses' => [
+            'active' => 'Active',
+            'passive' => 'Passive',
+        ],
         'door_models' => [
             'layout' => [
                 'door_models' => 'Door Models',
@@ -133,6 +137,7 @@ return [
                 'edit_door_model' => 'Edit Door Model',
             ],
             'table' => [
+                'status' => 'Status',
                 'name' => 'Name',
                 'height_range' => 'Height range',
                 'width_range' => 'Width range',
@@ -143,6 +148,7 @@ return [
                 'empty_description' => 'Door models are seeded from the catalog import.',
             ],
             'form' => [
+                'status' => 'Status',
                 'name' => 'Name',
                 'sizing_section' => 'Sizing',
                 'min_height' => 'Min height (mm)',

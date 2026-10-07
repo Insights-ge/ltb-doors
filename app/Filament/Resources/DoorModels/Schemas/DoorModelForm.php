@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\DoorModels\Schemas;
 
+use App\Enums\DoorModelStatus;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -17,6 +19,11 @@ class DoorModelForm
                 TextInput::make('name')
                     ->label(__('panel.catalog.door_models.form.name'))
                     ->maxLength(255)
+                    ->required(),
+                Select::make('status')
+                    ->label(__('panel.catalog.door_models.form.status'))
+                    ->options(DoorModelStatus::class)
+                    ->default(DoorModelStatus::Active)
                     ->required(),
                 Section::make(__('panel.catalog.door_models.form.sizing_section'))
                     ->schema([
