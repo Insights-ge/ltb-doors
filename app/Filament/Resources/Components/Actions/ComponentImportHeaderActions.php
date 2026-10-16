@@ -8,7 +8,7 @@ use App\Actions\PreviewComponentImportAction;
 use App\Data\ComponentImportPreviewData;
 use App\Jobs\ImportComponentsJob;
 use App\Models\User;
-use App\Support\ComponentImportErrorFormatter;
+use App\Support\ImportErrorFormatter;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -129,7 +129,7 @@ class ComponentImportHeaderActions
         $preview = self::preview($file);
 
         if ($preview->hasErrors()) {
-            return app(ComponentImportErrorFormatter::class)->toHtml(
+            return app(ImportErrorFormatter::class)->toHtml(
                 __('components.import.actions.preview_errors', ['count' => $preview->errors->totalCount]),
                 $preview->errors,
             );

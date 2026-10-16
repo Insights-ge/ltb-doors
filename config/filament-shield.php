@@ -239,6 +239,7 @@ return [
 
     'custom_permissions' => [
         'Import:Component' => 'Import Components',
+        'Import:DoorVariant' => 'Import Door Variants',
     ],
 
     /*

@@ -31,6 +31,7 @@ class GeneralInformationSection
                         TextInput::make('product_code')
                             ->label(__('door_variants.form.product_code'))
                             ->maxLength(255)
+                            ->unique(ignoreRecord: true)
                             ->required(),
                         TextInput::make('frame_design_code')
                             ->label(__('door_variants.form.frame_design_code'))

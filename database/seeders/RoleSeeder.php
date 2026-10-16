@@ -52,6 +52,7 @@ class RoleSeeder extends Seeder
             'Create:DoorVariant',
             'Update:DoorVariant',
             'Delete:DoorVariant',
+            'Import:DoorVariant',
         ]);
 
         User::query()
