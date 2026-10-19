@@ -61,6 +61,33 @@ test('a door model can be edited', function () {
     expect($doorModel->refresh()->name)->toBe('ახალი');
 });
 
+test('a door model cannot be created with the name of another door model', function () {
+    $doorModel = DoorModel::factory()->create();
+
+    Livewire::test(CreateDoorModel::class)
+        ->fillForm(['name' => $doorModel->name])
+        ->call('create')
+        ->assertHasFormErrors(['name' => 'unique']);
+});
+
+test('a door model cannot be renamed to the name of another door model', function () {
+    $doorModel = DoorModel::factory()->create();
+    $otherDoorModel = DoorModel::factory()->create();
+
+    Livewire::test(EditDoorModel::class, ['record' => $doorModel->getKey()])
+        ->fillForm(['name' => $otherDoorModel->name])
+        ->call('save')
+        ->assertHasFormErrors(['name' => 'unique']);
+});
+
+test('a door model can be saved with its own name', function () {
+    $doorModel = DoorModel::factory()->create();
+
+    Livewire::test(EditDoorModel::class, ['record' => $doorModel->getKey()])
+        ->call('save')
+        ->assertHasNoFormErrors();
+});
+
 test('sizing fields are disabled on the edit page', function () {
     $doorModel = DoorModel::factory()->create();
 

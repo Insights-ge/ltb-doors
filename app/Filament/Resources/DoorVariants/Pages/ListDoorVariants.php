@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DoorVariants\Pages;
 
+use App\Filament\Resources\DoorVariants\Actions\DoorVariantImportHeaderActions;
 use App\Filament\Resources\DoorVariants\DoorVariantResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -13,6 +14,7 @@ class ListDoorVariants extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            DoorVariantImportHeaderActions::import(),
             CreateAction::make(),
         ];
     }

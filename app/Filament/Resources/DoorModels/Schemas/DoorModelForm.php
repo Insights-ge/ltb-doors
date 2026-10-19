@@ -19,6 +19,7 @@ class DoorModelForm
                 TextInput::make('name')
                     ->label(__('door_models.form.name'))
                     ->maxLength(255)
+                    ->unique(ignoreRecord: true)
                     ->required(),
                 Select::make('status')
                     ->label(__('door_models.form.status'))

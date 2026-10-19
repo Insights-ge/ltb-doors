@@ -66,4 +66,9 @@ class DoorVariantPolicy
     {
         return $authUser->can('Reorder:DoorVariant');
     }
+
+    public function import(AuthUser $authUser): bool
+    {
+        return $authUser->can('Import:DoorVariant');
+    }
 }

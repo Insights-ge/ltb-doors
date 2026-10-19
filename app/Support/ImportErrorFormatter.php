@@ -7,9 +7,9 @@ use App\Data\ImportRowErrorData;
 use Illuminate\Support\HtmlString;
 
 /**
- * Turns component import errors into the lines shown in the preview and in the result notification.
+ * Turns import errors into the lines shown in the preview and in the result notification.
  */
-class ComponentImportErrorFormatter
+class ImportErrorFormatter
 {
     /**
      * The intro line, one line per kept error ("Row 5: …"), and a "…and N more errors." line when errors were left out.
@@ -25,7 +25,7 @@ class ComponentImportErrorFormatter
         $hiddenErrorCount = $errors->totalCount - count($errors->errors);
 
         if ($hiddenErrorCount > 0) {
-            $lines[] = e(__('components.import.notifications.more_errors', ['count' => $hiddenErrorCount]));
+            $lines[] = e(__('imports.more_errors', ['count' => $hiddenErrorCount]));
         }
 
         return new HtmlString(implode('<br>', $lines));
@@ -37,6 +37,6 @@ class ComponentImportErrorFormatter
             return $error->message;
         }
 
-        return __('components.import.notifications.row_error', ['row' => $error->rowNumber, 'message' => $error->message]);
+        return __('imports.row_error', ['row' => $error->rowNumber, 'message' => $error->message]);
     }
 }

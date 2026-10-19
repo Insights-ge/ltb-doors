@@ -46,7 +46,7 @@ test('a missing column is reported and no rows are read', function () {
         ->and($result->errors)->toHaveCount(1)
         ->and($result->errors[0]->rowNumber)->toBeNull()
         ->and($result->errors[0]->column)->toBe('color')
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.missing_column', ['column' => 'color']));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.missing_column', ['column' => 'color']));
 });
 
 test('an extra column is reported', function () {
@@ -55,7 +55,7 @@ test('an extra column is reported', function () {
     expect($result->rows)->toBeEmpty()
         ->and($result->errors)->toHaveCount(1)
         ->and($result->errors[0]->column)->toBe('notes')
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.unknown_column', ['column' => 'notes']));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.unknown_column', ['column' => 'notes']));
 });
 
 test('a duplicated column is reported', function () {
@@ -64,7 +64,7 @@ test('a duplicated column is reported', function () {
     expect($result->rows)->toBeEmpty()
         ->and($result->errors)->toHaveCount(1)
         ->and($result->errors[0]->column)->toBe('code')
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.duplicate_column', ['column' => 'code']));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.duplicate_column', ['column' => 'code']));
 });
 
 test('every header and cell is trimmed', function () {
@@ -111,7 +111,7 @@ test('a file with more rows than the limit is rejected', function () {
     $result = readComponentSpreadsheet([componentImportHeaders(), $row, $row, $row], maxRows: 2);
 
     expect($result->rows)->toBeEmpty()
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.too_many_rows', ['max' => 2]));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.too_many_rows', ['max' => 2]));
 });
 
 test('a file with exactly the row limit is read', function () {
@@ -135,12 +135,12 @@ test('a file that is not a spreadsheet is reported as unreadable', function () {
     $result = app(ComponentSpreadsheetReader::class)->read($path);
 
     expect($result->rows)->toBeEmpty()
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.file_unreadable'));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.file_unreadable'));
 });
 
 test('an empty spreadsheet is reported as having no header row', function () {
     $result = readComponentSpreadsheet([]);
 
     expect($result->rows)->toBeEmpty()
-        ->and($result->errors[0]->message)->toBe(__('components.import.errors.no_header'));
+        ->and($result->errors[0]->message)->toBe(__('imports.errors.no_header'));
 });

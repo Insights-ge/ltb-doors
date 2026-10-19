@@ -39,12 +39,12 @@ class ComponentSpreadsheetReader
                 return $this->readRows($sheet->getRowIterator());
             }
         } catch (OpenSpoutException) {
-            return $this->fileError(__('components.import.errors.file_unreadable'));
+            return $this->fileError(__('imports.errors.file_unreadable'));
         } finally {
             $reader->close();
         }
 
-        return $this->fileError(__('components.import.errors.no_header'));
+        return $this->fileError(__('imports.errors.no_header'));
     }
 
     /**
@@ -77,14 +77,14 @@ class ComponentSpreadsheetReader
             }
 
             if (count($rows) === $this->maxRows) {
-                return $this->fileError(__('components.import.errors.too_many_rows', ['max' => $this->maxRows]));
+                return $this->fileError(__('imports.errors.too_many_rows', ['max' => $this->maxRows]));
             }
 
             $rows[] = $this->toRowData($rowNumber, $values, $columnIndexes);
         }
 
         if ($columnIndexes === null) {
-            return $this->fileError(__('components.import.errors.no_header'));
+            return $this->fileError(__('imports.errors.no_header'));
         }
 
         return new ComponentSpreadsheetData($rows, []);
@@ -103,15 +103,15 @@ class ComponentSpreadsheetReader
         $filledHeaders = array_filter($headers, fn (string $header): bool => $header !== '');
 
         foreach (array_diff($expectedHeaders, $filledHeaders) as $missingHeader) {
-            $errors[] = new ImportRowErrorData(null, $missingHeader, __('components.import.errors.missing_column', ['column' => $missingHeader]));
+            $errors[] = new ImportRowErrorData(null, $missingHeader, __('imports.errors.missing_column', ['column' => $missingHeader]));
         }
 
         foreach (array_diff($filledHeaders, $expectedHeaders) as $unknownHeader) {
-            $errors[] = new ImportRowErrorData(null, $unknownHeader, __('components.import.errors.unknown_column', ['column' => $unknownHeader]));
+            $errors[] = new ImportRowErrorData(null, $unknownHeader, __('imports.errors.unknown_column', ['column' => $unknownHeader]));
         }
 
         foreach (array_keys(array_filter(array_count_values($filledHeaders), fn (int $count): bool => $count > 1)) as $duplicateHeader) {
-            $errors[] = new ImportRowErrorData(null, (string) $duplicateHeader, __('components.import.errors.duplicate_column', ['column' => $duplicateHeader]));
+            $errors[] = new ImportRowErrorData(null, (string) $duplicateHeader, __('imports.errors.duplicate_column', ['column' => $duplicateHeader]));
         }
 
         return $errors;

@@ -80,7 +80,7 @@ test('an upload that fails validation saves nothing, is deleted and the errors a
         ->and(Storage::disk(ImportComponentsJob::disk())->exists($path))->toBeFalse()
         ->and($notification['title'])->toBe(__('components.import.notifications.failed_title'))
         ->and($notification['status'])->toBe('danger')
-        ->and($notification['body'])->toContain(e(__('components.import.notifications.row_error', [
+        ->and($notification['body'])->toContain(e(__('imports.row_error', [
             'row' => 3,
             'message' => __('components.import.errors.invalid_color', ['value' => 'black', 'allowed' => 'შავი, ინოქსი, გრაფიტი, სილვერი']),
         ])));
@@ -92,7 +92,7 @@ test('an upload with wrong headers is deleted and the header errors are reported
     ImportComponentsJob::dispatchSync($path, $this->user, app()->getLocale());
 
     expect(Storage::disk(ImportComponentsJob::disk())->exists($path))->toBeFalse()
-        ->and(sentComponentImportNotification($this->user)['body'])->toContain(e(__('components.import.errors.missing_column', ['column' => 'description'])));
+        ->and(sentComponentImportNotification($this->user)['body'])->toContain(e(__('imports.errors.missing_column', ['column' => 'description'])));
 });
 
 test('the failure report lists at most 200 errors and says how many more there are', function () {
@@ -102,9 +102,9 @@ test('the failure report lists at most 200 errors and says how many more there a
 
     $body = sentComponentImportNotification($this->user)['body'];
 
-    expect(substr_count($body, e(__('components.import.notifications.row_error', ['row' => 2, 'message' => '']))))->toBe(1)
+    expect(substr_count($body, e(__('imports.row_error', ['row' => 2, 'message' => '']))))->toBe(1)
         ->and(substr_count($body, '<br>'))->toBe(201)
-        ->and($body)->toContain(e(__('components.import.notifications.more_errors', ['count' => 50])));
+        ->and($body)->toContain(e(__('imports.more_errors', ['count' => 50])));
 });
 
 test('the report is written in the language the user had when starting the import', function () {

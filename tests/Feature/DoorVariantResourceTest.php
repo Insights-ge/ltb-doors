@@ -83,6 +83,33 @@ test('a door variant can be edited', function () {
     expect($variant->refresh()->product_code)->toBe('პნლა000001');
 });
 
+test('a door variant cannot be created with the product code of another door variant', function () {
+    $variant = DoorVariant::factory()->create();
+
+    Livewire::test(CreateDoorVariant::class)
+        ->fillForm(['product_code' => $variant->product_code])
+        ->call('create')
+        ->assertHasFormErrors(['product_code' => 'unique']);
+});
+
+test('a door variant cannot be edited to the product code of another door variant', function () {
+    $variant = DoorVariant::factory()->create();
+    $otherVariant = DoorVariant::factory()->create();
+
+    Livewire::test(EditDoorVariant::class, ['record' => $variant->getKey()])
+        ->fillForm(['product_code' => $otherVariant->product_code])
+        ->call('save')
+        ->assertHasFormErrors(['product_code' => 'unique']);
+});
+
+test('a door variant can be saved with its own product code', function () {
+    $variant = DoorVariant::factory()->create();
+
+    Livewire::test(EditDoorVariant::class, ['record' => $variant->getKey()])
+        ->call('save')
+        ->assertHasNoFormErrors();
+});
+
 test('component fields only offer components of their own type', function () {
     $topRail = Component::factory()->ofType(ComponentType::TopRail)->create();
     $partition = Component::factory()->ofType(ComponentType::Partition)->create(['unique_code' => $topRail->unique_code]);

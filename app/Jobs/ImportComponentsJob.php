@@ -7,7 +7,7 @@ use App\Data\ImportErrorListData;
 use App\Models\User;
 use App\Services\ComponentImportService;
 use App\Services\ComponentSpreadsheetReader;
-use App\Support\ComponentImportErrorFormatter;
+use App\Support\ImportErrorFormatter;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -98,7 +98,7 @@ class ImportComponentsJob implements ShouldQueue
             return Notification::make()
                 ->danger()
                 ->title(__('components.import.notifications.failed_title'))
-                ->body(app(ComponentImportErrorFormatter::class)->toHtml(
+                ->body(app(ImportErrorFormatter::class)->toHtml(
                     __('components.import.notifications.failed_body', ['count' => $result->errors->totalCount]),
                     $result->errors,
                 ));

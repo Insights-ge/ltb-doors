@@ -76,7 +76,7 @@ test('the preview lists the errors and the import cannot be confirmed', function
         ->mountAction('importComponents')
         ->fillForm(['file' => componentImportUpload([componentImportRow(['type' => 'უცნობი'])])])
         ->assertMountedActionModalSee(__('components.import.actions.preview_errors', ['count' => 1]))
-        ->assertMountedActionModalSee(__('components.import.notifications.row_error', [
+        ->assertMountedActionModalSee(__('imports.row_error', [
             'row' => 2,
             'message' => __('components.import.errors.invalid_type', [
                 'value' => 'უცნობი',
