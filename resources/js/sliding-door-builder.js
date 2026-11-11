@@ -195,9 +195,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 && weights.every((weight, index) => weight === preset.panelWeights[index]))?.id ?? null;
         },
 
+        layoutIsAvailable(preset) {
+            return preset.panelWeights.length === 1 || !this.selectedVariant || this.selectedVariant.hasPartition;
+        },
+
         selectLayout(layoutId) {
             const preset = this.metadata.layoutPresets?.find((candidate) => candidate.id === layoutId);
-            if (!preset || !this.previewConfiguration || this.selectedLayoutId === layoutId) {
+            if (!preset || !this.layoutIsAvailable(preset) || !this.previewConfiguration || this.selectedLayoutId === layoutId) {
                 return;
             }
             const configuration = this.previewConfiguration;

@@ -35,9 +35,22 @@ test('exclusions apply to every used component and optional components only when
     config.softClose = true;
     assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length, 2);
     config.softClose = false;
+    variant.hasPartition = true;
     config.panelWeights = [1,1];
     config.infillIdsByDoor = [[7,7],[7,7]];
     assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length, 4);
     variant.components.forEach(component => component.incompatibleInfillIds = []);
+    assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
+});
+
+
+test('an upstream variant without partitions invalidates a retained divided layout', () => {
+    const {config,catalog,metadata} = fixture();
+    config.panelWeights = [1,1];
+    config.infillIdsByDoor = [[7,7],[7,7]];
+    const before = structuredClone(config);
+    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'partition_missing'));
+    assert.deepEqual(config,before);
+    catalog.models[0].variants[0].hasPartition = true;
     assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
 });

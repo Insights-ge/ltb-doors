@@ -70,6 +70,7 @@
                             {{ __('sliding_door_builder.layouts.shared_description') }}
                             {{ __('sliding_door_builder.layouts.remapping_description') }}
                         </p>
+                        <p x-show="selectedVariant && !selectedVariant.hasPartition" class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('sliding_door_builder.layouts.no_partition') }}</p>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <template x-for="preset in metadata.layoutPresets" :key="preset.id">
                                 <x-filament::button
@@ -77,6 +78,7 @@
                                     class="builder-preview-selector"
                                     x-on:click="selectLayout(preset.id)"
                                     x-bind:aria-pressed="selectedLayoutId === preset.id"
+                                    x-bind:disabled="!layoutIsAvailable(preset)"
                                     x-bind:data-layout-preset="preset.id"
                                 >
                                     <span x-text="preset.label"></span>

@@ -11,6 +11,7 @@ return [
         'no_infills_description' => 'Panel finishes are currently unavailable. Please try again later.',
     ],
     'layouts' => [
+        'no_partition' => 'This variant supports full panels only. Choose another variant to add divisions.',
         'remapping_description' => 'Finishes are kept from top to bottom. Removed panels are discarded; new panels start without a finish.',
         'title' => 'Shared layout',
         'shared_description' => 'Applies to both doors.',

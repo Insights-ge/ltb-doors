@@ -33,6 +33,7 @@ export function validateBuilder(configuration, catalog, metadata) {
     if (!variant || variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('variant_required', 2, 'builder-variant');
     if (!metadata.layoutPresets?.some((preset) => preset.panelWeights.length === config.panelWeights?.length
         && preset.panelWeights.every((weight, index) => weight === config.panelWeights[index]))) add('layout_required', 3, 'builder-layouts');
+    if (variant && config.panelWeights?.length > 1 && !variant.hasPartition) add('partition_missing', 3, 'builder-layouts');
     const excluded = incompatibleInfillIds(config, variant);
     for (let doorIndex = 0; doorIndex < 2; doorIndex++) {
         for (let panelIndex = 0; panelIndex < (config.panelWeights?.length ?? 0); panelIndex++) {
