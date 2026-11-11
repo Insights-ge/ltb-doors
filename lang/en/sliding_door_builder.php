@@ -42,6 +42,7 @@ return [
         'invalid' => 'Enter a positive measurement in millimetres.',
     ],
     'system' => [
+        'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
         'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
         'range_width' => 'Catalog width',
         'range_height' => 'Catalog height',
@@ -69,6 +70,7 @@ return [
             'description' => 'Set the width and height of the opening.',
         ],
         'system' => [
+            'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
             'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
             'range_width' => 'Catalog width',
             'range_height' => 'Catalog height',

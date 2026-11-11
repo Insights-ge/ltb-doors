@@ -68,6 +68,7 @@
                             @foreach (['width', 'height', 'variantHeight'] as $range)
                                 <div><dt class="inline">{{ __('sliding_door_builder.system.range_' . $range) }}:</dt> <dd class="inline"><span x-text="sizingReference?.{{ $range }}?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</dd></div>
                             @endforeach
+                            <div x-show="sizingReference?.discouragedHeight"><dt class="inline">{{ __('sliding_door_builder.system.discouraged_height') }}:</dt> <dd class="inline"><span x-text="sizingReference?.discouragedHeight?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</dd></div>
                         </dl>
                     </div>
                     <div class="mt-4" x-show="selectedVariant && (selectedVariant.hasSoftCloseMechanism || previewConfiguration.softClose)">

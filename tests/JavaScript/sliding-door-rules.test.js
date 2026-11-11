@@ -77,3 +77,17 @@ test('unconfirmed catalog measurement scope does not invent opening or half-door
         assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
     }
 });
+
+
+test('discouraged height references remain advisory while their scope is unconfirmed', () => {
+    const {config,catalog,metadata} = fixture();
+    Object.assign(catalog.models[0], {notRecommendedHeightMin:2200,notRecommendedHeightMax:2500});
+    for (const height of [2199,2200,2400,2500,2501]) {
+        config.openingHeight=height;
+        const result=validateBuilder(config,catalog,metadata);
+        assert.deepEqual(result.errors, []);
+        assert.equal(result.advisories[0].code, 'discouraged_height_reference');
+    }
+    catalog.models[0].notRecommendedHeightMin=null;
+    assert.deepEqual(validateBuilder(config,catalog,metadata).advisories, []);
+});

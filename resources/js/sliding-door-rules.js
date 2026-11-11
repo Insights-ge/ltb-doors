@@ -9,6 +9,9 @@ export function catalogSizingReference(model, variant) {
         width: [model.minWidth, model.maxWidth],
         height: [model.minHeight, model.maxHeight],
         variantHeight: [variant.heightRangeMin, variant.heightRangeMax],
+        discouragedHeight: model.notRecommendedHeightMin !== null && model.notRecommendedHeightMin !== undefined
+            && model.notRecommendedHeightMax !== null && model.notRecommendedHeightMax !== undefined
+            ? [model.notRecommendedHeightMin, model.notRecommendedHeightMax] : null,
         scopes: sizingScopes,
     } : null;
 }
@@ -41,6 +44,9 @@ export function validateBuilder(configuration, catalog, metadata) {
     }
     const model = catalog.models.find((item) => item.id === config.modelId);
     const variant = model?.variants.find((item) => item.id === config.variantId);
+    if (catalogSizingReference(model, variant)?.discouragedHeight) {
+        advisories.push({ code: 'discouraged_height_reference', step: 2, field: 'builder-variant' });
+    }
     if (!model) add('model_required', 2, 'builder-model');
     if (!variant || variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('variant_required', 2, 'builder-variant');
     if (!metadata.layoutPresets?.some((preset) => preset.panelWeights.length === config.panelWeights?.length
