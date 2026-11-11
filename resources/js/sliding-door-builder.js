@@ -1,4 +1,4 @@
-import { validateBuilder } from './sliding-door-rules.js';
+import { validateBuilder, incompatibleInfillIds } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
@@ -23,6 +23,10 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        infillIsIncompatible(infillId) {
+            return incompatibleInfillIds(this.previewConfiguration, this.selectedVariant).has(infillId);
+        },
 
         get validation() {
             const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);

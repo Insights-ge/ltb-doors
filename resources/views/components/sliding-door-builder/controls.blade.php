@@ -112,7 +112,9 @@
                                 >
                                     <span class="flex items-center gap-2 whitespace-normal text-start">
                                         <span aria-hidden="true" class="h-6 w-6 shrink-0 rounded border border-gray-400" x-bind:style="{ backgroundColor: infillVisual(infill.id).fill }"></span>
-                                        <span><span x-text="infill.code"></span> — <span x-text="infill.description"></span></span>
+                                        <span><span x-text="infill.code"></span> — <span x-text="infill.description"></span>
+                                            <span x-show="infillIsIncompatible(infill.id)" class="block text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.finishes.incompatible') }}</span>
+                                        </span>
                                     </span>
                                 </x-filament::button>
                             </template>

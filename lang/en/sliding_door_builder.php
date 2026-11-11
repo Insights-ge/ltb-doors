@@ -19,6 +19,7 @@ return [
         'three_horizontal_panels' => 'Three equal horizontal panels',
     ],
     'finishes' => [
+        'incompatible' => 'Incompatible with the selected system and options',
         'replace_heading' => 'Replace panel finishes?',
         'replace_description' => 'This change will replace or remove existing panel finishes. Continue?',
         'cancel' => 'Cancel',

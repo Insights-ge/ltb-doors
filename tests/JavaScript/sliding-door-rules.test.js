@@ -21,3 +21,23 @@ test('validation distinguishes actionable blockers from unresolved sizing assump
     assert.ok(invalid.errors.some(issue => issue.field === 'builder-openingWidth' && issue.step === 1));
     assert.ok(invalid.errors.some(issue => issue.doorIndex === 1 && issue.panelIndex === 0));
 });
+
+
+test('exclusions apply to every used component and optional components only when used', () => {
+    const { config, catalog, metadata } = fixture();
+    const variant = catalog.models[0].variants[0];
+    for (const type of ['side_profile','top_rail','bottom_rail']) {
+        variant.components = [{type, incompatibleInfillIds:[7]}];
+        assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length, 2);
+    }
+    variant.components = [{type:'partition',incompatibleInfillIds:[7]}, {type:'soft_close_mechanism',incompatibleInfillIds:[7]}];
+    assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
+    config.softClose = true;
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length, 2);
+    config.softClose = false;
+    config.panelWeights = [1,1];
+    config.infillIdsByDoor = [[7,7],[7,7]];
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length, 4);
+    variant.components.forEach(component => component.incompatibleInfillIds = []);
+    assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
+});
