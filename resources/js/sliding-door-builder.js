@@ -57,6 +57,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         focusIssue(issue) {
             if (issue.doorIndex !== undefined) {
                 const door = this.previewDoors[issue.doorIndex];
+                if (door) this.selectPreviewDoor(door.id);
                 const panel = door?.panels[issue.panelIndex];
                 if (panel) this.selectPreviewPanel(door.id, panel.id);
             }

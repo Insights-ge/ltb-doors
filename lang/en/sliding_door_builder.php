@@ -81,6 +81,11 @@ return [
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
+        'edit' => 'Edit',
+        'edit_size' => 'Edit size',
+        'edit_system' => 'Edit system',
+        'edit_layout' => 'Edit layout',
+
         'colour' => 'Colour',
         'yes' => 'Yes',
         'no' => 'No',
@@ -108,6 +113,11 @@ return [
             'description' => 'Choose a shared layout and panel finishes for each door.',
         ],
         'review' => [
+            'edit' => 'Edit',
+            'edit_size' => 'Edit size',
+            'edit_system' => 'Edit system',
+            'edit_layout' => 'Edit layout',
+
             'label' => 'Review',
             'description' => 'Review the measurements and selections for your doors.',
         ],
