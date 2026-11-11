@@ -32,6 +32,8 @@ class SlidingDoorBuilder extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
 
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::WrenchScrewdriver;
+
     protected static ?int $navigationSort = 0;
 
     /** @var array<string, mixed> */
