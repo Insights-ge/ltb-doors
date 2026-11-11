@@ -33,6 +33,11 @@ return [
         'select_panel' => 'Select a door and panel in the preview to edit its finish.',
         'unselected' => 'No finish selected',
     ],
+    'size' => [
+        'width' => 'Width (mm)',
+        'height' => 'Height (mm)',
+        'invalid' => 'Enter a positive measurement in millimetres.',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'Size',

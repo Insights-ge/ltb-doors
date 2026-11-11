@@ -1,4 +1,4 @@
-import { createInitialConfiguration } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -17,9 +17,17 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
         pendingChange: null,
+        sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        setMeasurement(field, value) {
+            if (!['openingWidth', 'openingHeight'].includes(field)) return;
+            const number = parseMeasurement(value);
+            this.sizeErrors[field] = number === null;
+            this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
+        },
 
         get selectedPreviewPanel() {
             return this.selectedPreviewDoor?.panels.find((panel) => panel.id === this.previewSelection.panelId) ?? null;

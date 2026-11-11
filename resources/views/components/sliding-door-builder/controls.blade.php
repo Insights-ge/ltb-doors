@@ -11,6 +11,19 @@
                 <p class="builder-control-description text-sm text-gray-500 dark:text-gray-400">
                     {{ $step->getDescription() }}
                 </p>
+                @if ($step === \App\Enums\SlidingDoorBuilderStep::Size)
+                    <div class="mt-4 grid gap-4">
+                        @foreach (['openingWidth' => 'width', 'openingHeight' => 'height'] as $field => $label)
+                            <div>
+                                <label for="builder-{{ $field }}" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.size.' . $label) }}</label>
+                                <x-filament::input.wrapper>
+                                    <x-filament::input id="builder-{{ $field }}" type="number" min="0" step="any" inputmode="decimal" x-bind:value="previewConfiguration.{{ $field }}" x-on:change="setMeasurement('{{ $field }}', $event.target.value)" x-bind:aria-invalid="sizeErrors.{{ $field }}" aria-describedby="builder-{{ $field }}-error" />
+                                </x-filament::input.wrapper>
+                                <p id="builder-{{ $field }}-error" x-show="sizeErrors.{{ $field }}" x-cloak class="mt-1 text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.size.invalid') }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
                     <fieldset class="mt-4" x-bind:disabled="!hasPreview">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">
