@@ -10,24 +10,25 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 
 ## Demonstration script
 
-1. Enter opening width and height in millimetres, then click Next. The progress indicator is read-only. Each section must be complete before advancing, with one Previous/Next row in its footer. Incomplete text keeps the last valid preview and shows a red error under the field.
-2. Choose a system, frame design, and actual colour/variant combination. Catalog ranges are available as references.
-3. Choose full panels, two equal horizontal panels, or three equal horizontal panels. Both doors always share the layout.
-4. Select a numbered door and panel in the preview; choose finishes independently. Tab and Enter/Space operate the same controls. Escape clears selection.
-5. Try applying a finish to all panels, copying a door, or reducing the layout after customizing finishes. Confirm or cancel the replacement dialog. Surviving panel choices follow their top-to-bottom positions; new panels start empty and removed values do not return.
-6. Change the system/variant/options and inspect compatibility messages. Existing finishes remain visible for correction. Click Next to validate the section. Errors appear only beneath their fields; an unfinished or incompatible panel is selected automatically for correction. A variant without partitions cannot introduce a divided layout.
-7. Complete every panel and open review. Check the opening dimensions, system/variant/colour, shared layout, independent finishes and options. Edit links return to the appropriate step/door/panel.
-8. Refresh to restore the last valid design on this browser/device. Print the summary or download its JSON configuration. Reset requires confirmation and clears the saved draft. Neither action submits a quote or order.
+1. Choose a door model, then enter width and height in millimetres. Size fields stay disabled until a model is selected and enforce its inclusive minimum/maximum bounds. The progress indicator is read-only; each section must be complete before advancing, with one Previous/Next row and inline errors.
+2. Choose a frame design and actual colour/variant combination. Variant height ranges remain informational.
+3. Both doors inherit the model's partition count: 1–4 horizontal dividers create 2–5 equal panels on each door. There is no layout/count selector. Select a numbered door and panel and choose finishes independently. Tab and Enter/Space operate these controls; Escape clears selection.
+4. Try applying a finish to all panels or copying a door. Changing to a model with fewer partitions asks for confirmation if filled panels would be removed. Cancel restores the previous model; surviving finishes follow their top-to-bottom positions, new panels start empty, and removed finishes do not return.
+5. Change variants/options and inspect compatibility messages. Existing finishes remain available for correction. Next validates each section and selects an unfinished/incompatible panel automatically. Models without any partition-capable variants cannot be selected.
+6. Complete every panel and open review. Check dimensions, model/variant/colour, model divisions, independent finishes and options. Edit links return to the appropriate step/door/panel.
+7. Refresh to restore the last valid design in this browser. Print the summary or download its JSON. Reset requires confirmation and clears the saved draft. Neither action submits a quote or order.
 
 ## Implemented rules and limitations
 
 - Exactly two equal-width illustrative doors; one shared layout, independent finishes and stable instance IDs.
-- Size and system controls are PHP Filament `TextInput`, `Select` and `Checkbox` schemas. Livewire owns their field state and renders native inline validation on Next. Dependent design/variant options come from the active catalog. Alpine observes the fields for the SVG preview, while the custom panel/layout editor stays in the browser. Draft restoration and reset refill the native schemas without discarding independent finishes.
+- Size and system controls are PHP Filament `TextInput`, `Select` and `Checkbox` schemas. Livewire owns their field state and renders native inline validation on Next. Dependent design/variant options come from the active catalog. Alpine observes the fields for the SVG preview, while the custom panel finish editor stays in the browser. Draft restoration and reset refill the native schemas without discarding independent finishes.
 - Standard field errors come from the same `validation.php` translations and field-label casing used by Filament: missing values use `required`, nonnumeric values use `numeric`, zero/negative measurements use `gt.numeric`, and removed catalog choices use `exists` or `in`. Domain-specific compatibility messages remain separate.
-- Positive finite opening dimensions and representable geometry are enforced. Model width/height limits, variant height ranges and discouraged heights have **unconfirmed measurement scope**: one finished door versus an entire opening. They remain raw reference/advisory values. `sliding-door-rules.js` records the scopes as `unconfirmed`. Confirm scope and track/overlap deductions before applying product sizing limits. Estimated half-width geometry is never a cutting size.
+- Positive finite dimensions, inclusive model width/height limits and representable geometry are enforced. Model bounds apply directly to the entered dimensions. Variant height ranges and discouraged heights retain unconfirmed measurement scope and remain references/advisories. Estimated half-width preview geometry is never a cutting size.
+- `door_models.partition_count` stores each model's shared divider count (1–4). The catalog seeder assigns a random count per model on each run; run `php artisan db:seed --class=DoorCatalogSeeder` locally after migration to refresh the catalog without resetting users. The browser payload exposes `partitionCount`; visual metadata contains only colour/finish mappings and neutral fallback.
+
 - Recorded infill exclusions apply to all used frame components, partitions when divided, and soft-close components only when selected. An empty exclusion list means no recorded exclusions, not a complete certification of compatibility.
 - Soft close is a preference available with the relevant component. Hardware quantities and installation eligibility remain unconfirmed.
-- The last fully valid design is saved under a per-user browser-storage key. Partial/invalid edits do not overwrite it. Restore validates structure, IDs, dimensions and current catalog compatibility; outdated choices are preserved for correction. Storage failures allow continued editing. Drafts stay in this browser; there is no live cross-tab synchronization or server draft endpoint.
+- The last fully valid design is saved under a per-user browser-storage key. Partial/invalid edits do not overwrite it. Restore validates structure, IDs, dimensions and current catalog compatibility; outdated choices are preserved for correction. Drafts with divisions that no longer match the current model require explicit recovery instead of silently changing panel finishes. Storage failures allow continued editing. Drafts stay in this browser; there is no live cross-tab synchronization or server draft endpoint.
 - Print and JSON export revalidate the design. JSON includes configuration IDs, readable current catalog details, millimetre units and recorded assumptions. Import, share links, pricing, manufacturing calculations and order/quote submission are deferred.
 - A focused-input reduced viewport simulates available space with a mobile keyboard. Physical-device keyboard behaviour and a live screen-reader audit remain manual follow-ups; DOM/browser checks do not replace those audits.
 
@@ -53,16 +54,4 @@ BUILDER_TEST_EMAIL=your-local-email BUILDER_TEST_PASSWORD=your-local-password /t
 
 Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Optional `BUILDER_TEST_ARTIFACTS` stores reduced-viewport screenshots in the chosen directory. Run against a local environment, not production.
 
-Verified on this branch:
-
-- **366 PHP tests**, 3525 assertions; **104 individual Node tests**; **ten Chromium regression cases**; production Vite build and repository-wide Duster all pass.
-- Catalog-backed journeys in English/Georgian, independent finishes, review, JSON download, refresh/restore and print PDF, without blocking console errors.
-- 320/390/768/1440px widths and light/dark themes; Georgian/long names, no horizontal overflow, 44px controls and reduced-height focused inputs.
-- Keyboard selection, context labels, pressed/live states, section/invalid-field focus, annotation contrast of at least 4.5:1 and focus accents of at least 3:1 against the preview surface.
-- Empty/incomplete catalogs, removed/changed options, missing visuals, names rendered as text, malformed drafts and storage failures.
-- No SVG node replacement for selection/nonvisual changes; correct resize redraw and two clean Filament SPA teardown/remount cycles.
-- Print output uses white surfaces, actual frame colour and no selection markers. The dev server and its hot-file configuration remain available after the production-build check.
-
-Latest validation-message verification: 22 PHP feature tests (200 assertions), 104 individual Node tests, nine Chromium cases, targeted PHPStan and Duster pass.
-
-Latest Filament form verification: all 366 PHP tests (3525 assertions), 104 Node tests and ten Chromium cases pass. Native-field coverage includes dependent options, required/numeric/positive validation, draft restoration, soft-close changes, resizing and reset. Targeted PHPStan and Duster pass.
+Browser coverage includes English/Georgian journeys, model bounds and fixed divisions, independent finishes, review, JSON export, restoration/reset, print, keyboard selection, light/dark themes, 320/390/768/1440px layouts, reduced viewport focus, compatibility changes, neutral visual fallbacks, malformed drafts/storage failures, and Filament SPA teardown/remount.

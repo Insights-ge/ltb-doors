@@ -3,7 +3,7 @@ import { measurementError, parseMeasurement, modelPanelWeights } from './sliding
 
 export const sizingScopes = Object.freeze({ model: 'configuration', variantHeight: 'unconfirmed', discouragedHeight: 'unconfirmed' });
 
-/** Raw catalog ranges are reference facts, not bounds on the opening or cutting sizes. */
+/** Model ranges constrain entered sizes; variant height scopes remain informational. */
 export function catalogSizingReference(model, variant) {
     return model && variant ? {
         width: [model.minWidth, model.maxWidth],

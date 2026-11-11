@@ -4,10 +4,8 @@ namespace App\Services;
 
 use App\Data\BuilderFrameColorData;
 use App\Data\BuilderInfillVisualData;
-use App\Data\BuilderLayoutPresetData;
 use App\Data\BuilderMetadataData;
 use App\Data\BuilderVisualData;
-use App\Enums\BuilderLayout;
 use App\Enums\DoorColor;
 
 class BuilderMetadataReadService
@@ -17,14 +15,6 @@ class BuilderMetadataReadService
         $neutral = $this->readVisual(config('builder.neutral_fill'), new BuilderVisualData('#B8B8B8'));
 
         return new BuilderMetadataData(
-            layoutPresets: array_map(
-                fn (BuilderLayout $layout): BuilderLayoutPresetData => new BuilderLayoutPresetData(
-                    id: $layout,
-                    label: $layout->getLabel(),
-                    panelWeights: $layout->panelWeights(),
-                ),
-                BuilderLayout::cases(),
-            ),
             frameColors: array_map(
                 fn (DoorColor $color): BuilderFrameColorData => new BuilderFrameColorData(
                     color: $color,

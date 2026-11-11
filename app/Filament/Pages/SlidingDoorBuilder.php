@@ -151,7 +151,6 @@ class SlidingDoorBuilder extends Page
             'builder-model' => __('sliding_door_builder.system.model'),
             'builder-design' => __('sliding_door_builder.system.design'),
             'builder-variant' => __('sliding_door_builder.system.variant'),
-            'builder-layouts' => __('sliding_door_builder.layouts.title'),
             'builder-finishes' => __('sliding_door_builder.finishes.title'),
         ];
         $messages = [];

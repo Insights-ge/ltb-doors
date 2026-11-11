@@ -10,15 +10,6 @@ return [
         'no_infills_heading' => 'No panel finishes available',
         'no_infills_description' => 'Panel finishes are currently unavailable. Please try again later.',
     ],
-    'layouts' => [
-        'no_partition' => 'This variant supports full panels only. Choose another variant to add divisions.',
-        'remapping_description' => 'Finishes are kept from top to bottom. Removed panels are discarded; new panels start without a finish.',
-        'title' => 'Shared layout',
-        'shared_description' => 'Applies to both doors.',
-        'full_panel' => 'Full panel',
-        'two_horizontal_panels' => 'Two equal horizontal panels',
-        'three_horizontal_panels' => 'Three equal horizontal panels',
-    ],
     'finishes' => [
         'unavailable' => 'This finish is no longer available. Choose another finish or clear it.',
         'incompatible' => 'Incompatible with the selected system and options',

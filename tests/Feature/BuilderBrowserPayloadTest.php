@@ -2,7 +2,6 @@
 
 use App\Data\BuilderBrowserPayloadData;
 use App\Data\BuilderCatalogData;
-use App\Enums\BuilderLayout;
 use App\Enums\ComponentType;
 use App\Enums\DoorColor;
 use App\Filament\Pages\SlidingDoorBuilder;
@@ -13,7 +12,6 @@ use App\Services\BuilderCatalogReadService;
 use App\Services\BuilderMetadataReadService;
 use Database\Seeders\GeneralSettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Lang;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 
@@ -34,8 +32,7 @@ test('the browser contract keeps empty catalog arrays separate from the metadata
     expect($decoded->catalog->models)->toBe([]);
     expect($decoded->catalog->infills)->toBe([]);
     expect($decoded->metadata)->toBeInstanceOf(stdClass::class);
-    expect(array_keys(get_object_vars($decoded->metadata)))->toBe(['layoutPresets', 'frameColors', 'infillVisuals', 'neutralVisual']);
-    expect($decoded->metadata->layoutPresets)->toHaveCount(3);
+    expect(array_keys(get_object_vars($decoded->metadata)))->toBe(['frameColors', 'infillVisuals', 'neutralVisual']);
 });
 
 test('the browser payload serializes catalog enums references and optional values', function () {
@@ -52,6 +49,7 @@ test('the browser payload serializes catalog enums references and optional value
     $model = $decoded->catalog->models[0];
     $door = $model->variants[0];
 
+    expect($model->partitionCount)->toBe($variant->doorModel->partition_count);
     expect($model->notRecommendedHeightMin)->toBeNull();
     expect($door->color)->toBe('black');
     expect($door->hasPartition)->toBeFalse();
@@ -59,7 +57,6 @@ test('the browser payload serializes catalog enums references and optional value
     expect($door->components[0]->type)->toBe('side_profile');
     expect($door->components[0]->incompatibleInfillIds)->toBe([$infill->id]);
     expect($decoded->catalog->infills[0]->id)->toBe($infill->id);
-    expect($decoded->metadata->layoutPresets)->toHaveCount(3);
 });
 
 test('the authorized page embeds an escaped payload without displaying catalog selections', function () {
@@ -112,20 +109,4 @@ test('the published schema uses the application enum values', function () {
     expect($schema['$defs']['variant']['properties']['color']['enum'])->toBe(array_column(DoorColor::cases(), 'value'));
     expect($schema['$defs']['frameColor']['properties']['color']['enum'])->toBe(array_column(DoorColor::cases(), 'value'));
     expect($schema['$defs']['component']['properties']['type']['enum'])->toBe(array_column(ComponentType::cases(), 'value'));
-    expect($schema['$defs']['layoutPreset']['properties']['id']['enum'])->toBe(array_column(BuilderLayout::cases(), 'value'));
 });
-
-test('layout presets have equal top to bottom proportions and translated labels', function (string $locale) {
-    app()->setLocale($locale);
-    $metadata = app(BuilderMetadataReadService::class)->read();
-
-    expect(array_column($metadata->layoutPresets, 'id'))->toBe(BuilderLayout::cases());
-    expect(array_column($metadata->layoutPresets, 'panelWeights'))->toBe([[1], [1, 1], [1, 1, 1]]);
-    expect(array_column($metadata->layoutPresets, 'requiresPartition'))->toBe([false, true, true]);
-
-    foreach ($metadata->layoutPresets as $preset) {
-        $key = 'sliding_door_builder.layouts.' . $preset->id->value;
-        expect(Lang::hasForLocale($key, $locale))->toBeTrue();
-        expect($preset->label)->toBe(__($key, [], $locale));
-    }
-})->with(['en', 'ka']);

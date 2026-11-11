@@ -15,12 +15,11 @@
             }
         },
         "metadata": {
-            "description": "Presentation presets, kept separate from catalog facts.",
+            "description": "Visual mappings and neutral fallbacks, kept separate from catalog facts.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["layoutPresets", "frameColors", "infillVisuals", "neutralVisual"],
+            "required": ["frameColors", "infillVisuals", "neutralVisual"],
             "properties": {
-                "layoutPresets": { "type": "array", "items": { "$ref": "#/$defs/layoutPreset" } },
                 "frameColors": { "type": "array", "items": { "$ref": "#/$defs/frameColor" } },
                 "infillVisuals": { "type": "array", "items": { "$ref": "#/$defs/infillVisual" } },
                 "neutralVisual": { "$ref": "#/$defs/visual" }
@@ -54,26 +53,6 @@
                 "infillId": { "$ref": "#/$defs/id" },
                 "visual": { "$ref": "#/$defs/visual" }
             }
-        },
-        "layoutPreset": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["id", "label", "panelWeights", "requiresPartition"],
-            "properties": {
-                "id": { "enum": ["full_panel", "two_horizontal_panels", "three_horizontal_panels"] },
-                "label": { "type": "string" },
-                "panelWeights": {
-                    "description": "Relative heights from top to bottom. Equal weights produce equal horizontal panels.",
-                    "type": "array",
-                    "items": { "type": "integer", "minimum": 1 }
-                },
-                "requiresPartition": { "type": "boolean" }
-            },
-            "oneOf": [
-                { "properties": { "id": { "const": "full_panel" }, "panelWeights": { "const": [1] }, "requiresPartition": { "const": false } } },
-                { "properties": { "id": { "const": "two_horizontal_panels" }, "panelWeights": { "const": [1, 1] }, "requiresPartition": { "const": true } } },
-                { "properties": { "id": { "const": "three_horizontal_panels" }, "panelWeights": { "const": [1, 1, 1] }, "requiresPartition": { "const": true } } }
-            ]
         },
         "id": { "type": "integer", "minimum": 1 },
         "model": {

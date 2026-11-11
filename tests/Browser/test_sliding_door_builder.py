@@ -62,7 +62,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.ready()
 
     def field_error(self, field):
-        if field in ['builder-layouts', 'builder-finishes']:
+        if field == 'builder-finishes':
             return self.page.locator(f'#{field}-error')
         return self.page.locator(f'[data-field-wrapper]:has(#{field}) [data-validation-error]')
 
