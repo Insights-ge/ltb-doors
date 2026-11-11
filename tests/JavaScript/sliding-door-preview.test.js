@@ -124,3 +124,19 @@ for (const [name, width, height, weights] of [
         });
     }
 }
+
+test('database material textures reach the scene without changing panel geometry', () => {
+    const input = configuration();
+    const visuals = metadata();
+    const before = createPreviewScene(input, visuals, {width:600,height:400});
+    visuals.infillVisuals[0].visual.texture='wood_straight';
+    const after = createPreviewScene(input, visuals, {width:600,height:400});
+    for (let door=0;door<before.doors.length;door++) {
+        for (let panel=0;panel<before.doors[door].panels.length;panel++) {
+            const original=before.doors[door].panels[panel];
+            const textured=after.doors[door].panels[panel];
+            assert.deepEqual({...textured,texture:null},original);
+            assert.equal(textured.texture, textured.fill==='#AABBCC' ? 'wood_straight' : null);
+        }
+    }
+});

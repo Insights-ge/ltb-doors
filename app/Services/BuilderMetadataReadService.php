@@ -7,6 +7,8 @@ use App\Data\BuilderInfillVisualData;
 use App\Data\BuilderMetadataData;
 use App\Data\BuilderVisualData;
 use App\Enums\DoorColor;
+use App\Enums\InfillTexture;
+use App\Models\Infill;
 
 class BuilderMetadataReadService
 {
@@ -42,22 +44,14 @@ class BuilderMetadataReadService
      */
     private function readInfillVisuals(BuilderVisualData $neutral): array
     {
-        $mappings = config('builder.infill_visuals', []);
+        return array_values(Infill::query()->select(['id', 'visual_color', 'visual_texture'])->orderBy('id')->get()
+            ->map(function (Infill $infill) use ($neutral): BuilderInfillVisualData {
+                $texture = $infill->getRawOriginal('visual_texture');
 
-        if (! is_array($mappings)) {
-            return [];
-        }
-
-        $visuals = [];
-
-        foreach ($mappings as $id => $fill) {
-            if (is_int($id) && $id > 0) {
-                $visuals[] = new BuilderInfillVisualData($id, $this->readVisual($fill, $neutral));
-            }
-        }
-
-        usort($visuals, fn (BuilderInfillVisualData $first, BuilderInfillVisualData $second): int => $first->infillId <=> $second->infillId);
-
-        return $visuals;
+                return new BuilderInfillVisualData($infill->id, new BuilderVisualData(
+                    fill: $this->readVisual($infill->visual_color, $neutral)->fill,
+                    texture: is_string($texture) ? (InfillTexture::tryFrom($texture) ?? InfillTexture::Solid) : InfillTexture::Solid,
+                ));
+            })->all());
     }
 }

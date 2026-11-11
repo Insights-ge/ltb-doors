@@ -13,7 +13,4 @@ return [
         DoorColor::Silver->value => '#C5C7C9',
     ],
 
-    // Optional mappings: positive infill database ID => six-digit hex colour.
-    // Unmapped infills use neutral_fill; never infer finishes from descriptions.
-    'infill_visuals' => [],
 ];

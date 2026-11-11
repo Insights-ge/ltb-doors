@@ -32,7 +32,8 @@
             "additionalProperties": false,
             "required": ["fill"],
             "properties": {
-                "fill": { "type": "string", "pattern": "^#[0-9A-F]{6}$" }
+                "fill": { "type": "string", "pattern": "^#[0-9A-F]{6}$" },
+                "texture": { "enum": [null, "solid", "wood_straight", "wood_cathedral", "glass", "mirror"] }
             }
         },
         "frameColor": {

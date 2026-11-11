@@ -1,6 +1,8 @@
 import { calculateDoorGeometry, fitDoorGeometry } from './sliding-door-geometry.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 
+import { createPanelPaints } from './sliding-door-textures.js';
+
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /**
@@ -21,6 +23,7 @@ export function createPreviewScene(configuration, metadata, viewport) {
                 ...panel,
                 id: configuration.panelIdsByDoor?.[door.index]?.[panel.index] ?? null,
                 fill: infillVisual(metadata, configuration.infillIdsByDoor?.[door.index]?.[panel.index]).fill,
+                texture: infillVisual(metadata, configuration.infillIdsByDoor?.[door.index]?.[panel.index]).texture ?? null,
             })),
         })),
     };
@@ -103,6 +106,7 @@ function drawScene(svg, scene, configuration, labels, locale) {
     const title = element(svg, 'title');
     title.textContent = labels.drawing_label;
 
+    const paintPanel = createPanelPaints(svg);
     for (const door of scene.doors) {
         const group = element(svg, 'g', {
             'data-door-index': door.index, 'data-door-id': door.id,
@@ -120,7 +124,7 @@ function drawScene(svg, scene, configuration, labels, locale) {
         for (const panel of door.panels) {
             element(group, 'rect', {
                 ...rectangleAttributes(panel),
-                fill: panel.fill,
+                fill: paintPanel(panel),
                 class: 'builder-preview-panel',
                 'data-panel-index': panel.index,
                 'data-panel-id': panel.id,

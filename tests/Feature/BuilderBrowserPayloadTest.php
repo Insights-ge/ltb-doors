@@ -4,6 +4,7 @@ use App\Data\BuilderBrowserPayloadData;
 use App\Data\BuilderCatalogData;
 use App\Enums\ComponentType;
 use App\Enums\DoorColor;
+use App\Enums\InfillTexture;
 use App\Filament\Pages\SlidingDoorBuilder;
 use App\Models\DoorVariant;
 use App\Models\Infill;
@@ -108,5 +109,6 @@ test('the published schema uses the application enum values', function () {
 
     expect($schema['$defs']['variant']['properties']['color']['enum'])->toBe(array_column(DoorColor::cases(), 'value'));
     expect($schema['$defs']['frameColor']['properties']['color']['enum'])->toBe(array_column(DoorColor::cases(), 'value'));
+    expect($schema['$defs']['visual']['properties']['texture']['enum'])->toBe([null, ...array_column(InfillTexture::cases(), 'value')]);
     expect($schema['$defs']['component']['properties']['type']['enum'])->toBe(array_column(ComponentType::cases(), 'value'));
 });

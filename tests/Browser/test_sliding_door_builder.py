@@ -1,5 +1,6 @@
 """Catalog-backed Chromium regressions. Requires a running local app and Vite."""
 import json
+import html
 import os
 from pathlib import Path
 import unittest
@@ -459,6 +460,43 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function(f'{ROOT}.infillState==={infill_id}')
         self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]'), infill_id)
         self.assertEqual(page.locator('[data-infill-id]').count(), 0)
+
+    def test_database_materials_render_local_svg_paints(self):
+        self.configure()
+        page = self.page
+        records = page.evaluate(f'{ROOT}.catalog.infills')
+        samples = []
+        textures = set()
+        for infill in records:
+            page.evaluate(f"""id => {{
+                const b={ROOT};
+                b.previewConfiguration={{...b.previewConfiguration,infillIdsByDoor:b.previewConfiguration.infillIdsByDoor.map(row=>row.map(()=>id))}};
+                b.updatePreview();
+            }}""", infill['id'])
+            page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]==={infill["id"]}')
+            visual = page.evaluate(f'{ROOT}.infillVisual({infill["id"]})')
+            textures.add(visual['texture'])
+            fills = page.locator('.builder-preview-panel').evaluate_all('els=>els.map(el=>el.getAttribute("fill"))')
+            for fill in fills:
+                if visual['texture'] == 'solid':
+                    self.assertEqual(fill, visual['fill'])
+                else:
+                    self.assertTrue(fill.startswith('url(#builder-material-'))
+                    paint_id = fill[5:-1]
+                    self.assertEqual(page.locator(f'.builder-preview-svg defs [id="{paint_id}"]').count(), 1)
+            self.assertEqual(page.locator('.builder-preview-svg image, .builder-preview-svg script').count(), 0)
+            if visual['texture'] not in [sample['texture'] for sample in samples] or len(samples) < 3:
+                samples.append({'texture':visual['texture'], 'name':infill['description'], 'svg':page.locator('.builder-preview-svg').evaluate('el=>el.outerHTML')})
+        self.assertTrue({'solid','wood_straight','wood_cathedral','glass','mirror'}.issubset(textures))
+        if os.environ.get('BUILDER_TEST_ARTIFACTS'):
+            directory = Path(os.environ['BUILDER_TEST_ARTIFACTS'])
+            directory.mkdir(parents=True, exist_ok=True)
+            gallery = self.context.new_page()
+            cards = ''.join('<article><h3>'+html.escape(sample['name'])+'</h3>'+sample['svg']+'</article>' for sample in samples)
+            gallery.set_viewport_size({'width':1440,'height':1100})
+            gallery.set_content('<style>body{font:14px sans-serif;margin:20px;background:#eef0ed;color:#333}main{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}article{background:white;padding:16px;border-radius:10px}h3{min-height:50px;font-size:14px}svg{position:static!important;width:100%;height:260px;color:#444}.builder-preview-panel-highlight{visibility:hidden}.builder-preview-annotation,.builder-preview-door-label{fill:currentColor}</style><main>'+cards+'</main>')
+            gallery.screenshot(path=str(directory / 'infill-materials.png'), full_page=True)
+            gallery.close()
 
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page
