@@ -140,13 +140,17 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 choices = self.configure()
                 self.step(4)
                 page.wait_for_function(f'{ROOT}.activeStep===4')
-                self.assertEqual(page.locator('.builder-review button').count(), 0)
+                self.assertEqual(page.locator('.builder-review button').count(), 2)
+                page.locator('[data-review-components]').click()
+                page.locator('.fi-modal-open .fi-modal-window:visible').wait_for(state='visible')
                 self.assertEqual(page.locator('[data-review-component]').count(), 5)
                 components = page.evaluate(f'{ROOT}.selectedVariant.components')
                 for component in components:
                     row = page.locator(f'[data-review-component="{component["type"]}"]')
                     self.assertIn(component['code'], row.inner_text())
                     self.assertIn(component['description'], row.inner_text())
+                page.keyboard.press('Escape')
+                page.locator('.fi-modal-open .fi-modal-window:visible').wait_for(state='hidden')
                 self.assertFalse(page.locator('.builder-review ul').count())
                 self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor'), [[choices['infills'][panel%2] for panel in range(choices['panels'])] for door in range(2)])
                 page.reload()
@@ -493,6 +497,26 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             gallery.set_content('<style>body{font:14px sans-serif;margin:20px;background:#eef0ed;color:#333}main{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}article{background:white;padding:16px;border-radius:10px}h3{min-height:50px;font-size:14px}svg{position:static!important;width:100%;height:260px;color:#444}.builder-preview-panel-highlight{visibility:hidden}.builder-preview-annotation,.builder-preview-door-label{fill:currentColor}</style><main>'+cards+'</main>')
             gallery.screenshot(path=str(directory / 'infill-materials.png'), full_page=True)
             gallery.close()
+
+    def test_review_section_buttons_open_filament_modals_and_restore_focus(self):
+        self.configure()
+        self.step(4)
+        page = self.page
+        page.set_viewport_size({'width':390,'height':800})
+        page.evaluate("Alpine.store('sidebar').close()")
+        for name in ['components','panels']:
+            trigger = page.locator(f'[data-review-{name}]')
+            self.assertTrue(trigger.locator('svg').is_visible())
+            trigger.click()
+            modal = page.locator('.fi-modal-open .fi-modal-window:visible')
+            modal.wait_for(state='visible')
+            page.wait_for_function('document.activeElement?.closest(".fi-modal-open") !== null')
+            self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+            if name == 'panels':
+                self.assertIn(page.evaluate(f'{ROOT}.catalog.infills[0].code'), modal.inner_text())
+            page.keyboard.press('Escape')
+            modal.wait_for(state='hidden')
+            page.wait_for_function('(selector)=>document.activeElement?.matches(selector)', arg=f'[data-review-{name}]')
 
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page
