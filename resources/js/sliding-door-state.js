@@ -13,6 +13,7 @@ export function createInitialConfiguration() {
 }
 
 export function parseMeasurement(value) {
+    if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : null;
     const text = String(value ?? '').trim();
     if (!/^\d+(?:[.,]\d+)?$/.test(text)) return null;
     const number = Number(text.replace(',', '.'));

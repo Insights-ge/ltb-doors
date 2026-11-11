@@ -138,7 +138,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.evaluate("Alpine.store('sidebar').close()")
                     page.evaluate('(mode)=>window.dispatchEvent(new CustomEvent("theme-changed",{detail:mode}))', mode)
                     self.step(3)
-                    self.assertTrue(page.locator('[data-layout-preset=two_horizontal_panels]').is_visible())
+                    page.locator('[data-layout-preset=two_horizontal_panels]').wait_for(state='visible')
                     self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
                     svg = page.locator('.builder-preview-svg').bounding_box()
                     self.assertGreater(svg['width'], 96)
@@ -229,6 +229,35 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertIn('<img data-untrusted', page.locator('.builder-review').inner_text())
         self.assertEqual(page.locator('[data-untrusted]').count(), 0)
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+
+    def test_preview_avoids_replacing_nodes_for_selection_and_nonvisual_changes(self):
+        self.configure()
+        page = self.page
+        page.evaluate("window.__builderPanel=document.querySelector('.builder-preview-panel')")
+        page.locator('[data-preview-door-control]').first.click()
+        page.locator('[data-preview-panel-control]').first.click()
+        self.assertTrue(page.evaluate("window.__builderPanel===document.querySelector('.builder-preview-panel')"))
+        page.evaluate(f'{ROOT}.previewConfiguration={{...{ROOT}.previewConfiguration,softClose:!{ROOT}.previewConfiguration.softClose}}')
+        page.evaluate(f'{ROOT}.updatePreview()')
+        self.assertTrue(page.evaluate("window.__builderPanel===document.querySelector('.builder-preview-panel')"))
+        # Repeated public render calls and ResizeObserver notifications must be idempotent.
+        page.evaluate(f'{ROOT}.updatePreview()')
+        self.assertTrue(page.evaluate("window.__builderPanel===document.querySelector('.builder-preview-panel')"))
+        page.set_viewport_size({'width': 390, 'height': 900})
+        page.wait_for_function("window.__builderPanel!==document.querySelector('.builder-preview-panel')")
+        self.assertEqual(page.locator('.builder-preview-door').count(), 2)
+        self.assertEqual(page.locator('.builder-preview-panel').count(), 4)
+        # Exercise Filament's SPA teardown/remount instead of only a full page refresh.
+        for _ in range(2):
+            page.evaluate("Livewire.navigate('/admin/my-profile')")
+            page.wait_for_function("!document.querySelector('.sliding-door-builder')")
+            page.evaluate("Livewire.navigate('/admin/sliding-door-builder')")
+            self.ready()
+            page.wait_for_function(f'{ROOT}.hasPreview')
+            self.assertEqual(page.locator('.builder-preview-door').count(), 2)
+            self.assertEqual(page.locator('.builder-preview-panel').count(), 4)
+            page.locator('[data-preview-door-control]').first.click()
+            self.assertEqual(page.locator('.builder-preview-door.is-selected').count(), 1)
 
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()

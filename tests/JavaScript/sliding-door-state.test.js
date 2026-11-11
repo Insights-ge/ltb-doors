@@ -15,3 +15,10 @@ test('measurements accept decimal millimetres and reject missing, nonfinite and 
     for (const input of ['', ' ', null, undefined, '1e999', '-1', '0', '0x10', 'Infinity', '12 mm']) assert.equal(parseMeasurement(input), null);
     for (const [input, expected] of [['2400',2400], [' 10.5 ',10.5], ['12,5',12.5], ['0.1',0.1]]) assert.equal(parseMeasurement(input), expected);
 });
+
+
+test('committed finite numeric measurements retain validity even when their string uses exponent notation', () => {
+    assert.equal(parseMeasurement(1e22),1e22);
+    assert.equal(parseMeasurement(1e-10),1e-10);
+    assert.equal(parseMeasurement(Infinity),null);
+});

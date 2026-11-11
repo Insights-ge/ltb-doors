@@ -29,12 +29,16 @@ export function createPreviewScene(configuration, metadata, viewport) {
 export function createDoorPreview(svg, { metadata, labels, locale, onRender, onSelect }) {
     let configuration = null;
     let selection = { doorId: null, panelId: null };
+    let sceneKey = null;
+    let destroyed = false;
 
     function render(nextConfiguration) {
+        if (destroyed) return;
         configuration = nextConfiguration;
-        svg.replaceChildren();
 
         if (configuration === null) {
+            sceneKey = null;
+            svg.replaceChildren();
             onRender(false);
             return;
         }
@@ -47,10 +51,20 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
             if (!(error instanceof RangeError)) {
                 throw error;
             }
+            sceneKey = null;
+            svg.replaceChildren();
             onRender(false);
             return;
         }
 
+        const nextSceneKey = JSON.stringify([scene, configuration.openingWidth, configuration.openingHeight]);
+        if (nextSceneKey === sceneKey) {
+            applySelection(svg, selection);
+            onRender(true);
+            return;
+        }
+        sceneKey = nextSceneKey;
+        svg.replaceChildren();
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         drawScene(svg, scene, configuration, labels, locale);
@@ -71,10 +85,12 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
     return {
         render,
         setSelection(nextSelection) {
+            if (destroyed) return;
             selection = nextSelection;
             applySelection(svg, selection);
         },
         destroy() {
+            destroyed = true;
             observer.disconnect();
             svg.removeEventListener('click', select);
             svg.replaceChildren();
