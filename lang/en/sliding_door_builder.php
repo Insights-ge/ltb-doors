@@ -90,6 +90,10 @@ return [
         'yes' => 'Yes',
         'no' => 'No',
     ],
+    'drafts' => [
+        'saved' => 'Last valid design saved in this browser on this device.',
+        'unavailable' => 'Browser storage is unavailable. You can continue without saving.',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'Size',

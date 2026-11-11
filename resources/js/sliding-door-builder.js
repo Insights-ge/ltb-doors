@@ -1,3 +1,4 @@
+import { saveDraft } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
@@ -5,19 +6,22 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {} }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, storageKey = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
     let previousConfiguration = null;
     let stopSelectionWatching;
     let rootElement;
+    let storage;
+    let lastSaved = null;
 
     return {
         activeStep: initialStep,
         catalog: payload.catalog,
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
+        draftStatus: null,
         validationAttempted: false,
         pendingChange: null,
         sizeInputs: { openingWidth: '', openingHeight: '' },
@@ -25,6 +29,14 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        saveLocalDraft() {
+            if (!storageKey || !storage || !this.canReview) return;
+            const fingerprint = JSON.stringify(this.previewConfiguration);
+            if (fingerprint === lastSaved) return;
+            this.draftStatus = saveDraft(storage, storageKey, this.previewConfiguration);
+            if (this.draftStatus === 'saved') lastSaved = fingerprint;
+        },
 
         get reviewDesign() {
             return summarizeConfiguration(this.previewConfiguration, this.catalog, this.metadata);
@@ -75,6 +87,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         resetConfiguration() {
             previousConfiguration = null;
+            lastSaved = null;
+            try { storage?.removeItem(storageKey); this.draftStatus = null; } catch { this.draftStatus = 'unavailable'; }
             this.pendingChange = null;
             this.previewConfiguration = createInitialConfiguration();
             this.previewSelection = { doorId: null, panelId: null };
@@ -284,6 +298,9 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         init() {
             this.$nextTick(() => {
                 rootElement = this.$el;
+                if (storageKey) {
+                    try { storage = window.localStorage; } catch { this.draftStatus = 'unavailable'; }
+                }
                 const svg = this.$el.querySelector('.builder-preview-svg');
                 if (destroyed || !svg) {
                     return;
@@ -349,6 +366,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             }
             preview?.setSelection(this.previewSelection);
             preview?.render(configuration);
+            this.saveLocalDraft();
         },
 
         selectPreviewDoor(doorId) {
