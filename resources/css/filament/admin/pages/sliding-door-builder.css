@@ -170,18 +170,13 @@
     }
 
     .sliding-door-builder .builder-step-content:focus-visible,
-    .sliding-door-builder .builder-controls input:focus-visible,
-    .sliding-door-builder .builder-controls select:focus-visible,
     .sliding-door-builder .builder-review-edit:focus-visible,
     .sliding-door-builder .builder-preview-selector:focus-visible {
         outline: 2px solid var(--builder-accent);
         outline-offset: 2px;
     }
 
-    .sliding-door-builder button,
-    .sliding-door-builder input:not([type='checkbox']),
-    .sliding-door-builder select,
-    .sliding-door-builder label:has(input[type='checkbox']),
+    .sliding-door-builder .builder-control-actions > .fi-btn,
     .sliding-door-builder .builder-preview-selector {
         min-height: 2.75rem;
         min-width: 2.75rem;

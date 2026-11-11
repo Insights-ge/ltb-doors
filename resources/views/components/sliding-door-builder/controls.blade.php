@@ -21,7 +21,6 @@
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
                     <div class="mt-4">{{ $this->systemForm }}</div>
                     <div x-show="selectedVariant" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                        <p>{{ __('sliding_door_builder.system.range_note') }}</p>
                         <p>{{ __('sliding_door_builder.system.range_variantHeight') }}: <span x-text="sizingReference?.variantHeight?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</p>
                     </div>
                 @endif

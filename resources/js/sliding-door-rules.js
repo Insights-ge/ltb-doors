@@ -1,9 +1,9 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
 import { measurementError, parseMeasurement, modelPanelWeights } from './sliding-door-state.js';
 
-export const sizingScopes = Object.freeze({ model: 'configuration', variantHeight: 'unconfirmed', discouragedHeight: 'unconfirmed' });
+export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
-/** Model ranges constrain entered sizes; variant height scopes remain informational. */
+/** Model ranges constrain entered sizes; variant height ranges determine available variants. */
 export function catalogSizingReference(model, variant) {
     return model && variant ? {
         width: [model.minWidth, model.maxWidth],
@@ -16,11 +16,11 @@ export function catalogSizingReference(model, variant) {
     } : null;
 }
 
-/** Catalog constraints with unconfirmed measurement scope remain informational. */
+/** Use the fixed component set recorded on the selected variant. */
 export function usedComponents(configuration, variant) {
     const types = ['side_profile', 'top_rail', 'bottom_rail'];
     if (configuration?.panelWeights?.length > 1) types.push('partition');
-    if (configuration?.softClose) types.push('soft_close_mechanism');
+    if (variant?.hasSoftCloseMechanism) types.push('soft_close_mechanism');
     return variant?.components.filter((component) => types.includes(component.type)) ?? [];
 }
 
@@ -31,7 +31,7 @@ export function incompatibleInfillIds(configuration, variant) {
 export function validateBuilder(configuration, catalog, metadata) {
     const errors = [];
     const advisories = [];
-    const assumptions = [{ code: 'sizing_unconfirmed', step: 2, field: 'builder-variant' }];
+    const assumptions = [];
     const add = (code, step, field, extra = {}) => errors.push({ code, step, field, ...extra });
     const config = configuration ?? {};
     const model = catalog.models.find((item) => item.id === config.modelId);
@@ -40,7 +40,7 @@ export function validateBuilder(configuration, catalog, metadata) {
     if (model) {
         if (!model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
         for (const [field, min, max] of [
-            ['openingWidth', model.minWidth, model.maxWidth],
+            ['openingWidth', model.minWidth * 2, model.maxWidth * 2],
             ['openingHeight', model.minHeight, model.maxHeight],
         ]) {
             const error = measurementError(config[field]);
@@ -48,6 +48,8 @@ export function validateBuilder(configuration, catalog, metadata) {
             else if (parseMeasurement(config[field]) < min) add('min', 1, `builder-${field}`, {limit:min});
             else if (parseMeasurement(config[field]) > max) add('max', 1, `builder-${field}`, {limit:max});
         }
+        const height = parseMeasurement(config.openingHeight);
+        if (height !== null && !model.variants.some(variant => variant.hasPartition && height >= variant.heightRangeMin && height <= variant.heightRangeMax)) add('no_variant_for_height', 1, 'builder-openingHeight');
         const expected = modelPanelWeights(model);
         if (!expected.length || config.panelWeights?.length !== expected.length || !config.panelWeights.every(weight => weight === 1)) {
             add('model_structure_changed', 1, 'builder-model');
@@ -66,9 +68,10 @@ export function validateBuilder(configuration, catalog, metadata) {
     if (!variant) add(missing(config.variantId) ? 'required' : 'exists', 2, 'builder-variant');
     else if (variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('in', 2, 'builder-variant');
     if (variant && config.panelWeights?.length > 1 && !variant.hasPartition) add('partition_missing', 2, 'builder-variant');
-    if (config.softClose) {
-        assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-soft-close' });
-        if (!variant?.hasSoftCloseMechanism) add('soft_close_missing', 2, 'builder-soft-close');
+    if (variant && Boolean(config.softClose) !== Boolean(variant.hasSoftCloseMechanism)) add('variant_components_mismatch', 2, 'builder-variant');
+    if (variant && (config.openingHeight < variant.heightRangeMin || config.openingHeight > variant.heightRangeMax)) add('variant_height_mismatch', 2, 'builder-variant');
+    if (variant?.hasSoftCloseMechanism) {
+        assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-variant' });
     }
     const excluded = incompatibleInfillIds(config, variant);
     for (let doorIndex = 0; doorIndex < 2; doorIndex++) {

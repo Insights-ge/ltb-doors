@@ -36,13 +36,11 @@ return [
     ],
     'system' => [
         'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
-        'range_note' => 'Variant height ranges are for reference; their scope remains unconfirmed.',
         'range_width' => 'Catalog width',
         'range_height' => 'Catalog height',
         'range_variantHeight' => 'Variant height',
 
-        'soft_close' => 'Soft close preference',
-        'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
+        'soft_close' => 'Soft close',
 
         'model' => 'Door model',
         'design' => 'Frame design',
@@ -58,14 +56,16 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
+        'no_variant_for_height' => 'No available variant supports this height.',
+        'variant_components_mismatch' => 'The components must match the selected variant. Choose an available variant.',
+        'variant_height_mismatch' => 'Choose a variant available for this height.',
+
         'model_unavailable' => 'This model has no variants with partition components. Choose another model.',
         'model_structure_changed' => 'The panel divisions must match the selected model.',
 
         'geometry_invalid' => 'These dimensions cannot produce a preview.',
         'finish_incompatible' => 'Door :door, panel :panel: finish is incompatible with the selected system/options.',
         'partition_missing' => 'This variant has no partition component. Choose another variant.',
-        'soft_close_missing' => 'Soft close is unavailable for this variant. Turn it off or choose another variant.',
-        'sizing_unconfirmed' => 'Variant height range scope remains unconfirmed.',
         'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],

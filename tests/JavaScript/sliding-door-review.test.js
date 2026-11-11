@@ -7,7 +7,7 @@ import { saveDraft, readDraft, configurationSnapshot } from '../../resources/js/
 function fixture() {
     return {
         config:{openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',softClose:false,panelWeights:[1,1],doorIds:['d1','d2'],panelIdsByDoor:[['a','b'],['c','d']],infillIdsByDoor:[[7,8],[8,7]]},
-        catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'Current system',variants:[{id:2,name:'Current variant',frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Glass'},{id:8,code:'B',description:'Mirror'}]},
+        catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'Current system',variants:[{id:2,name:'Current variant',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Glass'},{id:8,code:'B',description:'Mirror'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
 }
@@ -26,7 +26,7 @@ test('review and JSON describe the exact independently edited panels using curre
     assert.equal(exported.units,'mm');
     assert.deepEqual(exported.configuration,config);
     assert.deepEqual(exported.summary,review);
-    assert.ok(exported.assumptions.includes('sizing_unconfirmed'));
+    assert.deepEqual(exported.assumptions,[]);
     catalog.models[0].name='Renamed system';
     assert.equal(summarizeConfiguration(config,catalog,metadata).modelName,'Renamed system');
 });

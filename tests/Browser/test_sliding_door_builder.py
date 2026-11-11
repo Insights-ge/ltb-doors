@@ -83,17 +83,27 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         choices = self.page.evaluate(f'''() => {{
             const b={ROOT};
             for(const m of b.catalog.models) for(const v of m.variants) {{
-                const excluded=new Set(v.components.filter(c=>c.type!=='soft_close_mechanism').flatMap(c=>c.incompatibleInfillIds));
+                const excluded=new Set(v.components.flatMap(c=>c.incompatibleInfillIds));
                 const infills=b.catalog.infills.filter(i=>!excluded.has(i.id));
-                if(v.hasPartition && infills.length>1) return {{model:m.id,variant:v.id,design:v.frameDesignCode,panels:m.partitionCount+1,width:Math.floor((m.minWidth+m.maxWidth)/2),height:Math.floor((m.minHeight+m.maxHeight)/2),infills:infills.slice(0,2).map(i=>i.id)}};
+                if(v.hasPartition && Math.max(m.minHeight,v.heightRangeMin)<=Math.min(m.maxHeight,v.heightRangeMax) && infills.length>1) return {{model:m.id,variant:v.id,design:v.frameDesignCode,panels:m.partitionCount+1,width:m.minWidth+m.maxWidth,height:Math.floor((Math.max(m.minHeight,v.heightRangeMin)+Math.min(m.maxHeight,v.heightRangeMax))/2),infills:infills.slice(0,2).map(i=>i.id)}};
             }}
         }}''')
         self.assertIsNotNone(choices, 'Seed an active variant with a partition and two compatible infills.')
         return choices
 
+    def select(self, field, value):
+        self.page.locator('#'+field).click()
+        self.page.locator(f'[role=option][data-value="{value}"]:visible').click()
+        key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
+        self.page.wait_for_function(f'String({ROOT}.formState.{key}) === {json.dumps(str(value))}')
+
+    def selected_value(self, field):
+        key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
+        return self.page.evaluate(f'String({ROOT}.formState.{key} ?? "")')
+
     def choose_model_and_size(self):
         choices = self.catalog_choices()
-        self.page.locator('#builder-model').select_option(str(choices['model']))
+        self.select('builder-model', str(choices['model']))
         self.page.wait_for_function("!document.querySelector('#builder-openingWidth').disabled")
         self.page.locator('#builder-openingWidth').fill(str(choices['width']))
         self.page.locator('#builder-openingHeight').fill(str(choices['height']))
@@ -103,8 +113,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page = self.page
         choices = self.choose_model_and_size()
         self.step(2)
-        page.locator('#builder-design').select_option(choices['design'])
-        page.locator('#builder-variant').select_option(str(choices['variant']))
+        self.select('builder-design', choices['design'])
+        self.select('builder-variant', str(choices['variant']))
         self.step(3)
         page.wait_for_function(f'document.querySelectorAll(".builder-preview-panel").length==={2*choices["panels"]}')
         for door in range(2):
@@ -136,9 +146,9 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 page.reload()
                 self.ready()
                 page.wait_for_function(f"{ROOT}.draftStatus==='restored'")
-                self.assertEqual(page.locator('#builder-model').input_value(), str(choices['model']))
-                self.assertEqual(page.locator('#builder-design').input_value(), choices['design'])
-                self.assertEqual(page.locator('#builder-variant').input_value(), str(choices['variant']))
+                self.assertEqual(self.selected_value('builder-model'), str(choices['model']))
+                self.assertEqual(self.selected_value('builder-design'), choices['design'])
+                self.assertEqual(self.selected_value('builder-variant'), str(choices['variant']))
                 self.step(4)
                 self.assertIn(str(choices['width']), page.locator('.builder-review').inner_text())
                 page.evaluate('window.__builderPrinted=false; window.print=()=>window.__builderPrinted=true')
@@ -305,12 +315,12 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertFalse(self.field_error('builder-variant').is_visible())
         self.step(3)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
-        page.locator('#builder-design').select_option(choices['design'])
+        self.select('builder-design', choices['design'])
         self.step(3)
         self.field_error('builder-variant').wait_for(state='visible')
         self.step(3)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
-        page.locator('#builder-variant').select_option(str(choices['variant']))
+        self.select('builder-variant', str(choices['variant']))
         self.step(3)
         self.assertFalse(page.locator('#builder-finishes-error').is_visible())
         self.step(4)
@@ -354,13 +364,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         choices = self.configure()
         page = self.page
         before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor)')
-        if page.evaluate(f'{ROOT}.selectedVariant.hasSoftCloseMechanism'):
-            self.step(2)
-            checkbox = page.locator('#builder-soft-close')
-            checkbox.check()
-            page.wait_for_function(f'{ROOT}.previewConfiguration.softClose')
-            checkbox.uncheck()
-            page.wait_for_function(f'!{ROOT}.previewConfiguration.softClose')
+        self.assertEqual(page.locator('#builder-soft-close').count(), 0)
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.softClose'), page.evaluate(f'{ROOT}.selectedVariant.hasSoftCloseMechanism'))
         self.step(1)
         page.locator('#builder-openingWidth').fill(str(choices['width']+1))
         page.locator('#builder-openingHeight').focus()
@@ -372,7 +377,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function(f'!{ROOT}.formBusy && {ROOT}.previewConfiguration.openingWidth===null')
         self.assertEqual(page.locator('#builder-openingWidth').input_value(), '')
         self.assertEqual(page.locator('#builder-openingHeight').input_value(), '')
-        self.assertEqual(page.locator('#builder-model').input_value(), '')
+        self.assertEqual(self.selected_value('builder-model'), '')
         self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.variantId'))
         self.assertEqual(page.locator('.builder-preview-panel').count(), 0)
         self.assertTrue(page.locator('.builder-preview-placeholder').is_visible())
@@ -405,7 +410,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         choices = self.configure()
         page = self.page
         self.step(1)
-        bounds = page.evaluate(f'({{min:{ROOT}.selectedModel.minWidth,max:{ROOT}.selectedModel.maxWidth}})')
+        bounds = page.evaluate(f'({{min:{ROOT}.selectedModel.minWidth*2,max:{ROOT}.selectedModel.maxWidth*2}})')
         for value, rule, limit in [(bounds['min']-1, 'min', bounds['min']), (bounds['max']+1, 'max', bounds['max'])]:
             page.locator('#builder-openingWidth').fill(str(value))
             self.step(2)
@@ -419,12 +424,12 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         smaller = page.evaluate(f'{ROOT}.catalog.models.find(m=>m.partitionCount+1 < {choices["panels"]} && m.variants.some(v=>v.hasPartition))?.id')
         if smaller is not None:
             before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)')
-            page.locator('#builder-model').select_option(str(smaller))
+            self.select('builder-model', str(smaller))
             page.locator('[data-cancel-replacement]').click()
             page.wait_for_function(f'!{ROOT}.formBusy')
-            self.assertEqual(page.locator('#builder-model').input_value(), str(choices['model']))
+            self.assertEqual(self.selected_value('builder-model'), str(choices['model']))
             self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)'), before)
-            page.locator('#builder-model').select_option(str(smaller))
+            self.select('builder-model', str(smaller))
             page.locator('[data-confirm-replacement]').click()
             page.wait_for_function(f'{ROOT}.previewConfiguration.modelId==={smaller}')
             count = page.evaluate(f'{ROOT}.selectedModel.partitionCount+1')

@@ -34,7 +34,7 @@ class SlidingDoorBuilder extends Page
     /** @var array<string, mixed> */
     public array $builderFields = [
         'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
-        'frameDesignCode' => null, 'variantId' => null, 'softClose' => false,
+        'frameDesignCode' => null, 'variantId' => null,
     ];
 
     protected string $view = 'filament.admin.pages.sliding-door-builder';
@@ -107,9 +107,8 @@ class SlidingDoorBuilder extends Page
             'modelId' => ['nullable', 'integer'],
             'frameDesignCode' => ['nullable', 'string', 'max:255'],
             'variantId' => ['nullable', 'integer'],
-            'softClose' => ['required', 'boolean'],
         ])->validate();
-        foreach (['openingWidth', 'openingHeight', 'modelId', 'frameDesignCode', 'variantId', 'softClose'] as $field) {
+        foreach (['openingWidth', 'openingHeight', 'modelId', 'frameDesignCode', 'variantId'] as $field) {
             if (array_key_exists($field, $validated)) {
                 $this->builderFields[$field] = $validated[$field];
             }

@@ -6,7 +6,6 @@ use App\Data\BuilderDoorModelData;
 use App\Data\BuilderDoorVariantData;
 use App\Filament\Pages\SlidingDoorBuilder;
 use Closure;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
@@ -74,7 +73,18 @@ class SlidingDoorBuilderForms
                     : null)
                 ->mutateStateForValidationUsing(fn ($state) => is_string($state) ? str_replace(',', '.', trim($state)) : $state)
                 ->live(onBlur: true)
-                ->afterStateUpdated(fn () => $page->resetValidation('builderFields.' . $name))
+                ->afterStateUpdated(function (Get $get, Set $set) use ($page, $name): void {
+                    if ($name === 'openingHeight' && self::variant($page, $get) === null) {
+                        $set('frameDesignCode', null);
+                        $set('variantId', null);
+                    }
+                    $page->resetValidation();
+                })
+                ->rule(fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($page, $get, $name): void {
+                    if ($name === 'openingHeight' && self::model($page, $get) !== null && self::matchingVariants($page, $get) === []) {
+                        $fail(__('sliding_door_builder.validation.no_variant_for_height'));
+                    }
+                })
                 ->extraInputAttributes(fn (): array => [
                     'x-on:blur' => "setMeasurement('{$name}', \$event.target.value)",
                     'aria-invalid' => self::hasError($page, $name) ? 'true' : 'false',
@@ -93,7 +103,7 @@ class SlidingDoorBuilderForms
                 ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'frameDesignCode') ? 'true' : 'false'])
                 ->label(__('sliding_door_builder.system.design'))
                 ->placeholder(__('sliding_door_builder.system.choose'))
-                ->options(fn (Get $get): array => collect(self::supportedVariants(self::model($page, $get)))->mapWithKeys(fn (BuilderDoorVariantData $variant): array => [$variant->frameDesignCode => $variant->frameDesignCode])->all())
+                ->options(fn (Get $get): array => collect(self::matchingVariants($page, $get))->mapWithKeys(fn (BuilderDoorVariantData $variant): array => [$variant->frameDesignCode => $variant->frameDesignCode])->all())
                 ->disabled(fn (Get $get): bool => self::model($page, $get) === null)
                 ->required(fn (Get $get): bool => self::model($page, $get) !== null)
                 ->live()
@@ -108,24 +118,10 @@ class SlidingDoorBuilderForms
                 ->label(__('sliding_door_builder.system.variant'))
                 ->placeholder(__('sliding_door_builder.system.choose'))
                 ->options(fn (Get $get): array => collect(self::variants($page, $get))->mapWithKeys(fn (BuilderDoorVariantData $variant): array => [$variant->id => $variant->color->getLabel() . ' — ' . $variant->name])->all())
-                ->disabled(fn (Get $get): bool => self::variants($page, $get) === [])
-                ->required(fn (Get $get): bool => self::variants($page, $get) !== [])
+                ->disabled(fn (Get $get): bool => ! filled($get('frameDesignCode')))
+                ->required(fn (Get $get): bool => filled($get('frameDesignCode')))
                 ->live()
                 ->afterStateUpdated(fn () => $page->resetValidation()),
-            Checkbox::make('softClose')
-                ->id('builder-soft-close')
-                ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'softClose') ? 'true' : 'false'])
-                ->label(__('sliding_door_builder.system.soft_close'))
-                ->helperText(__('sliding_door_builder.system.soft_close_note'))
-                ->visible(fn (Get $get): bool => (self::variant($page, $get)->hasSoftCloseMechanism ?? false) || (bool) $get('softClose'))
-                ->rules(['boolean'])
-                ->live()
-                ->afterStateUpdated(fn () => $page->resetValidation('builderFields.softClose'))
-                ->rule(fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($page, $get): void {
-                    if ($value && ! self::variant($page, $get)?->hasSoftCloseMechanism) {
-                        $fail(__('sliding_door_builder.validation.soft_close_missing'));
-                    }
-                }),
         ]);
     }
 
@@ -167,7 +163,7 @@ class SlidingDoorBuilderForms
     /** @return list<BuilderDoorVariantData> */
     private static function variants(SlidingDoorBuilder $page, Get $get): array
     {
-        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => $variant->frameDesignCode === $get('frameDesignCode')));
+        return array_values(array_filter(self::matchingVariants($page, $get), fn (BuilderDoorVariantData $variant): bool => $variant->frameDesignCode === $get('frameDesignCode')));
     }
 
     /** @return list<BuilderDoorVariantData> */
@@ -176,13 +172,25 @@ class SlidingDoorBuilderForms
         return array_values(array_filter($model->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $variant->hasPartition));
     }
 
+    /** @return list<BuilderDoorVariantData> */
+    private static function matchingVariants(SlidingDoorBuilder $page, Get $get): array
+    {
+        $height = $get('openingHeight');
+        $height = is_string($height) ? str_replace(',', '.', trim($height)) : $height;
+        if (! is_numeric($height) || ! is_finite((float) $height)) {
+            return [];
+        }
+
+        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => $height >= $variant->heightRangeMin && $height <= $variant->heightRangeMax));
+    }
+
     private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): ?int
     {
         $model = self::model($page, $get);
 
         return match ($field . '.' . $bound) {
-            'width.min' => $model?->minWidth,
-            'width.max' => $model?->maxWidth,
+            'width.min' => $model === null ? null : $model->minWidth * 2,
+            'width.max' => $model === null ? null : $model->maxWidth * 2,
             'height.min' => $model?->minHeight,
             'height.max' => $model?->maxHeight,
             default => null,

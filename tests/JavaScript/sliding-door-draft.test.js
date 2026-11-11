@@ -19,7 +19,7 @@ test('draft saving whitelists configuration facts and reports unavailable storag
 function fixture() {
     return {
         config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,panelWeights:[1,1],doorIds:['d1','d2'],panelIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
-        catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'System',variants:[{id:2,name:'Variant',color:'black',frameDesignCode:'A',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
+        catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'System',variants:[{id:2,name:'Variant',color:'black',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
 }

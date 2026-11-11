@@ -47,7 +47,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             const variantId = id(state.variantId);
             const model = this.catalog.models.find((candidate) => candidate.id === modelId);
             const variant = model?.variants.find((candidate) => candidate.id === variantId);
-            const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(state.softClose) };
+            const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(variant?.hasSoftCloseMechanism) };
             const next = applyModelLayout({ ...this.previewConfiguration, ...fields }, model);
             const modelChange = fields.modelId !== this.previewConfiguration.modelId
                 || next.panelWeights !== this.previewConfiguration.panelWeights;
@@ -71,7 +71,6 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     modelId: config.modelId ?? null,
                     frameDesignCode: config.frameDesignCode ?? null,
                     variantId: config.variantId ?? null,
-                    softClose: Boolean(config.softClose),
                 };
                 this.formState = fields;
                 await this.$wire.restoreBuilderFields(fields);
@@ -259,11 +258,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         get frameDesigns() {
-            return [...new Set(this.selectedModel?.variants.map((variant) => variant.frameDesignCode) ?? [])];
+            return [...new Set(this.selectedModel?.variants.filter(variant => variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax).map((variant) => variant.frameDesignCode) ?? [])];
         },
 
         get availableVariants() {
-            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode) ?? [];
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax) ?? [];
         },
 
         selectModel(value) {
@@ -280,12 +279,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         selectVariant(value) {
             const variant = this.availableVariants.find((candidate) => candidate.id === Number(value));
             if (!variant) return;
-            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color };
-        },
-
-        setSoftClose(enabled) {
-            if (enabled && !this.selectedVariant?.hasSoftCloseMechanism) return;
-            this.previewConfiguration = { ...this.previewConfiguration, softClose: Boolean(enabled) };
+            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color, softClose: Boolean(variant.hasSoftCloseMechanism) };
         },
 
         variantLabel(variant) {

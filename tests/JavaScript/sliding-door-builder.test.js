@@ -11,7 +11,7 @@ function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
         validationLabels,
         fieldValidationMessages,
         payload: {
-            catalog: { models: [{id:1, partitionCount:2, minWidth:500, maxWidth:1100, minHeight:1600, maxHeight:2600, variants:[{id:11,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}], infills: [] },
+            catalog: { models: [{id:1, partitionCount:2, minWidth:500, maxWidth:1100, minHeight:1600, maxHeight:2600, variants:[{id:11,heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}], infills: [] },
             metadata: {
                 frameColors: [{ color: 'black', label: 'Black', visual: { fill: '#202020' } }],
                 infillVisuals: [{ infillId: 7, visual: { fill: '#AABBCC' } }],
@@ -19,8 +19,8 @@ function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
             },
         },
     });
-    builder.previewConfiguration = { modelId:1, openingWidth: 800, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
-    builder.sizeInputs = { openingWidth: '800', openingHeight: '2400' };
+    builder.previewConfiguration = { modelId:1, openingWidth: 1600, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
+    builder.sizeInputs = { openingWidth: '1600', openingHeight: '2400' };
     return builder;
 }
 
@@ -254,7 +254,7 @@ test('size and colour changes preserve independent panel choices and surviving s
 
 test('system controls resolve only real design and colour variants and preserve panel edits', () => {
     const builder = editingBuilder();
-    builder.catalog.models = [{ id: 1, variants: [{id: 11, frameDesignCode: 'A', color:'black'}, {id:12, frameDesignCode:'B', color:'silver'}] }];
+    builder.catalog.models = [{ id: 1, variants: [{id: 11, hasPartition:true,heightRangeMin:1600,heightRangeMax:2600,frameDesignCode: 'A', color:'black'}, {id:12, hasPartition:true,heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'B', color:'silver'}] }];
     builder.previewConfiguration.infillIdsByDoor = [[7,null,null],[8,null,null]];
     builder.selectModel('1');
     assert.deepEqual(builder.frameDesigns, ['A','B']);
@@ -289,7 +289,7 @@ test('navigation gates incomplete size and product choices without losing panel 
 test('incomplete measurement entry retains committed geometry but blocks forward navigation', () => {
     const builder = editingBuilder();
     builder.setMeasurement('openingWidth', '12e');
-    assert.equal(builder.previewConfiguration.openingWidth, 800);
+    assert.equal(builder.previewConfiguration.openingWidth, 1600);
     assert.equal(builder.sizeInputs.openingWidth, '12e');
     assert.equal(builder.sizeErrors.openingWidth, true);
     builder.goToStep(2);
@@ -337,7 +337,7 @@ function sequentialBuilder() {
         'builder-finishes': { required: 'Choose a finish.' },
     });
     builder.catalog.models = [{ id: 1, name: 'System', partitionCount:2,minWidth:500,maxWidth:1100,minHeight:1600,maxHeight:2600, variants: [
-        { id: 11, frameDesignCode: 'A', color: 'black', hasPartition: true, hasSoftCloseMechanism: false, components: [] },
+        { id: 11, heightRangeMin:1600,heightRangeMax:2600,frameDesignCode: 'A', color: 'black', hasPartition: true, hasSoftCloseMechanism: false, components: [] },
     ] }];
     return builder;
 }
@@ -389,13 +389,13 @@ test('Next validates unblurred input and cannot reuse a previously committed siz
     builder.sizeInputs.openingWidth = '';
     builder.goToStep(2);
     assert.equal(builder.activeStep, 1);
-    assert.equal(builder.previewConfiguration.openingWidth, 800);
+    assert.equal(builder.previewConfiguration.openingWidth, 1600);
     assert.equal(builder.fieldError('builder-openingWidth'), 'Width is required.');
     assert.equal(builder.fieldError('builder-model'), '');
-    builder.sizeInputs.openingWidth = '900';
+    builder.sizeInputs.openingWidth = '1800';
     builder.goToStep(2);
     assert.equal(builder.activeStep, 2);
-    assert.equal(builder.previewConfiguration.openingWidth, 900);
+    assert.equal(builder.previewConfiguration.openingWidth, 1800);
     assert.equal(builder.fieldError('builder-openingWidth'), '');
 });
 
@@ -404,11 +404,11 @@ test('invalid draft text replaces the committed-size error with the matching fie
     const builder = sequentialBuilder();
     for (const [value, message] of [['', 'Width is required.'], ['abc', 'Width must be a number.'], ['0', 'Width must be greater than zero.'], ['-12', 'Width must be greater than zero.']]) {
         builder.setMeasurement('openingWidth', value);
-        assert.equal(builder.previewConfiguration.openingWidth, 800);
+        assert.equal(builder.previewConfiguration.openingWidth, 1600);
         assert.equal(builder.fieldError('builder-openingWidth'), message);
         assert.equal(builder.validation.errors.filter(issue => issue.field === 'builder-openingWidth').length, 1);
     }
-    builder.setMeasurement('openingWidth', '900');
+    builder.setMeasurement('openingWidth', '1800');
     assert.equal(builder.fieldError('builder-openingWidth'), '');
 });
 
@@ -417,7 +417,7 @@ test('native model changes derive both doors and cancelling restores the previou
     builder.catalog.models.push({...builder.catalog.models[0],id:2,partitionCount:1});
     builder.previewConfiguration.infillIdsByDoor = [[7,8,7],[8,7,8]];
     const before = structuredClone(builder.previewConfiguration);
-    builder.formState = {openingWidth:'800',openingHeight:'2400',modelId:2,variantId:null,frameDesignCode:null,softClose:false};
+    builder.formState = {openingWidth:'1600',openingHeight:'2400',modelId:2,variantId:null,frameDesignCode:null,softClose:false};
     builder.$wire = {restoreBuilderFields:async () => {}};
     builder.applyFormFields();
     assert.equal(builder.pendingChange.kind,'model');
