@@ -7,7 +7,7 @@ function geometry(openingWidth = 3000, openingHeight = 2000) {
         openingWidth,
         openingHeight,
         doorCount: 3,
-        panelWeightsByDoor: [[1], [1, 1], [1, 2, 1]],
+        infillWeightsByDoor: [[1], [1, 1], [1, 2, 1]],
     });
 }
 
@@ -59,18 +59,18 @@ for (const [openingWidth, openingHeight] of [[2400, 2400], [1000000, 1], [1, 100
                 const original = source.doors[doorIndex];
                 approximately(door.width / original.width, fitted.scale);
                 approximately(door.height / original.height, fitted.scale);
-                door.panels.forEach((panel, panelIndex) => {
-                    within(panel, viewport);
-                    const originalPanel = original.panels[panelIndex];
-                    approximately(panel.width / originalPanel.width, fitted.scale);
-                    approximately(panel.height / originalPanel.height, fitted.scale);
+                door.infills.forEach((infill, infillIndex) => {
+                    within(infill, viewport);
+                    const originalInfill = original.infills[infillIndex];
+                    approximately(infill.width / originalInfill.width, fitted.scale);
+                    approximately(infill.height / originalInfill.height, fitted.scale);
                 });
             });
         });
     }
 }
 
-test('fitted doors and panels retain shared boundaries', () => {
+test('fitted doors and infills retain shared boundaries', () => {
     const fitted = fitDoorGeometry(geometry(), { width: 375, height: 240, padding: 17 });
     let right = fitted.opening.x;
 
@@ -78,9 +78,9 @@ test('fitted doors and panels retain shared boundaries', () => {
         approximately(door.x, right);
         right = door.x + door.width;
         let bottom = fitted.opening.y;
-        for (const panel of door.panels) {
-            approximately(panel.y, bottom);
-            bottom = panel.y + panel.height;
+        for (const infill of door.infills) {
+            approximately(infill.y, bottom);
+            bottom = infill.y + infill.height;
         }
         approximately(bottom, fitted.opening.y + fitted.opening.height);
     }
@@ -95,7 +95,7 @@ test('fitting is repeatable across viewport changes and does not mutate geometry
     fitDoorGeometry(source, { width: 1200, height: 800, padding: 32 });
 
     assert.deepEqual(fitDoorGeometry(source, mobile), first);
-    first.doors[0].panels[0].width = 0;
+    first.doors[0].infills[0].width = 0;
     assert.deepEqual(source, before);
 });
 
@@ -110,7 +110,7 @@ test('extreme finite ratios retain positive dimensions without minimum-size dist
         openingWidth: Number.MIN_VALUE,
         openingHeight: 1,
         doorCount: 1,
-        panelWeightsByDoor: [[1]],
+        infillWeightsByDoor: [[1]],
     });
     const tiny = fitDoorGeometry(narrow, viewport);
     within(tiny.opening, viewport);

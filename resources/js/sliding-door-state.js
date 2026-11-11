@@ -7,7 +7,7 @@ export function createInitialConfiguration() {
         variantId: null,
         frameDesignCode: null,
         frameColor: null,
-        panelWeights: [],
+        infillWeights: [],
         softClose: false,
     };
 }
@@ -33,21 +33,21 @@ export function parseMeasurement(value) {
 }
 
 
-export function modelPanelWeights(model) {
+export function modelInfillWeights(model) {
     return Number.isInteger(model?.partitionCount) && model.partitionCount >= 1 && model.partitionCount <= 4
         ? Array(model.partitionCount + 1).fill(1) : [];
 }
 
-/** Preserve corresponding top-to-bottom finishes; new model panels start empty. */
+/** Preserve corresponding top-to-bottom finishes; new model infills start empty. */
 export function applyModelLayout(configuration, model) {
     if (!model) return configuration;
-    const panelWeights = modelPanelWeights(model);
-    if (configuration.panelWeights?.length === panelWeights.length && configuration.panelWeights.every(weight => weight === 1)) return configuration;
+    const infillWeights = modelInfillWeights(model);
+    if (configuration.infillWeights?.length === infillWeights.length && configuration.infillWeights.every(weight => weight === 1)) return configuration;
     return {
         ...configuration,
-        panelWeights,
-        panelIdsByDoor: configuration.panelIdsByDoor?.map(ids => ids.slice(0, panelWeights.length)),
-        infillIdsByDoor: Array.from({length:2}, (_,doorIndex) => panelWeights.map((_,panelIndex) =>
-            panelIndex < (configuration.panelWeights?.length ?? 0) ? configuration.infillIdsByDoor?.[doorIndex]?.[panelIndex] ?? null : null)),
+        infillWeights,
+        infillInstanceIdsByDoor: configuration.infillInstanceIdsByDoor?.map(ids => ids.slice(0, infillWeights.length)),
+        infillIdsByDoor: Array.from({length:2}, (_,doorIndex) => infillWeights.map((_,infillIndex) =>
+            infillIndex < (configuration.infillWeights?.length ?? 0) ? configuration.infillIdsByDoor?.[doorIndex]?.[infillIndex] ?? null : null)),
     };
 }

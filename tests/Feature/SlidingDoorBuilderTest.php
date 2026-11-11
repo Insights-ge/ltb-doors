@@ -55,7 +55,7 @@ test('admins and super admins can open the builder using their session locale', 
         ->assertSee(__('sliding_door_builder.steps.opening.label', [], $locale))
         ->assertSee(__('sliding_door_builder.preview.title', [], $locale))
         ->assertSee(__('sliding_door_builder.preview.drawing_label', [], $locale))
-        ->assertSee(__('sliding_door_builder.preview.panels_label', [], $locale))
+        ->assertSee(__('sliding_door_builder.preview.infills_label', [], $locale))
         ->assertDontSee('builder-summary', false)
         ->assertSee(__('sliding_door_builder.finishes.replace_heading', [], $locale))
         ->assertSee(__('sliding_door_builder.finishes.replace_description', [], $locale))
@@ -203,8 +203,8 @@ test('builder field messages match the validation translations used by Filament'
             expect($messages['builder-model']['required'])->toBe(__('validation.required', [
                 'attribute' => Str::lcfirst(__('sliding_door_builder.system.model')),
             ]));
-            expect($messages['builder-panel-0']['exists'])->toBe(__('validation.exists', [
-                'attribute' => Str::lcfirst(__('sliding_door_builder.preview.panel_short_label', ['number' => 1])),
+            expect($messages['builder-infill-0']['exists'])->toBe(__('validation.exists', [
+                'attribute' => Str::lcfirst(__('sliding_door_builder.preview.infill_short_label', ['number' => 1])),
             ]));
 
             return true;
@@ -357,7 +357,7 @@ test('the infill control is a searchable Filament select with variant incompatib
         });
 });
 
-test('all model panels have visible numbered searchable selects with escaped material swatches', function () {
+test('all model infills have visible numbered searchable selects with escaped material swatches', function () {
     $variant = DoorVariant::factory()->create();
     $variant->doorModel->update(['partition_count' => 4]);
     $infill = Infill::factory()->create(['description' => '<img src=x onerror=alert(1)>', 'visual_color' => '#AABBCC']);
@@ -372,7 +372,7 @@ test('all model panels have visible numbered searchable selects with escaped mat
             $label = $field->getOptions()[$infill->id];
 
             return $field->isSearchable()
-                && $field->getLabel() === __('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1])
+                && $field->getLabel() === __('sliding_door_builder.preview.infill_short_label', ['number' => $index + 1])
                 && str_contains($label, 'background:#AABBCC')
                 && str_contains($label, '&lt;img') && ! str_contains($label, '<img');
         });

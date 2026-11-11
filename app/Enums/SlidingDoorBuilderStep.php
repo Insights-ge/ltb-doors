@@ -8,7 +8,7 @@ enum SlidingDoorBuilderStep: int implements HasLabel
 {
     case Size = 1;
     case System = 2;
-    case Panels = 3;
+    case Infills = 3;
     case Review = 4;
 
     public function getLabel(): string
@@ -26,7 +26,7 @@ enum SlidingDoorBuilderStep: int implements HasLabel
         return 'sliding_door_builder.steps.' . match ($this) {
             self::Size => 'opening',
             self::System => 'system',
-            self::Panels => 'panels',
+            self::Infills => 'infills',
             self::Review => 'review',
         };
     }

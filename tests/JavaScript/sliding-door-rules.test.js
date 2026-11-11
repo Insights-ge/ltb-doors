@@ -4,7 +4,7 @@ import { validateBuilder } from '../../resources/js/sliding-door-rules.js';
 
 function fixture() {
     return {
-        config:{openingWidth:1600,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',panelWeights:[1,1],infillIdsByDoor:[[7,7],[7,7]],softClose:false},
+        config:{openingWidth:1600,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',infillWeights:[1,1],infillIdsByDoor:[[7,7],[7,7]],softClose:false},
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:1100,minHeight:1600,maxHeight:2600,variants:[{id:2,heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,hasSoftCloseMechanism:false,components:[]}]}],infills:[{id:7}]},
         metadata:{},
     };
@@ -37,13 +37,13 @@ test('model size boundaries are inclusive and invalid sizes link to the first st
 });
 
 for (const partitions of [1,2,3,4]) {
-    test(`model with ${partitions} partitions accepts only its fixed panel divisions`, () => {
+    test(`model with ${partitions} partitions accepts only its fixed infill divisions`, () => {
         const {config,catalog,metadata}=fixture();
         catalog.models[0].partitionCount=partitions;
-        config.panelWeights=Array(partitions+1).fill(1);
+        config.infillWeights=Array(partitions+1).fill(1);
         config.infillIdsByDoor=[Array(partitions+1).fill(7),Array(partitions+1).fill(7)];
         assert.deepEqual(validateBuilder(config,catalog,metadata).errors,[]);
-        config.panelWeights=[1];
+        config.infillWeights=[1];
         assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue=>issue.code==='model_structure_changed'));
     });
 }
@@ -77,8 +77,8 @@ test('removed products and finishes stay present but invalidate the design', () 
     config.infillIdsByDoor[0][0]=null;
     config.infillIdsByDoor[0][1]=999;
     let result=validateBuilder(config,catalog,metadata);
-    assert.ok(result.errors.some(issue=>issue.field==='builder-panel-0' && issue.doorIndex===0 && issue.code==='required'));
-    assert.ok(result.errors.some(issue=>issue.field==='builder-panel-1' && issue.doorIndex===0 && issue.code==='exists'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-infill-0' && issue.doorIndex===0 && issue.code==='required'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-infill-1' && issue.doorIndex===0 && issue.code==='exists'));
     catalog.models[0].variants=[];
     assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue=>issue.field==='builder-variant' && issue.code==='exists'));
 });

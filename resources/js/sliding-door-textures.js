@@ -15,7 +15,7 @@ function shade(hex, amount) {
 }
 
 /** Native SVG paints: no remote images, arbitrary markup or material-dependent geometry. */
-export function createPanelPaints(svg) {
+export function createInfillPaints(svg) {
     const prefix = `builder-material-${++instance}`;
     const paints = new Map();
     let defs;

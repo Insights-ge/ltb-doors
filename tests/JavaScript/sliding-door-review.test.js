@@ -6,13 +6,13 @@ import { saveDraft, readDraft, configurationSnapshot } from '../../resources/js/
 
 function fixture() {
     return {
-        config:{openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',softClose:false,panelWeights:[1,1],doorIds:['d1','d2'],panelIdsByDoor:[['a','b'],['c','d']],infillIdsByDoor:[[7,8],[7,8]]},
+        config:{openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b'],['c','d']],infillIdsByDoor:[[7,8],[7,8]]},
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'Current system',variants:[{id:2,name:'Current variant',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Glass'},{id:8,code:'B',description:'Mirror'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
 }
 
-test('review and JSON describe the exact shared panels using current catalog labels', () => {
+test('review and JSON describe the exact shared infills using current catalog labels', () => {
     const {config,catalog,metadata}=fixture();
     const review=summarizeConfiguration(config,catalog,metadata);
     assert.equal(review.modelName,'Current system');
@@ -20,8 +20,8 @@ test('review and JSON describe the exact shared panels using current catalog lab
     assert.equal(review.openingWidth,3000);
     assert.equal(review.colorLabel,'Black');
     assert.equal(review.partitionCount,1);
-    assert.equal(review.panelsPerDoor,2);
-    assert.deepEqual(review.doors.map(door => door.panels.map(panel => panel.infill.code)),[['A','B'],['A','B']]);
+    assert.equal(review.infillsPerDoor,2);
+    assert.deepEqual(review.doors.map(door => door.infills.map(infill => infill.infill.code)),[['A','B'],['A','B']]);
     const exported=JSON.parse(exportConfiguration(config,catalog,metadata));
     assert.equal(exported.units,'mm');
     assert.deepEqual(exported.configuration,config);
@@ -45,14 +45,14 @@ test('draft round trips retain shared finishes but changed compatibility blocks 
     assert.deepEqual(restored.configuration.infillIdsByDoor,config.infillIdsByDoor);
 });
 
-test('removed products, unknown layouts and missing panels cannot be exported', () => {
+test('removed products, unknown layouts and missing infills cannot be exported', () => {
     for (const mutate of [
         ({catalog}) => catalog.models=[],
         ({catalog}) => catalog.infills=[],
         ({config}) => config.variantId=999,
         ({config}) => config.infillIdsByDoor[1][0]=8,
         ({config}) => config.infillIdsByDoor[0][0]=null,
-        ({config}) => config.panelWeights=[1,2],
+        ({config}) => config.infillWeights=[1,2],
     ]) {
         const data=fixture(); mutate(data);
         assert.throws(()=>exportConfiguration(data.config,data.catalog,data.metadata),RangeError);

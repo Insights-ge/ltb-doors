@@ -41,7 +41,7 @@ class SlidingDoorBuilderForms
                     if ($model === null) {
                         return null;
                     }
-                    $summary = __('sliding_door_builder.size.partition_summary', ['count' => $model->partitionCount, 'panels' => $model->partitionCount + 1]);
+                    $summary = __('sliding_door_builder.size.partition_summary', ['count' => $model->partitionCount, 'infills' => $model->partitionCount + 1]);
 
                     return is_string($summary) ? $summary : null;
                 })
@@ -135,24 +135,24 @@ class SlidingDoorBuilderForms
                 continue;
             }
             for ($index = 0; $index <= $model->partitionCount; $index++) {
-                $field = 'builder-panel-' . $index;
+                $field = 'builder-infill-' . $index;
                 $fields[] = Select::make((string) $index)
                     ->id($field)
-                    ->label(__('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1]))
+                    ->label(__('sliding_door_builder.preview.infill_short_label', ['number' => $index + 1]))
                     ->placeholder(__('sliding_door_builder.finishes.unselected'))
                     ->searchable()->allowHtml()
                     ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => self::infillOptionLabel($page, $infill)])->all())
                     ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true))
                     ->belowContent(view('components.sliding-door-builder.field-error', ['field' => $field]))
                     ->extraInputAttributes([
-                        'x-on:focusin' => 'selectPanelIndex(' . $index . ')',
+                        'x-on:focusin' => 'selectInfillIndex(' . $index . ')',
                         'x-bind:aria-invalid' => "Boolean(fieldError('{$field}'))",
                         'aria-describedby' => $field . '-error',
                     ]);
             }
         }
 
-        return $schema->statePath('panelInfillIds')->columns(1)->components($fields);
+        return $schema->statePath('infillSelections')->columns(1)->components($fields);
     }
 
     private static function infillOptionLabel(SlidingDoorBuilder $page, BuilderInfillData $infill): string

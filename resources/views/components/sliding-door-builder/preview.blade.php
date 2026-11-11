@@ -9,22 +9,22 @@
         <div
 
             role="group"
-            aria-label="{{ __('sliding_door_builder.preview.panels_label') }}"
+            aria-label="{{ __('sliding_door_builder.preview.infills_label') }}"
 
             class="flex flex-wrap gap-2"
         >
-            <template x-for="panel in (previewDoors[0]?.panels ?? [])" :key="panel.id">
+            <template x-for="infill in (previewDoors[0]?.infills ?? [])" :key="infill.id">
                 <x-filament::button
                     color="gray"
                     size="sm"
                     class="builder-preview-selector"
-                    x-on:click="selectPanelIndex(panel.index)"
-                    x-bind:aria-pressed="previewSelection.panelId === panel.id"
+                    x-on:click="selectInfillIndex(infill.index)"
+                    x-bind:aria-pressed="previewSelection.infillInstanceId === infill.id"
                     x-bind:aria-controls="$id('builder-preview-drawing')"
-                    x-bind:aria-label="previewPanelAccessibleLabel(panel.index)"
-                    x-bind:data-preview-panel-control="panel.id"
+                    x-bind:aria-label="previewInfillAccessibleLabel(infill.index)"
+                    x-bind:data-preview-infill-control="infill.id"
                 >
-                    <span x-text="previewPanelLabel(panel.index)"></span>
+                    <span x-text="previewInfillLabel(infill.index)"></span>
                 </x-filament::button>
             </template>
         </div>

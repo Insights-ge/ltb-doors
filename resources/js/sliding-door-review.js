@@ -8,16 +8,16 @@ export function summarizeConfiguration(config, catalog, metadata) {
         modelName: model?.name ?? '', variantName: variant?.name ?? '',
         frameDesignCode: variant?.frameDesignCode ?? '',
         colorLabel: metadata.frameColors?.find((color) => color.color === variant?.color)?.label ?? '',
-        partitionCount: model?.partitionCount ?? null, panelsPerDoor: config.panelWeights.length, softClose: Boolean(config.softClose),
+        partitionCount: model?.partitionCount ?? null, infillsPerDoor: config.infillWeights.length, softClose: Boolean(config.softClose),
         components: (variant?.components ?? []).map(component => ({
             id:component.id, type:component.type, code:component.code, description:component.description,
             colorLabel:metadata.frameColors?.find(color => color.color===component.color)?.label ?? '',
         })),
         doors: Array.from({length:2}, (_,index) => ({
             index, id: config.doorIds?.[index] ?? index,
-            panels: config.panelWeights.map((_,panelIndex) => ({
-                index: panelIndex, id: config.panelIdsByDoor?.[index]?.[panelIndex] ?? panelIndex,
-                infill: catalog.infills?.find((infill) => infill.id === config.infillIdsByDoor?.[index]?.[panelIndex]) ?? null,
+            infills: config.infillWeights.map((_,infillIndex) => ({
+                index: infillIndex, id: config.infillInstanceIdsByDoor?.[index]?.[infillIndex] ?? infillIndex,
+                infill: catalog.infills?.find((infill) => infill.id === config.infillIdsByDoor?.[index]?.[infillIndex]) ?? null,
             })),
         })),
     };

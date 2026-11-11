@@ -3,11 +3,11 @@ import test from 'node:test';
 import { configurationSnapshot, saveDraft, readDraft } from '../../resources/js/sliding-door-draft.js';
 
 test('draft saving whitelists configuration facts and reports unavailable storage', () => {
-    const config={openingWidth:3000,panelWeights:[1], secret:'not saved'};
+    const config={openingWidth:3000,infillWeights:[1], secret:'not saved'};
     const snapshot=configurationSnapshot(config);
     assert.equal(snapshot.secret,undefined);
-    snapshot.panelWeights.push(1);
-    assert.deepEqual(config.panelWeights,[1]);
+    snapshot.infillWeights.push(1);
+    assert.deepEqual(config.infillWeights,[1]);
     let saved;
     assert.equal(saveDraft({setItem:(key,value)=>saved=[key,JSON.parse(value)]},'user-1',config),'saved');
     assert.equal(saved[0],'user-1');
@@ -18,7 +18,7 @@ test('draft saving whitelists configuration facts and reports unavailable storag
 
 function fixture() {
     return {
-        config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,panelWeights:[1,1],doorIds:['d1','d2'],panelIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
+        config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'System',variants:[{id:2,name:'Variant',color:'black',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
@@ -65,7 +65,19 @@ test('older independently filled doors require explicit recovery without losing 
     config.infillIdsByDoor[1][0]=null;
     const raw=JSON.stringify(config);
     const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
-    assert.equal(result.status,'outdated_panels');
+    assert.equal(result.status,'outdated_infills');
     assert.equal(result.configuration,null);
     assert.deepEqual(JSON.parse(raw).infillIdsByDoor,config.infillIdsByDoor);
+});
+
+test('previous saved field names restore into the infill contract without changing instance identities',()=>{
+    const {config,catalog,metadata}=fixture();
+    const legacy={...config,panelWeights:config.infillWeights,panelIdsByDoor:config.infillInstanceIdsByDoor};
+    delete legacy.infillWeights;
+    delete legacy.infillInstanceIdsByDoor;
+    const raw=JSON.stringify(legacy);
+    const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
+    assert.equal(result.status,'restored');
+    assert.deepEqual(configurationSnapshot(result.configuration),config);
+    assert.ok(!Object.hasOwn(configurationSnapshot(result.configuration),'panelWeights'));
 });

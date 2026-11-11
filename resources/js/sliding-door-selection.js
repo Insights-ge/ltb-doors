@@ -2,29 +2,29 @@ import { calculateDoorGeometry } from './sliding-door-geometry.js';
 
 const DOOR_COUNT = 2;
 
-/** Two doors share one panel layout; instance identities remain independent. */
+/** Two doors share one infill layout; instance identities remain independent. */
 export function reconcilePreviewConfiguration(configuration, previous, createId = () => globalThis.crypto.randomUUID()) {
     if (configuration === null) {
         return null;
     }
 
-    if (!Array.isArray(configuration.panelWeights)) {
-        throw new RangeError('The builder requires one shared panel layout.');
+    if (!Array.isArray(configuration.infillWeights)) {
+        throw new RangeError('The builder requires one shared infill layout.');
     }
     const geometryConfiguration = {
         ...configuration,
         doorCount: DOOR_COUNT,
-        panelWeightsByDoor: Array.from({ length: DOOR_COUNT }, () => [...configuration.panelWeights]),
+        infillWeightsByDoor: Array.from({ length: DOOR_COUNT }, () => [...configuration.infillWeights]),
     };
     calculateDoorGeometry(geometryConfiguration);
     if ((configuration.doorIds !== undefined && !Array.isArray(configuration.doorIds))
-        || (configuration.panelIdsByDoor !== undefined && !Array.isArray(configuration.panelIdsByDoor))) {
+        || (configuration.infillInstanceIdsByDoor !== undefined && !Array.isArray(configuration.infillInstanceIdsByDoor))) {
         throw new RangeError('Instance IDs must be supplied as arrays.');
     }
     const doorIds = [];
-    const panelIdsByDoor = [];
+    const infillInstanceIdsByDoor = [];
     const seenDoors = new Set();
-    const seenPanels = new Set();
+    const seenInfills = new Set();
 
     for (let index = 0; index < DOOR_COUNT; index++) {
         const id = configuration.doorIds?.[index] ?? previous?.doorIds?.[index] ?? createId();
@@ -32,66 +32,66 @@ export function reconcilePreviewConfiguration(configuration, previous, createId 
         doorIds.push(id);
 
         const previousIndex = previous?.doorIds?.indexOf(id) ?? -1;
-        if (configuration.panelIdsByDoor?.[index] !== undefined && !Array.isArray(configuration.panelIdsByDoor[index])) {
-            throw new RangeError('Panel instance IDs must be supplied as arrays.');
+        if (configuration.infillInstanceIdsByDoor?.[index] !== undefined && !Array.isArray(configuration.infillInstanceIdsByDoor[index])) {
+            throw new RangeError('Infill instance IDs must be supplied as arrays.');
         }
-        const panelIds = configuration.panelWeights.map((_, panelIndex) => {
-            const panelId = configuration.panelIdsByDoor?.[index]?.[panelIndex]
-                ?? previous?.panelIdsByDoor?.[previousIndex]?.[panelIndex]
+        const infillInstanceIds = configuration.infillWeights.map((_, infillIndex) => {
+            const infillInstanceId = configuration.infillInstanceIdsByDoor?.[index]?.[infillIndex]
+                ?? previous?.infillInstanceIdsByDoor?.[previousIndex]?.[infillIndex]
                 ?? createId();
-            requireIdentity(panelId, seenPanels);
-            return panelId;
+            requireIdentity(infillInstanceId, seenInfills);
+            return infillInstanceId;
         });
-        panelIdsByDoor.push(panelIds);
+        infillInstanceIdsByDoor.push(infillInstanceIds);
     }
 
-    if (sameIdentities(configuration, doorIds, panelIdsByDoor) && sameGeometry(configuration, geometryConfiguration)) {
+    if (sameIdentities(configuration, doorIds, infillInstanceIdsByDoor) && sameGeometry(configuration, geometryConfiguration)) {
         return configuration;
     }
 
-    return { ...geometryConfiguration, doorIds, panelIdsByDoor };
+    return { ...geometryConfiguration, doorIds, infillInstanceIdsByDoor };
 }
 
 function sameGeometry(configuration, derived) {
     return configuration.doorCount === DOOR_COUNT
-        && Array.isArray(configuration.panelWeightsByDoor)
-        && configuration.panelWeightsByDoor.length === DOOR_COUNT
-        && derived.panelWeightsByDoor.every((weights, index) => Array.isArray(configuration.panelWeightsByDoor[index])
-            && weights.length === configuration.panelWeightsByDoor[index].length
-            && weights.every((weight, panelIndex) => weight === configuration.panelWeightsByDoor[index][panelIndex]));
+        && Array.isArray(configuration.infillWeightsByDoor)
+        && configuration.infillWeightsByDoor.length === DOOR_COUNT
+        && derived.infillWeightsByDoor.every((weights, index) => Array.isArray(configuration.infillWeightsByDoor[index])
+            && weights.length === configuration.infillWeightsByDoor[index].length
+            && weights.every((weight, infillIndex) => weight === configuration.infillWeightsByDoor[index][infillIndex]));
 }
 
 export function previewSelectionTargets(configuration) {
     return configuration?.doorIds.map((id, index) => ({
         id,
         index,
-        panels: configuration.panelIdsByDoor[index].map((panelId, panelIndex) => ({ id: panelId, index: panelIndex })),
+        infills: configuration.infillInstanceIdsByDoor[index].map((infillInstanceId, infillIndex) => ({ id: infillInstanceId, index: infillIndex })),
     })) ?? [];
 }
 
 export function reconcilePreviewSelection(selection, doors) {
     const door = doors.find((candidate) => candidate.id === selection.doorId);
     if (!door) {
-        return { doorId: null, panelId: null };
+        return { doorId: null, infillInstanceId: null };
     }
-    if (selection.panelId !== null && !door.panels.some((panel) => panel.id === selection.panelId)) {
-        return { doorId: door.id, panelId: null };
+    if (selection.infillInstanceId !== null && !door.infills.some((infill) => infill.id === selection.infillInstanceId)) {
+        return { doorId: door.id, infillInstanceId: null };
     }
     return selection;
 }
 
 function requireIdentity(id, seen) {
     if (typeof id !== 'string' || id.trim() === '' || seen.has(id)) {
-        throw new RangeError('Door and panel instance IDs must be nonempty and unique.');
+        throw new RangeError('Door and infill instance IDs must be nonempty and unique.');
     }
     seen.add(id);
 }
 
-function sameIdentities(configuration, doorIds, panelIdsByDoor) {
+function sameIdentities(configuration, doorIds, infillInstanceIdsByDoor) {
     return configuration.doorIds?.length === doorIds.length
         && doorIds.every((id, index) => id === configuration.doorIds[index])
-        && configuration.panelIdsByDoor?.length === panelIdsByDoor.length
-        && panelIdsByDoor.every((ids, index) => Array.isArray(configuration.panelIdsByDoor[index])
-            && ids.length === configuration.panelIdsByDoor[index].length
-            && ids.every((id, panelIndex) => id === configuration.panelIdsByDoor[index][panelIndex]));
+        && configuration.infillInstanceIdsByDoor?.length === infillInstanceIdsByDoor.length
+        && infillInstanceIdsByDoor.every((ids, index) => Array.isArray(configuration.infillInstanceIdsByDoor[index])
+            && ids.length === configuration.infillInstanceIdsByDoor[index].length
+            && ids.every((id, infillIndex) => id === configuration.infillInstanceIdsByDoor[index][infillIndex]));
 }

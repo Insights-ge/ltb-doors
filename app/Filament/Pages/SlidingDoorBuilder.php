@@ -41,7 +41,7 @@ class SlidingDoorBuilder extends Page
     ];
 
     /** @var array<int, int|string|null> */
-    public array $panelInfillIds = [];
+    public array $infillSelections = [];
 
     protected string $view = 'filament.admin.pages.sliding-door-builder';
 
@@ -169,7 +169,7 @@ class SlidingDoorBuilder extends Page
             'builder-variant' => __('sliding_door_builder.system.variant'),
         ];
         for ($index = 0; $index < 5; $index++) {
-            $labels['builder-panel-' . $index] = __('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1]);
+            $labels['builder-infill-' . $index] = __('sliding_door_builder.preview.infill_short_label', ['number' => $index + 1]);
         }
         $messages = [];
 

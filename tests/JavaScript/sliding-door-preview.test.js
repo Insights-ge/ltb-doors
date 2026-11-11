@@ -16,19 +16,19 @@ function configuration() {
         openingWidth: 3000,
         openingHeight: 2400,
         doorCount: 3,
-        panelWeightsByDoor: [[1], [1, 1], [1, 1, 1]],
+        infillWeightsByDoor: [[1], [1, 1], [1, 1, 1]],
         frameColor: 'black',
         infillIdsByDoor: [[7], [7, null], [null, 7, 999]],
     };
 }
 
-test('preview scenes preserve geometry and resolve fills per panel', () => {
+test('preview scenes preserve geometry and resolve fills per infill', () => {
     const scene = createPreviewScene(configuration(), metadata(), { width: 800, height: 500 });
 
     assert.equal(scene.doors.length, 3);
-    assert.deepEqual(scene.doors.map((door) => door.panels.length), [1, 2, 3]);
+    assert.deepEqual(scene.doors.map((door) => door.infills.length), [1, 2, 3]);
     assert.equal(scene.frameFill, '#202020');
-    assert.deepEqual(scene.doors.map((door) => door.panels.map((panel) => panel.fill)), [
+    assert.deepEqual(scene.doors.map((door) => door.infills.map((infill) => infill.fill)), [
         ['#AABBCC'], ['#AABBCC', '#B8B8B8'], ['#B8B8B8', '#AABBCC', '#B8B8B8'],
     ]);
     assert.equal(scene.opening.width / scene.opening.height, 3000 / 2400);
@@ -45,7 +45,7 @@ test('unknown frame colours and unselected infills use neutral visuals', () => {
 
     assert.equal(scene.frameFill, '#B8B8B8');
     for (const door of scene.doors) {
-        door.panels.forEach((panel) => assert.equal(panel.fill, '#B8B8B8'));
+        door.infills.forEach((infill) => assert.equal(infill.fill, '#B8B8B8'));
     }
 });
 
@@ -87,9 +87,9 @@ for (const [name, width, height, weights] of [
         test(`${name} builder layout retains two doors, proportions and bounds at ${viewport.width}px`, () => {
             let id = 0;
             const input = reconcilePreviewConfiguration({
-                openingWidth: width, openingHeight: height, panelWeights: weights,
+                openingWidth: width, openingHeight: height, infillWeights: weights,
                 // Conflicting generic inputs must not override the builder's two-door rule.
-                doorCount: 5, panelWeightsByDoor: [[1]],
+                doorCount: 5, infillWeightsByDoor: [[1]],
             }, null, () => `geometry-${++id}`);
             const scene = createPreviewScene(input, metadata(), viewport);
             const close = (actual, expected) => assert.ok(
@@ -105,7 +105,7 @@ for (const [name, width, height, weights] of [
                 assert.ok(inner.y + inner.height <= outer.y + outer.height + tolerance);
             };
             assert.equal(scene.doors.length, 2);
-            assert.deepEqual(scene.doors.map(door => door.panels.length), [weights.length, weights.length]);
+            assert.deepEqual(scene.doors.map(door => door.infills.length), [weights.length, weights.length]);
             close(scene.opening.width / scene.opening.height, width / height);
             contains({ x: 48, y: 48, width: viewport.width - 96, height: viewport.height - 96 }, scene.opening);
             close(scene.doors[0].x + scene.doors[0].width, scene.doors[1].x);
@@ -113,28 +113,28 @@ for (const [name, width, height, weights] of [
             for (const door of scene.doors) {
                 contains(scene.opening, door);
                 close(door.width / scene.opening.width, 0.5);
-                close(door.panels.reduce((sum, panel) => sum + panel.height, 0), door.height);
-                for (const [index, panel] of door.panels.entries()) {
-                    contains(door, panel);
-                    assert.equal(panel.id, input.panelIdsByDoor[door.index][index]);
-                    close(panel.height / door.height, weights[index] / weights.reduce((a, b) => a + b, 0));
-                    if (index > 0) close(door.panels[index - 1].y + door.panels[index - 1].height, panel.y);
+                close(door.infills.reduce((sum, infill) => sum + infill.height, 0), door.height);
+                for (const [index, infill] of door.infills.entries()) {
+                    contains(door, infill);
+                    assert.equal(infill.id, input.infillInstanceIdsByDoor[door.index][index]);
+                    close(infill.height / door.height, weights[index] / weights.reduce((a, b) => a + b, 0));
+                    if (index > 0) close(door.infills[index - 1].y + door.infills[index - 1].height, infill.y);
                 }
             }
         });
     }
 }
 
-test('database material textures reach the scene without changing panel geometry', () => {
+test('database material textures reach the scene without changing infill geometry', () => {
     const input = configuration();
     const visuals = metadata();
     const before = createPreviewScene(input, visuals, {width:600,height:400});
     visuals.infillVisuals[0].visual.texture='wood_straight';
     const after = createPreviewScene(input, visuals, {width:600,height:400});
     for (let door=0;door<before.doors.length;door++) {
-        for (let panel=0;panel<before.doors[door].panels.length;panel++) {
-            const original=before.doors[door].panels[panel];
-            const textured=after.doors[door].panels[panel];
+        for (let infill=0;infill<before.doors[door].infills.length;infill++) {
+            const original=before.doors[door].infills[infill];
+            const textured=after.doors[door].infills[infill];
             assert.deepEqual({...textured,texture:null},original);
             assert.equal(textured.texture, textured.fill==='#AABBCC' ? 'wood_straight' : null);
         }

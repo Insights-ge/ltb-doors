@@ -150,7 +150,7 @@
         text-decoration: underline;
     }
 
-    .sliding-door-builder .builder-preview-panel-highlight {
+    .sliding-door-builder .builder-preview-infill-highlight {
         visibility: hidden;
         pointer-events: none;
         fill: none;
@@ -160,11 +160,11 @@
         filter: drop-shadow(0 0 1px var(--color-white));
     }
 
-    .sliding-door-builder .builder-preview-panel-highlight.is-selected {
+    .sliding-door-builder .builder-preview-infill-highlight.is-selected {
         visibility: visible;
     }
 
-    .sliding-door-builder .builder-preview-panel {
+    .sliding-door-builder .builder-preview-infill {
         cursor: pointer;
     }
 
@@ -239,7 +239,7 @@
     .sliding-door-builder { background: white !important; }
     .sliding-door-builder .builder-preview-door.is-selected > .builder-preview-frame { stroke: var(--builder-frame-fill); }
     .sliding-door-builder .builder-preview-door.is-selected > .builder-preview-door-label { fill: currentColor; font-weight: 400; text-decoration: none; }
-    .sliding-door-builder .builder-preview-panel-highlight { display: none; }
+    .sliding-door-builder .builder-preview-infill-highlight { display: none; }
 
     body:has(.sliding-door-builder) .fi-sidebar,
     body:has(.sliding-door-builder) .fi-topbar,

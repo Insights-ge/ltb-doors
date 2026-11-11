@@ -7,22 +7,22 @@ return [
     'catalog' => [
         'no_models_heading' => 'No door systems available',
         'no_models_description' => 'There are currently no door systems available to configure.',
-        'no_infills_heading' => 'No panel finishes available',
-        'no_infills_description' => 'Panel finishes are currently unavailable. Please try again later.',
+        'no_infills_heading' => 'No infills available',
+        'no_infills_description' => 'Infills are currently unavailable. Please try again later.',
     ],
     'finishes' => [
         'unavailable' => 'This finish is no longer available. Choose another finish or clear it.',
         'incompatible' => 'Incompatible with the selected system and options',
-        'replace_heading' => 'Replace panel finishes?',
-        'replace_description' => 'This change will replace or remove existing panel finishes. Continue?',
+        'replace_heading' => 'Replace infills?',
+        'replace_description' => 'This change will replace or remove existing infills. Continue?',
         'cancel' => 'Cancel',
         'replace' => 'Replace finishes',
 
-        'title' => 'Panel finish',
+        'title' => 'Infill',
         'unselected' => 'No finish selected',
     ],
     'size' => [
-        'partition_summary' => 'Partitions: :count; panels per door: :panels.',
+        'partition_summary' => 'Partitions: :count; infills per door: :infills.',
 
         'unit' => 'mm',
         'width' => 'Width (mm)',
@@ -50,24 +50,24 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
-        'shared_infills_mismatch' => 'Use the same infill for this panel on both doors.',
+        'shared_infills_mismatch' => 'Use the same infill for this infill on both doors.',
         'no_variant_for_height' => 'No available variant supports this height.',
         'variant_components_mismatch' => 'The components must match the selected variant. Choose an available variant.',
         'variant_height_mismatch' => 'Choose a variant available for this height.',
 
         'model_unavailable' => 'This model has no variants with partition components. Choose another model.',
-        'model_structure_changed' => 'The panel divisions must match the selected model.',
+        'model_structure_changed' => 'The infill divisions must match the selected model.',
 
         'geometry_invalid' => 'These dimensions cannot produce a preview.',
-        'finish_incompatible' => 'Door :door, panel :panel: finish is incompatible with the selected system/options.',
+        'finish_incompatible' => 'Door :door, infill :infill: finish is incompatible with the selected system/options.',
         'partition_missing' => 'This variant has no partition component. Choose another variant.',
         'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
         'not_included' => 'Not included',
-        'shared_panels' => 'Panels on both doors',
-        'divisions' => 'Panel divisions',
+        'shared_infills' => 'Infills',
+        'divisions' => 'Infill divisions',
 
         'export' => 'Download configuration (JSON)',
         'export_failed' => 'The configuration could not be downloaded. Please try again.',
@@ -83,8 +83,8 @@ return [
         'no' => 'No',
     ],
     'drafts' => [
-        'outdated_panels' => 'This saved design has different infills on each door. Start a new design to use shared panels.',
-        'outdated_layout' => 'The saved panel divisions no longer match this model. Start a new design.',
+        'outdated_infills' => 'This saved design has different infills on each door. Start a new design to use shared infills.',
+        'outdated_layout' => 'The saved infill divisions no longer match this model. Start a new design.',
 
         'discard' => 'Remove saved draft',
         'restored' => 'Your last valid design was restored from this browser.',
@@ -103,9 +103,9 @@ return [
             'label' => 'Frame and colour',
             'description' => 'Choose the frame design, colour and options.',
         ],
-        'panels' => [
-            'label' => 'Panel finishes',
-            'description' => 'Choose a finish for each panel.',
+        'infills' => [
+            'label' => 'Infills',
+            'description' => 'Choose a finish for each infill.',
         ],
         'review' => [
             'label' => 'Review',
@@ -113,16 +113,16 @@ return [
         ],
     ],
     'preview' => [
-        'layout_label' => ':panels panels (:partitions partitions)',
+        'layout_label' => ':infills infills (:partitions partitions)',
 
         'title' => 'Door preview',
         'drawing_label' => 'Illustrative sliding door front view with opening dimensions',
-        'panels_label' => 'Select a panel',
+        'infills_label' => 'Select an infill',
         'door_label' => 'Door :number',
-        'panel_short_label' => 'Panel :number',
-        'panel_label' => 'Panel :panel on both doors',
-        'no_selection' => 'No panel selected.',
-        'panel_selected' => 'Panel :panel selected on both doors.',
+        'infill_short_label' => 'Infill :number',
+        'infill_label' => 'Infill :infill on both doors',
+        'no_selection' => 'No infill selected.',
+        'infill_selected' => 'Infill :infill selected on both doors.',
         'width_annotation' => 'Opening width: :value mm',
         'height_annotation' => 'Opening height: :value mm',
         'empty_heading' => 'No preview yet',

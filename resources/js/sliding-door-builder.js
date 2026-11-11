@@ -35,7 +35,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
-        previewSelection: { doorId: null, panelId: null },
+        previewSelection: { doorId: null, infillInstanceId: null },
 
         applyFormFields() {
             if (!this.formState || destroyed) return;
@@ -52,7 +52,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(variant?.hasSoftCloseMechanism) };
             const next = applyModelLayout({ ...this.previewConfiguration, ...fields }, model);
             const modelChange = fields.modelId !== this.previewConfiguration.modelId
-                || next.panelWeights !== this.previewConfiguration.panelWeights;
+                || next.infillWeights !== this.previewConfiguration.infillWeights;
             if (this.pendingChange?.kind === 'model') {
                 this.pendingChange.configuration = next;
             } else if (modelChange) {
@@ -115,7 +115,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         get layoutSummary() {
             if (!this.selectedModel) return '';
             return (previewLabels.layout_label ?? '')
-                .replace(':panels', String(this.selectedModel.partitionCount + 1))
+                .replace(':infills', String(this.selectedModel.partitionCount + 1))
                 .replace(':partitions', String(this.selectedModel.partitionCount));
         },
 
@@ -131,7 +131,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         issueMessage(issue) {
             return (fieldValidationMessages[issue.field]?.[issue.code] ?? validationLabels[issue.code] ?? '')
                 .replace(':door', String((issue.doorIndex ?? 0) + 1))
-                .replace(':panel', String((issue.panelIndex ?? 0) + 1))
+                .replace(':infill', String((issue.infillIndex ?? 0) + 1))
                 .replace(':min', String(issue.limit ?? ''))
                 .replace(':max', String(issue.limit ?? ''));
         },
@@ -177,8 +177,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.attemptedSteps = [...new Set([...this.attemptedSteps, issue.step])];
             if (issue.doorIndex !== undefined) {
                 const door = this.previewDoors[issue.doorIndex];
-                const panel = door?.panels[issue.panelIndex];
-                if (panel) this.selectPreviewPanel(door.id, panel.id);
+                const infill = door?.infills[issue.infillIndex];
+                if (infill) this.selectPreviewInfill(door.id, infill.id);
             }
             this.activeStep = issue.step;
             this.$nextTick?.(() => {
@@ -198,7 +198,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             try { storage?.removeItem(storageKey); this.draftStatus = null; } catch { this.draftStatus = 'unavailable'; }
             this.pendingChange = null;
             this.previewConfiguration = createInitialConfiguration();
-            this.previewSelection = { doorId: null, panelId: null };
+            this.previewSelection = { doorId: null, infillInstanceId: null };
             this.sizeInputs = { openingWidth: '', openingHeight: '' };
             this.sizeErrors = { openingWidth: false, openingHeight: false };
             this.attemptedSteps = [];
@@ -289,32 +289,32 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return `${color} — ${variant.name}`;
         },
 
-        get selectedPreviewPanel() {
-            return this.selectedPreviewDoor?.panels.find((panel) => panel.id === this.previewSelection.panelId) ?? null;
+        get selectedPreviewInfill() {
+            return this.selectedPreviewDoor?.infills.find((infill) => infill.id === this.previewSelection.infillInstanceId) ?? null;
         },
 
         get paletteInfillId() {
             const door = this.selectedPreviewDoor;
-            const panel = this.selectedPreviewPanel;
-            return door && panel
-                ? this.previewConfiguration?.infillIdsByDoor?.[door.index]?.[panel.index] ?? null
+            const infill = this.selectedPreviewInfill;
+            return door && infill
+                ? this.previewConfiguration?.infillIdsByDoor?.[door.index]?.[infill.index] ?? null
                 : null;
         },
 
         chooseInfill(infillId) {
-            if (this.selectedPreviewPanel) this.setPanelInfill(this.selectedPreviewPanel.index, infillId);
+            if (this.selectedPreviewInfill) this.setInfill(this.selectedPreviewInfill.index, infillId);
         },
 
-        setPanelInfill(index, infillId) {
+        setInfill(index, infillId) {
             const config = this.previewConfiguration;
-            if (!Number.isInteger(index) || index < 0 || index >= (config?.panelWeights.length ?? 0)) return;
+            if (!Number.isInteger(index) || index < 0 || index >= (config?.infillWeights.length ?? 0)) return;
             if (infillId !== null && (!this.catalog.infills.some(infill => infill.id === infillId) || this.infillIsIncompatible(infillId))) return;
-            const finishes = config.panelWeights.map((_, position) => position === index ? infillId : config.infillIdsByDoor?.[0]?.[position] ?? null);
+            const finishes = config.infillWeights.map((_, position) => position === index ? infillId : config.infillIdsByDoor?.[0]?.[position] ?? null);
             this.previewConfiguration = { ...config, infillIdsByDoor: [[...finishes], [...finishes]] };
         },
 
         syncInfillField() {
-            const values = this.previewConfiguration?.panelWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
+            const values = this.previewConfiguration?.infillWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
             if (JSON.stringify(this.infillState) !== JSON.stringify(values)) this.infillState = values;
         },
 
@@ -322,16 +322,16 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (!Array.isArray(values)) return;
             values.forEach((value, index) => {
                 const id = value === null || value === '' || value === undefined ? null : Number(value);
-                if (id !== (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null)) this.setPanelInfill(index, id);
+                if (id !== (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null)) this.setInfill(index, id);
             });
             this.syncInfillField();
         },
 
         requestConfigurationChange(configuration, kind = null) {
             const current = this.previewConfiguration;
-            const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, panelIndex) => (
+            const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, infillIndex) => (
                 infillId !== null && infillId !== undefined
-                && infillId !== configuration.infillIdsByDoor?.[doorIndex]?.[panelIndex]
+                && infillId !== configuration.infillIdsByDoor?.[doorIndex]?.[infillIndex]
             )));
             if (replacesFinish) {
                 this.pendingChange = { before: JSON.stringify(current), configuration, kind };
@@ -365,8 +365,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         get previewSelectionAnnouncement() {
-            const panel = this.selectedPreviewPanel;
-            return panel ? (previewLabels.panel_selected ?? '').replace(':panel', String(panel.index + 1)) : (previewLabels.no_selection ?? '');
+            const infill = this.selectedPreviewInfill;
+            return infill ? (previewLabels.infill_selected ?? '').replace(':infill', String(infill.index + 1)) : (previewLabels.no_selection ?? '');
         },
 
         init() {
@@ -396,9 +396,9 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     labels: previewLabels,
                     locale: document.documentElement.lang,
                     onRender: (available) => { this.hasPreview = available; },
-                    onSelect: ({ doorId, panelId }) => {
-                        if (panelId !== null) {
-                            this.selectPreviewPanel(doorId, panelId);
+                    onSelect: ({ doorId, infillInstanceId }) => {
+                        if (infillInstanceId !== null) {
+                            this.selectPreviewInfill(doorId, infillInstanceId);
 
                         } else {
                             this.clearPreviewSelection();
@@ -430,7 +430,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         updatePreview() {
             const focused = rootElement?.ownerDocument.activeElement;
-            const focusedPanelId = focused?.dataset.previewPanelControl;
+            const focusedInfillInstanceId = focused?.dataset.previewInfillControl;
             const focusedDoorId = focused?.dataset.previewDoorControl;
             let configuration;
             try {
@@ -442,8 +442,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 this.previewDoors = [];
                 this.clearPreviewSelection();
                 preview?.render(null);
-                if (focusedPanelId || focusedDoorId) {
-                    this.$nextTick(() => this.focusPanelControls(null));
+                if (focusedInfillInstanceId || focusedDoorId) {
+                    this.$nextTick(() => this.focusInfillControls(null));
                 }
                 return;
             }
@@ -454,9 +454,9 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             previousConfiguration = configuration;
             this.previewDoors = previewSelectionTargets(configuration);
             this.previewSelection = reconcilePreviewSelection(this.previewSelection, this.previewDoors);
-            if ((focusedPanelId && !this.previewDoors.some((door) => door.panels.some((panel) => panel.id === focusedPanelId)))
+            if ((focusedInfillInstanceId && !this.previewDoors.some((door) => door.infills.some((infill) => infill.id === focusedInfillInstanceId)))
                 || (focusedDoorId && !this.previewDoors.some((door) => door.id === focusedDoorId))) {
-                this.$nextTick(() => this.focusPanelControls(this.previewSelection.panelId));
+                this.$nextTick(() => this.focusInfillControls(this.previewSelection.infillInstanceId));
             }
             this.syncInfillField();
             preview?.setSelection(this.previewSelection);
@@ -464,31 +464,31 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.saveLocalDraft();
         },
 
-        selectPanelIndex(index) {
+        selectInfillIndex(index) {
             const door = this.previewDoors[0];
-            const panel = door?.panels[index];
-            if (panel) this.previewSelection = { doorId: door.id, panelId: panel.id };
+            const infill = door?.infills[index];
+            if (infill) this.previewSelection = { doorId: door.id, infillInstanceId: infill.id };
         },
 
-        selectPreviewPanel(doorId, panelId) {
-            const panel = this.previewDoors.find(door => door.id === doorId)?.panels.find(panel => panel.id === panelId);
-            if (panel) this.selectPanelIndex(panel.index);
+        selectPreviewInfill(doorId, infillInstanceId) {
+            const infill = this.previewDoors.find(door => door.id === doorId)?.infills.find(infill => infill.id === infillInstanceId);
+            if (infill) this.selectInfillIndex(infill.index);
         },
 
         clearPreviewSelection() {
-            if (rootElement?.ownerDocument.activeElement?.hasAttribute('data-preview-panel-control')) {
-                this.focusPanelControls(this.previewSelection.panelId);
+            if (rootElement?.ownerDocument.activeElement?.hasAttribute('data-preview-infill-control')) {
+                this.focusInfillControls(this.previewSelection.infillInstanceId);
             }
-            this.previewSelection = { doorId: null, panelId: null };
+            this.previewSelection = { doorId: null, infillInstanceId: null };
         },
 
-        focusPanelControls(panelId) {
+        focusInfillControls(infillInstanceId) {
             if (destroyed) {
                 return;
             }
-            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-panel-control]') ?? [])
+            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-infill-control]') ?? [])
                 .filter((button) => button.getClientRects().length > 0);
-            const control = controls.find((button) => button.dataset.previewPanelControl === panelId)
+            const control = controls.find((button) => button.dataset.previewInfillControl === infillInstanceId)
                 ?? controls[0]
                 ?? rootElement?.querySelector(`#builder-step-${this.activeStep}`);
             control?.focus({ preventScroll: true });
@@ -498,13 +498,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return previewLabels.door_label.replace(':number', String(index + 1));
         },
 
-        previewPanelLabel(index) {
-            return previewLabels.panel_short_label.replace(':number', String(index + 1));
+        previewInfillLabel(index) {
+            return previewLabels.infill_short_label.replace(':number', String(index + 1));
         },
 
-        previewPanelAccessibleLabel(index) {
-            return (previewLabels.panel_label ?? '')
-                .replace(':panel', String(index + 1));
+        previewInfillAccessibleLabel(index) {
+            return (previewLabels.infill_label ?? '')
+                .replace(':infill', String(index + 1));
         },
 
         frameVisual(color) {

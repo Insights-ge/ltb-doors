@@ -24,7 +24,7 @@
                         <p>{{ __('sliding_door_builder.system.range_variantHeight') }}: <span x-text="sizingReference?.variantHeight?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</p>
                     </div>
                 @endif
-                @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
+                @if ($step === \App\Enums\SlidingDoorBuilderStep::Infills)
                     <div class="mt-4">{{ $this->infillForm }}</div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Review)

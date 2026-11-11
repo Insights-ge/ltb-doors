@@ -2,7 +2,7 @@
     <div
         x-load
         x-load-src="{{ \Illuminate\Support\Facades\Vite::asset('resources/js/sliding-door-builder.js') }}"
-        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), infillState: $wire.entangle('panelInfillIds'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
+        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), infillState: $wire.entangle('infillSelections'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
         x-on:modal-closed.window="if ($event.detail.id === 'builder-confirm-replacement' && pendingChange) cancelConfigurationChange()"
         class="sliding-door-builder grid grid-cols-1 gap-4 sm:gap-6"
     >
@@ -18,7 +18,7 @@
             />
         @else
             <p x-show="draftStatus" x-cloak role="status" class="builder-draft-status text-sm text-gray-500 dark:text-gray-400" x-text="@js(__('sliding_door_builder.drafts'))[draftStatus] ?? ''"></p>
-            <div x-show="['invalid', 'outdated', 'outdated_layout', 'outdated_panels'].includes(draftStatus)" x-cloak class="builder-draft-recovery">
+            <div x-show="['invalid', 'outdated', 'outdated_layout', 'outdated_infills'].includes(draftStatus)" x-cloak class="builder-draft-recovery">
                 <x-filament::button color="gray" x-on:click="discardStoredDraft()">{{ __('sliding_door_builder.drafts.discard') }}</x-filament::button>
             </div>
             <x-sliding-door-builder.step-navigation :steps="$steps" />

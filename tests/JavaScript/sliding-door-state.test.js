@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInitialConfiguration, parseMeasurement, measurementError, modelPanelWeights, applyModelLayout } from '../../resources/js/sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, modelInfillWeights, applyModelLayout } from '../../resources/js/sliding-door-state.js';
 
 test('new configurations contain no fabricated product or dimension choices and do not share mutable state', () => {
     const first = createInitialConfiguration();
     const second = createInitialConfiguration();
     assert.equal(first.openingWidth, null);
     assert.equal(first.variantId, null);
-    first.panelWeights.push(1);
-    assert.deepEqual(second.panelWeights, []);
+    first.infillWeights.push(1);
+    assert.deepEqual(second.infillWeights, []);
 });
 
 test('measurements accept decimal millimetres and reject missing, nonfinite and nonpositive input', () => {
@@ -33,21 +33,21 @@ test('measurement errors distinguish required, numeric and greater-than-zero rul
 
 
 for (const partitionCount of [1,2,3,4]) {
-    test(`${partitionCount} model partitions produce ${partitionCount+1} equal panels on each door`, () => {
-        assert.deepEqual(modelPanelWeights({partitionCount}), Array(partitionCount+1).fill(1));
-        const result=applyModelLayout({panelWeights:[],openingWidth:800}, {partitionCount});
-        assert.equal(result.panelWeights.length, partitionCount+1);
+    test(`${partitionCount} model partitions produce ${partitionCount+1} equal infills on each door`, () => {
+        assert.deepEqual(modelInfillWeights({partitionCount}), Array(partitionCount+1).fill(1));
+        const result=applyModelLayout({infillWeights:[],openingWidth:800}, {partitionCount});
+        assert.equal(result.infillWeights.length, partitionCount+1);
         assert.deepEqual(result.infillIdsByDoor, [Array(partitionCount+1).fill(null), Array(partitionCount+1).fill(null)]);
         assert.equal(result.openingWidth,800);
     });
 }
 
-test('model layout remapping preserves matching panels and does not resurrect removed finishes', () => {
-    const source={panelWeights:[1,1,1,1,1],doorIds:['d1','d2'],panelIdsByDoor:[['a','b','c','d','e'],['f','g','h','i','j']],infillIdsByDoor:[[7,8,7,8,7],[8,7,8,7,8]]};
+test('model layout remapping preserves matching infills and does not resurrect removed finishes', () => {
+    const source={infillWeights:[1,1,1,1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b','c','d','e'],['f','g','h','i','j']],infillIdsByDoor:[[7,8,7,8,7],[8,7,8,7,8]]};
     const before=structuredClone(source);
     const smaller=applyModelLayout(source,{partitionCount:1});
     assert.deepEqual(smaller.infillIdsByDoor,[[7,8],[8,7]]);
-    assert.deepEqual(smaller.panelIdsByDoor,[['a','b'],['f','g']]);
+    assert.deepEqual(smaller.infillInstanceIdsByDoor,[['a','b'],['f','g']]);
     assert.deepEqual(smaller.doorIds,source.doorIds);
     const larger=applyModelLayout(smaller,{partitionCount:4});
     assert.deepEqual(larger.infillIdsByDoor,[[7,8,null,null,null],[8,7,null,null,null]]);
