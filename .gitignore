@@ -32,3 +32,5 @@ AGENTS.md
 /.codex
 /.mcp.json
 /docs/plans/
+
+/tests/Browser/__pycache__/
