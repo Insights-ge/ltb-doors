@@ -4,6 +4,7 @@ namespace App\Filament\Forms;
 
 use App\Data\BuilderDoorModelData;
 use App\Data\BuilderDoorVariantData;
+use App\Data\BuilderInfillData;
 use App\Filament\Pages\SlidingDoorBuilder;
 use Closure;
 use Filament\Forms\Components\Select;
@@ -123,6 +124,45 @@ class SlidingDoorBuilderForms
                 ->live()
                 ->afterStateUpdated(fn () => $page->resetValidation()),
         ]);
+    }
+
+    public static function infill(Schema $schema, SlidingDoorBuilder $page): Schema
+    {
+        return $schema->columns(1)->components([
+            Select::make('selectedInfillId')
+                ->id('builder-finishes')
+                ->label(__('sliding_door_builder.finishes.title'))
+                ->placeholder(__('sliding_door_builder.finishes.unselected'))
+                ->searchable()
+                ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => $infill->code . ' — ' . $infill->description])->all())
+                ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true))
+                ->extraInputAttributes([
+                    'x-bind:aria-invalid' => "Boolean(fieldError('builder-finishes'))",
+                    'aria-describedby' => 'builder-finishes-error',
+                ]),
+        ]);
+    }
+
+    /** @return list<int> */
+    private static function incompatibleInfills(SlidingDoorBuilder $page): array
+    {
+        foreach ($page->builderCatalog->models as $model) {
+            if ($model->id !== self::id($page->builderFields['modelId'])) {
+                continue;
+            }
+            foreach ($model->variants as $variant) {
+                if ($variant->id === self::id($page->builderFields['variantId'])) {
+                    $ids = [];
+                    foreach ($variant->components as $component) {
+                        $ids = [...$ids, ...$component->incompatibleInfillIds];
+                    }
+
+                    return array_values(array_unique($ids));
+                }
+            }
+        }
+
+        return array_map(fn (BuilderInfillData $infill): int => $infill->id, $page->builderCatalog->infills);
     }
 
     private static function configure(Schema $schema): Schema

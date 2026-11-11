@@ -25,42 +25,13 @@
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
-                    <fieldset id="builder-finishes" x-bind:aria-invalid="Boolean(fieldError('builder-finishes'))" aria-describedby="builder-finishes-error" tabindex="-1" class="mt-6" x-bind:disabled="!selectedPreviewPanel">
-                        <legend class="text-sm font-medium text-gray-950 dark:text-white">
-                            {{ __('sliding_door_builder.finishes.title') }}
-                        </legend>
-                        <p x-show="!selectedPreviewPanel" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {{ __('sliding_door_builder.finishes.select_panel') }}
-                        </p>
-                        <p x-show="selectedPreviewPanel" class="mt-1 text-sm text-gray-500 dark:text-gray-400" x-text="previewPanelAccessibleLabel(selectedPreviewPanel?.index)"></p>
-                        <div class="mt-3 grid gap-2">
-                            <x-filament::button
-                                color="gray"
-                                class="builder-preview-selector"
-                                x-on:click="chooseInfill(null)"
-                                x-bind:aria-pressed="paletteInfillId === null"
-                                data-infill-clear
-                            >
-                                {{ __('sliding_door_builder.finishes.unselected') }}
-                            </x-filament::button>
-                            <template x-for="infill in catalog.infills" :key="infill.id">
-                                <x-filament::button
-                                    color="gray"
-                                    class="builder-preview-selector"
-                                    x-on:click="chooseInfill(infill.id)"
-                                    x-bind:aria-pressed="paletteInfillId === infill.id"
-                                    x-bind:disabled="infillIsIncompatible(infill.id)"
-                                    x-bind:data-infill-id="infill.id"
-                                >
-                                    <span class="flex items-center gap-2 whitespace-normal text-start">
-                                        <span aria-hidden="true" class="h-6 w-6 shrink-0 rounded border border-gray-400" x-bind:style="{ backgroundColor: infillVisual(infill.id).fill }"></span>
-                                        <span><span x-text="infill.code"></span> — <span x-text="infill.description"></span>
-                                        </span>
-                                    </span>
-                                </x-filament::button>
-                            </template>
-                        </div>
-                    </fieldset>
+                    <p x-show="!selectedPreviewPanel" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                        {{ __('sliding_door_builder.finishes.select_panel') }}
+                    </p>
+                    <div x-show="selectedPreviewPanel" class="mt-4">
+                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400" x-text="previewPanelAccessibleLabel(selectedPreviewPanel?.index)"></p>
+                        {{ $this->infillForm }}
+                    </div>
                     <x-sliding-door-builder.field-error field="builder-finishes" />
                     <div class="mt-6 space-y-3">
                         <div>

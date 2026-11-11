@@ -339,3 +339,25 @@ test('design and variant choices resolve only existing variants for the selected
             ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
     }
 });
+
+test('the infill control is a searchable Filament select with variant incompatibilities disabled', function () {
+    $variant = DoorVariant::factory()->create();
+    $allowed = Infill::factory()->create();
+    $excluded = Infill::factory()->create();
+    $variant->sideProfile->incompatibleInfills()->attach($excluded);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.modelId', $variant->door_model_id)
+        ->set('builderFields.variantId', $variant->id)
+        ->assertFormFieldExists('selectedInfillId', 'infillForm', function (Select $field) use ($allowed, $excluded): bool {
+            $options = $field->getOptions();
+
+            return $field->isSearchable()
+                && isset($options[$allowed->id], $options[$excluded->id])
+                && ! $field->isOptionDisabled($allowed->id, $options[$allowed->id])
+                && $field->isOptionDisabled($excluded->id, $options[$excluded->id]);
+        });
+});

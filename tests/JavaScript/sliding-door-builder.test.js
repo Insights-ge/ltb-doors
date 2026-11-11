@@ -438,3 +438,21 @@ test('native model changes derive both doors and cancelling restores the previou
     assert.deepEqual(builder.previewConfiguration.panelWeights,[1,1,1]);
     assert.deepEqual(builder.previewConfiguration.infillIdsByDoor,[[7,8,null],[8,7,null]]);
 });
+
+test('infill select follows panel selection and edits only that panel', () => {
+    const builder=editingBuilder();
+    builder.chooseInfill(7);
+    builder.syncInfillField();
+    assert.equal(builder.infillState,7);
+    builder.selectPreviewPanel(builder.previewDoors[1].id,builder.previewDoors[1].panels[0].id);
+    builder.syncInfillField();
+    assert.equal(builder.infillState,null);
+    builder.applyInfillField('8');
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor,[[7,null,null],[8,null,null]]);
+    builder.applyInfillField(null);
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor,[[7,null,null],[null,null,null]]);
+    builder.catalog.models[0].variants[0].components=[{type:'side_profile',incompatibleInfillIds:[8]}];
+    builder.previewConfiguration.variantId=11;
+    builder.applyInfillField('8');
+    assert.equal(builder.paletteInfillId,null);
+});

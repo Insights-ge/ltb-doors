@@ -94,6 +94,9 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
     def select(self, field, value):
         self.page.locator('#'+field).click()
         self.page.locator(f'[role=option][data-value="{value}"]:visible').click()
+        if field == 'builder-finishes':
+            self.page.wait_for_function(f'{ROOT}.paletteInfillId === {int(value)}')
+            return
         key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
         self.page.wait_for_function(f'String({ROOT}.formState.{key}) === {json.dumps(str(value))}')
 
@@ -121,7 +124,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             page.locator('[data-preview-door-control]').nth(door).click()
             for panel in range(choices['panels']):
                 page.locator('[data-preview-panel-control]').nth(panel).click()
-                page.locator(f'[data-infill-id="{choices["infills"][(door+panel)%2]}"]').click()
+                self.select('builder-finishes', choices['infills'][(door+panel)%2])
         page.wait_for_function(f'{ROOT}.canReview')
         return choices
 
@@ -326,12 +329,12 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.step(4)
         page.locator('#builder-finishes-error').wait_for(state='visible')
         self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 0)
-        self.assertTrue(page.locator('#builder-finishes-error').evaluate("el=>el.previousElementSibling.id==='builder-finishes'"))
+        self.assertTrue(page.locator('#builder-finishes').is_visible())
         for door in range(2):
             for panel in range(choices['panels']):
                 self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), door)
                 self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewPanel.index'), panel)
-                page.locator(f'[data-infill-id="{choices["infills"][door]}"]').click()
+                self.select('builder-finishes', choices['infills'][door])
                 self.step(4)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
         self.assertEqual(page.locator('[data-builder-next]:visible').count(), 0)
@@ -436,6 +439,26 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.panelWeights'), [1]*count)
             self.assertEqual(page.locator('.builder-preview-panel').count(), count*2)
         self.assertEqual(page.locator('[data-layout-preset]').count(), 0)
+
+    def test_infill_select_searches_clears_and_follows_the_selected_panel(self):
+        choices = self.configure()
+        page = self.page
+        infill_id = choices['infills'][0]
+        code = page.evaluate(f'{ROOT}.catalog.infills.find(i=>i.id==={infill_id}).code')
+        page.locator('#builder-finishes').click()
+        page.locator('.fi-select-input-search-ctn input:visible').fill(code)
+        option = page.locator(f'[role=option][data-value="{infill_id}"]:visible')
+        option.wait_for(state='visible')
+        self.assertIn(code, option.inner_text())
+        option.click()
+        page.wait_for_function(f'{ROOT}.paletteInfillId==={infill_id}')
+        page.locator('#builder-finishes').locator('..').locator('.fi-select-input-value-remove-btn').click()
+        page.wait_for_function(f'{ROOT}.paletteInfillId===null')
+        page.locator('[data-preview-door-control]').first.click()
+        page.locator('[data-preview-panel-control]').first.click()
+        page.wait_for_function(f'{ROOT}.infillState==={infill_id}')
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]'), infill_id)
+        self.assertEqual(page.locator('[data-infill-id]').count(), 0)
 
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page

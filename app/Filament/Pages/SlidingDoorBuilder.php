@@ -21,6 +21,7 @@ use Livewire\Attributes\Computed;
 /**
  * @property-read BuilderCatalogData $builderCatalog
  * @property-read Schema $sizeForm
+ * @property-read Schema $infillForm
  * @property-read Schema $systemForm
  */
 class SlidingDoorBuilder extends Page
@@ -36,6 +37,8 @@ class SlidingDoorBuilder extends Page
         'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
         'frameDesignCode' => null, 'variantId' => null,
     ];
+
+    public ?int $selectedInfillId = null;
 
     protected string $view = 'filament.admin.pages.sliding-door-builder';
 
@@ -58,6 +61,11 @@ class SlidingDoorBuilder extends Page
     public function systemForm(Schema $schema): Schema
     {
         return SlidingDoorBuilderForms::system($schema, $this);
+    }
+
+    public function infillForm(Schema $schema): Schema
+    {
+        return SlidingDoorBuilderForms::infill($schema, $this);
     }
 
     public function validateBuilderSection(int $step): bool

@@ -7,13 +7,14 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
     let previousConfiguration = null;
     let stopSelectionWatching;
     let stopFormWatching;
+    let stopInfillWatching;
     let rootElement;
     let storage;
     let lastSaved = null;
@@ -21,6 +22,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
     return {
         activeStep: initialStep,
         formState,
+        infillState,
         formBusy: false,
         catalog: payload.catalog,
         metadata: payload.metadata,
@@ -312,6 +314,21 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             }
         },
 
+        syncInfillField() {
+            const value = this.paletteInfillId;
+            if (this.infillState !== value) this.infillState = value;
+        },
+
+        applyInfillField(value) {
+            const id = value === null || value === '' || value === undefined ? null : Number(value);
+            if (id === this.paletteInfillId || !this.selectedPreviewPanel) return;
+            if (id !== null && this.infillIsIncompatible(id)) {
+                this.syncInfillField();
+                return;
+            }
+            this.chooseInfill(id);
+        },
+
         requestConfigurationChange(configuration, kind = null) {
             const current = this.previewConfiguration;
             const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, panelIndex) => (
@@ -429,7 +446,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     stopFormWatching = this.$watch('formState', () => this.applyFormFields());
                 }
                 stopWatching = this.$watch('previewConfiguration', () => this.updatePreview());
-                stopSelectionWatching = this.$watch('previewSelection', (selection) => preview.setSelection(selection));
+                stopSelectionWatching = this.$watch('previewSelection', (selection) => {
+                    this.syncInfillField();
+                    preview.setSelection(selection);
+                });
+                stopInfillWatching = this.$watch('infillState', value => this.applyInfillField(value));
                 this.updatePreview();
             });
         },
@@ -439,6 +460,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             stopWatching?.();
             stopSelectionWatching?.();
             stopFormWatching?.();
+            stopInfillWatching?.();
             preview?.destroy();
         },
 
@@ -472,6 +494,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 || (focusedDoorId && !this.previewDoors.some((door) => door.id === focusedDoorId))) {
                 this.$nextTick(() => this.focusPreviewDoor(this.previewSelection.doorId));
             }
+            this.syncInfillField();
             preview?.setSelection(this.previewSelection);
             preview?.render(configuration);
             this.saveLocalDraft();
