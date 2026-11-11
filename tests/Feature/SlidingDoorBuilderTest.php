@@ -10,6 +10,9 @@ use Database\Seeders\AdminPermissionSeeder;
 use Database\Seeders\GeneralSettingsSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\SuperAdminPermissionSeeder;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
@@ -213,3 +216,67 @@ test('builder field messages match the validation translations used by Filament'
             return true;
         });
 })->with(['en', 'ka']);
+
+test('builder size and system schemas use native Filament fields', function () {
+    DoorVariant::factory()->create();
+    Infill::factory()->create();
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    $component = Livewire::test(SlidingDoorBuilder::class);
+    foreach (['openingWidth', 'openingHeight'] as $field) {
+        $component->assertFormFieldExists($field, 'sizeForm', fn (Field $component): bool => $component instanceof TextInput);
+    }
+    foreach (['modelId', 'frameDesignCode', 'variantId'] as $field) {
+        $component->assertFormFieldExists($field, 'systemForm', fn (Field $component): bool => $component instanceof Select);
+    }
+    $component->assertFormFieldExists('softClose', 'systemForm', fn (Field $component): bool => $component instanceof Checkbox);
+});
+
+test('Filament validates builder measurements with the expected inline messages', function (string $value, string $rule, string $locale) {
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+    app()->setLocale($locale);
+
+    $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.openingWidth', $value)
+        ->set('builderFields.openingHeight', '2400')
+        ->call('validateBuilderSection', 1)
+        ->assertReturned(false)
+        ->assertHasErrors('builderFields.openingWidth');
+
+    $message = __($rule === 'gt' ? 'validation.gt.numeric' : 'validation.' . $rule, [
+        'attribute' => Str::lcfirst(__('sliding_door_builder.size.width')),
+        'value' => 0,
+    ]);
+    expect($component->errors()->first('builderFields.openingWidth'))->toBe($message);
+})->with([['', 'required'], ['abc', 'numeric'], ['0', 'gt'], ['-12', 'gt'], ['1e309', 'numeric']])->with(['en', 'ka']);
+
+test('restoring and clearing Filament field state preserves raw measurements and validates product choices', function () {
+    $variant = DoorVariant::factory()->create();
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->call('restoreBuilderFields', [
+            'openingWidth' => '3000,5', 'openingHeight' => '2400',
+            'modelId' => $variant->door_model_id, 'frameDesignCode' => $variant->frame_design_code,
+            'variantId' => $variant->id, 'softClose' => false,
+        ])
+        ->assertSet('builderFields.openingWidth', '3000,5')
+        ->call('validateBuilderSection', 1)->assertReturned(true)
+        ->call('validateBuilderSection', 2)->assertReturned(true)
+        ->assertHasNoErrors()
+        ->set('builderFields.variantId', 999999)
+        ->call('validateBuilderSection', 2)->assertReturned(false)
+        ->assertHasErrors('builderFields.variantId')
+        ->call('restoreBuilderFields', [
+            'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
+            'frameDesignCode' => null, 'variantId' => null, 'softClose' => false,
+        ])
+        ->assertHasNoErrors()
+        ->assertSet('builderFields.variantId', null);
+});

@@ -2,7 +2,7 @@
     <div
         x-load
         x-load-src="{{ \Illuminate\Support\Facades\Vite::asset('resources/js/sliding-door-builder.js') }}"
-        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
+        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
         x-on:modal-closed.window="if ($event.detail.id === 'builder-confirm-replacement') pendingChange = null"
         class="sliding-door-builder grid grid-cols-1 gap-4 sm:gap-6"
     >

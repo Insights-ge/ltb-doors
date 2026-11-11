@@ -7,18 +7,21 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
     let previousConfiguration = null;
     let stopSelectionWatching;
+    let stopFormWatching;
     let rootElement;
     let storage;
     let lastSaved = null;
 
     return {
         activeStep: initialStep,
+        formState,
+        formBusy: false,
         catalog: payload.catalog,
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
@@ -31,6 +34,41 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        applyFormFields() {
+            if (!this.formState || destroyed) return;
+            const state = this.formState;
+            for (const field of ['openingWidth', 'openingHeight']) {
+                const text = String(state[field] ?? '');
+                if (this.sizeInputs[field] !== text) this.setMeasurement(field, text);
+            }
+            const id = (value) => value === null || value === undefined || value === '' ? null : Number(value);
+            const modelId = id(state.modelId);
+            const variantId = id(state.variantId);
+            const variant = this.catalog.models.find((model) => model.id === modelId)?.variants.find((candidate) => candidate.id === variantId);
+            const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(state.softClose) };
+            if (Object.entries(fields).some(([field, value]) => this.previewConfiguration[field] !== value)) {
+                this.previewConfiguration = { ...this.previewConfiguration, ...fields };
+            }
+        },
+
+        async restoreFormFields() {
+            if (!this.formState || !this.$wire) return;
+            this.formBusy = true;
+            try {
+                const config = this.previewConfiguration;
+                const fields = {
+                    openingWidth: this.sizeInputs.openingWidth,
+                    openingHeight: this.sizeInputs.openingHeight,
+                    modelId: config.modelId ?? null,
+                    frameDesignCode: config.frameDesignCode ?? null,
+                    variantId: config.variantId ?? null,
+                    softClose: Boolean(config.softClose),
+                };
+                this.formState = fields;
+                await this.$wire.restoreBuilderFields(fields);
+            } finally { this.formBusy = false; }
+        },
 
         exportDesign() {
             if (!this.canReview) { this.goToStep(4); return; }
@@ -146,15 +184,32 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.sizeInputs = { openingWidth: '', openingHeight: '' };
             this.sizeErrors = { openingWidth: false, openingHeight: false };
             this.attemptedSteps = [];
-            this.goToStep(1);
+            this.activeStep = 1;
+            this.$nextTick?.(() => rootElement?.querySelector('#builder-step-1')?.focus());
             this.$dispatch('close-modal', { id: 'builder-confirm-reset' });
+            this.restoreFormFields();
         },
 
-        goToStep(step) {
-            if (![1, 2, 3, 4].includes(step)) return;
+        async goToStep(step) {
+            if (this.formBusy || ![1, 2, 3, 4].includes(step)) return;
+            this.applyFormFields();
             const target = step > this.activeStep ? Math.min(step, this.activeStep + 1) : step;
             if (target > this.activeStep && this.activeStep === 1) {
                 for (const field of ['openingWidth', 'openingHeight']) this.setMeasurement(field, this.sizeInputs[field]);
+            }
+            if (target > this.activeStep && this.activeStep <= 2 && this.formState) {
+                const currentStep = this.activeStep;
+                this.attemptedSteps = [...new Set([...this.attemptedSteps, currentStep])];
+                this.formBusy = true;
+                let valid;
+                try { valid = await this.$wire.validateBuilderSection(currentStep); }
+                finally { this.formBusy = false; }
+                this.applyFormFields();
+                if (!valid) {
+                    const issue = this.validation.errors.find((candidate) => candidate.step <= currentStep);
+                    if (issue) this.focusIssue(issue);
+                    return;
+                }
             }
             if (target > 1) {
                 const attempted = Array.from({ length: target - 1 }, (_, index) => index + 1);
@@ -347,19 +402,20 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         init() {
-            this.$nextTick(() => {
+            this.$nextTick(async () => {
                 rootElement = this.$el;
                 if (storageKey) {
                     try { storage = window.localStorage; } catch { this.draftStatus = 'unavailable'; }
                     if (storage) {
                         const draft = readDraft(storage, storageKey, this.catalog, this.metadata);
-                        this.draftStatus = draft.status;
                         if (draft.configuration) {
                             this.previewConfiguration = draft.configuration;
                             this.sizeInputs = { openingWidth: String(draft.configuration.openingWidth), openingHeight: String(draft.configuration.openingHeight) };
                             this.attemptedSteps = draft.status === 'outdated' ? [1, 2, 3] : [];
                             if (draft.status === 'restored') lastSaved = JSON.stringify(configurationSnapshot(draft.configuration));
+                            await this.restoreFormFields();
                         }
+                        this.draftStatus = draft.status;
                     }
                 }
                 const svg = this.$el.querySelector('.builder-preview-svg');
@@ -382,6 +438,10 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                         }
                     },
                 });
+                if (this.formState) {
+                    this.applyFormFields();
+                    stopFormWatching = this.$watch('formState', () => this.applyFormFields());
+                }
                 stopWatching = this.$watch('previewConfiguration', () => this.updatePreview());
                 stopSelectionWatching = this.$watch('previewSelection', (selection) => preview.setSelection(selection));
                 this.updatePreview();
@@ -392,6 +452,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             destroyed = true;
             stopWatching?.();
             stopSelectionWatching?.();
+            stopFormWatching?.();
             preview?.destroy();
         },
 

@@ -22,6 +22,7 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 ## Implemented rules and limitations
 
 - Exactly two equal-width illustrative doors; one shared layout, independent finishes and stable instance IDs.
+- Size and system controls are PHP Filament `TextInput`, `Select` and `Checkbox` schemas. Livewire owns their field state and renders native inline validation on Next. Dependent design/variant options come from the active catalog. Alpine observes the fields for the SVG preview, while the custom panel/layout editor stays in the browser. Draft restoration and reset refill the native schemas without discarding independent finishes.
 - Standard field errors come from the same `validation.php` translations and field-label casing used by Filament: missing values use `required`, nonnumeric values use `numeric`, zero/negative measurements use `gt.numeric`, and removed catalog choices use `exists` or `in`. Domain-specific compatibility messages remain separate.
 - Positive finite opening dimensions and representable geometry are enforced. Model width/height limits, variant height ranges and discouraged heights have **unconfirmed measurement scope**: one finished door versus an entire opening. They remain raw reference/advisory values. `sliding-door-rules.js` records the scopes as `unconfirmed`. Confirm scope and track/overlap deductions before applying product sizing limits. Estimated half-width geometry is never a cutting size.
 - Recorded infill exclusions apply to all used frame components, partitions when divided, and soft-close components only when selected. An empty exclusion list means no recorded exclusions, not a complete certification of compatibility.
@@ -54,7 +55,7 @@ Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Optional `B
 
 Verified on this branch:
 
-- **352 PHP tests**, 3429 assertions; **104 individual Node tests**; **nine Chromium regression cases**; production Vite build and repository-wide Duster all pass.
+- **366 PHP tests**, 3525 assertions; **104 individual Node tests**; **ten Chromium regression cases**; production Vite build and repository-wide Duster all pass.
 - Catalog-backed journeys in English/Georgian, independent finishes, review, JSON download, refresh/restore and print PDF, without blocking console errors.
 - 320/390/768/1440px widths and light/dark themes; Georgian/long names, no horizontal overflow, 44px controls and reduced-height focused inputs.
 - Keyboard selection, context labels, pressed/live states, section/invalid-field focus, annotation contrast of at least 4.5:1 and focus accents of at least 3:1 against the preview surface.
@@ -63,3 +64,5 @@ Verified on this branch:
 - Print output uses white surfaces, actual frame colour and no selection markers. The dev server and its hot-file configuration remain available after the production-build check.
 
 Latest validation-message verification: 22 PHP feature tests (200 assertions), 104 individual Node tests, nine Chromium cases, targeted PHPStan and Duster pass.
+
+Latest Filament form verification: all 366 PHP tests (3525 assertions), 104 Node tests and ten Chromium cases pass. Native-field coverage includes dependent options, required/numeric/positive validation, draft restoration, soft-close changes, resizing and reset. Targeted PHPStan and Duster pass.

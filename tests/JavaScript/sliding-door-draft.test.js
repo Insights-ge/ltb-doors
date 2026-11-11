@@ -41,7 +41,7 @@ test('draft round trips preserve identities and recheck the current catalog', ()
 
 test('malformed, oversized and legacy draft shapes are rejected without breaking configuration', () => {
     const {config,catalog,metadata}=fixture();
-    for (const raw of ['{','null','[]',JSON.stringify({openingWidth:3000}),' '.repeat(100001),JSON.stringify({...config,doorIds:['duplicate','duplicate']}),JSON.stringify({...config,infillIdsByDoor:[[7]]})]) {
+    for (const raw of ['{','null','[]',JSON.stringify({openingWidth:3000}),' '.repeat(100001),JSON.stringify({...config,doorIds:['duplicate','duplicate']}),JSON.stringify({...config,infillIdsByDoor:[[7]]}),JSON.stringify({...config,frameDesignCode:'A'.repeat(256)})]) {
         const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
         assert.equal(result.status,'invalid');
         assert.equal(result.configuration,null);
