@@ -20,6 +20,7 @@ class SlidingDoorBuilderForms
     {
         $fields = [
             Select::make('modelId')
+                ->searchable()
                 ->id('builder-model')
                 ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'modelId') ? 'true' : 'false'])
                 ->label(__('sliding_door_builder.system.model'))
@@ -87,6 +88,7 @@ class SlidingDoorBuilderForms
     {
         return self::configure($schema)->components([
             Select::make('frameDesignCode')
+                ->searchable()
                 ->id('builder-design')
                 ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'frameDesignCode') ? 'true' : 'false'])
                 ->label(__('sliding_door_builder.system.design'))
@@ -100,6 +102,7 @@ class SlidingDoorBuilderForms
                     $page->resetValidation();
                 }),
             Select::make('variantId')
+                ->searchable()
                 ->id('builder-variant')
                 ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'variantId') ? 'true' : 'false'])
                 ->label(__('sliding_door_builder.system.variant'))
