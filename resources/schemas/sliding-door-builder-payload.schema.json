@@ -92,10 +92,13 @@
         "component": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "type", "incompatibleInfillIds"],
+            "required": ["id", "type", "incompatibleInfillIds", "code", "description", "color"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "type": { "enum": ["side_profile", "top_rail", "bottom_rail", "partition", "soft_close_mechanism"] },
+                "code": { "type": "string" },
+                "description": { "type": "string" },
+                "color": { "enum": [null, "black", "inox", "graphite", "silver"] },
                 "incompatibleInfillIds": {
                     "type": "array",
                     "uniqueItems": true,

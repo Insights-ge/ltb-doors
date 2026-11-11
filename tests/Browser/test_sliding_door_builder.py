@@ -128,7 +128,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function(f'{ROOT}.canReview')
         return choices
 
-    def test_configuration_export_and_restoration_in_both_locales(self):
+    def test_configuration_review_and_restoration_in_both_locales(self):
         page = self.page
         for locale in ['en', 'ka']:
             with self.subTest(locale=locale):
@@ -140,12 +140,15 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 choices = self.configure()
                 self.step(4)
                 page.wait_for_function(f'{ROOT}.activeStep===4')
-                with page.expect_download() as event:
-                    page.locator('[data-export-design]').click()
-                with open(event.value.path()) as handle:
-                    exported = json.load(handle)
-                self.assertEqual(exported['configuration']['infillIdsByDoor'], [[choices['infills'][panel%2] for panel in range(choices['panels'])] for door in range(2)])
-                self.assertEqual(exported['units'], 'mm')
+                self.assertEqual(page.locator('.builder-review button').count(), 0)
+                self.assertEqual(page.locator('[data-review-component]').count(), 5)
+                components = page.evaluate(f'{ROOT}.selectedVariant.components')
+                for component in components:
+                    row = page.locator(f'[data-review-component="{component["type"]}"]')
+                    self.assertIn(component['code'], row.inner_text())
+                    self.assertIn(component['description'], row.inner_text())
+                self.assertFalse(page.locator('.builder-review ul').count())
+                self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor'), [[choices['infills'][panel%2] for panel in range(choices['panels'])] for door in range(2)])
                 page.reload()
                 self.ready()
                 page.wait_for_function(f"{ROOT}.draftStatus==='restored'")
@@ -154,9 +157,6 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 self.assertEqual(self.selected_value('builder-variant'), str(choices['variant']))
                 self.step(4)
                 self.assertIn(str(choices['width']), page.locator('.builder-review').inner_text())
-                page.evaluate('window.__builderPrinted=false; window.print=()=>window.__builderPrinted=true')
-                page.locator('[data-print-design]').click()
-                page.wait_for_function('window.__builderPrinted')
                 page.emulate_media(media='print')
                 self.assertTrue(page.locator('.builder-preview-svg').is_visible())
                 self.assertTrue(page.locator('.builder-review').is_visible())

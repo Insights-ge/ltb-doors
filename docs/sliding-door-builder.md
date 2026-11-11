@@ -15,8 +15,8 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 3. Both doors inherit the model's partition count: 1–4 horizontal dividers create 2–5 equal panels on each door. There is no layout/count selector. All numbered panel selects are visible immediately; choosing an infill sets that panel on both doors. Each option includes an escaped label and database-backed colour/texture swatch. Preview controls select panel positions only and highlight both doors. Tab and Enter/Space operate these controls; Escape clears selection.
 4. Changing to a model with fewer partitions asks for confirmation if filled panels would be removed. Cancel restores the previous model; surviving finishes follow their top-to-bottom positions, new panels start empty, and removed finishes do not return.
 5. Change variants/options and inspect compatibility messages. Existing finishes remain available for correction. Next validates each section and selects an unfinished/incompatible panel automatically. Models without any partition-capable variants cannot be selected.
-6. Complete every panel and open review. Check dimensions, model/variant/colour, model divisions, shared panel infills and options. Edit links return to the appropriate step/door/panel.
-7. Refresh to restore the last valid design in this browser. Print the summary or download its JSON. Reset requires confirmation and clears the saved draft. Neither action submits a quote or order.
+6. Complete every panel and open review. Check dimensions, model/variant/colour, model divisions, shared panel infills and all five component roles. Components show their recorded code, description and colour; absent optional hardware is marked as not included. Review is read-only; use Previous to return to configuration.
+7. Refresh to restore the last valid design in this browser. Reset requires confirmation and clears the saved draft. Neither action submits a quote or order.
 
 ## Implemented rules and limitations
 
@@ -29,7 +29,7 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 - Recorded infill exclusions apply to all used frame components, partitions when divided, and every recorded soft-close component. An empty exclusion list means no recorded exclusions, not a complete certification of compatibility.
 - Soft close is determined by the selected variant, with no independent checkbox. Hardware quantities and installation eligibility remain unconfirmed.
 - The last fully valid design is saved under a per-user browser-storage key. Partial/invalid edits do not overwrite it. Restore validates structure, IDs, dimensions and current catalog compatibility; outdated choices are preserved for correction. Drafts with outdated divisions or different infills on the two doors require explicit recovery; stored designs are preserved until the user discards or replaces them. Storage failures allow continued editing. Drafts stay in this browser; there is no live cross-tab synchronization or server draft endpoint.
-- Print and JSON export revalidate the design. JSON includes configuration IDs, readable current catalog details, millimetre units and recorded assumptions. Import, share links, pricing, manufacturing calculations and order/quote submission are deferred.
+- The review has no print, download or change buttons, and no uncertainty helper notes. The existing JSON export utility revalidates the design. JSON includes configuration IDs, readable current catalog details, millimetre units and recorded assumptions. Import, share links, pricing, manufacturing calculations and order/quote submission are deferred.
 - A focused-input reduced viewport simulates available space with a mobile keyboard. Physical-device keyboard behaviour and a live screen-reader audit remain manual follow-ups; DOM/browser checks do not replace those audits.
 
 ## Checks
@@ -54,4 +54,4 @@ BUILDER_TEST_EMAIL=your-local-email BUILDER_TEST_PASSWORD=your-local-password /t
 
 Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Optional `BUILDER_TEST_ARTIFACTS` stores reduced-viewport screenshots in the chosen directory. Run against a local environment, not production.
 
-Browser coverage includes English/Georgian journeys, model bounds and fixed divisions, shared panel infills, review, JSON export, restoration/reset, print, keyboard selection, light/dark themes, 320/390/768/1440px layouts, reduced viewport focus, compatibility changes, neutral visual fallbacks, malformed drafts/storage failures, and Filament SPA teardown/remount.
+Browser coverage includes English/Georgian journeys, model bounds and fixed divisions, shared panel infills, read-only component review, restoration/reset, browser print styles, keyboard selection, light/dark themes, 320/390/768/1440px layouts, reduced viewport focus, compatibility changes, neutral visual fallbacks, malformed drafts/storage failures, and Filament SPA teardown/remount.

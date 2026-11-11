@@ -98,6 +98,7 @@ test('variant availability is serialized from the components actually present', 
             id: 1,
             type: $type,
             incompatibleInfillIds: [],
+            code: 'TEST', description: 'Component', color: null,
         ),
         $types,
     );
@@ -159,4 +160,16 @@ test('catalog data does not serialize supplier identifiers or admin fields', fun
     $json = json_encode(app(BuilderCatalogReadService::class)->read(), JSON_THROW_ON_ERROR);
 
     expect($json)->not->toContain('PRIVATE-VARIANT', 'PRIVATE-COMPONENT', 'PRIVATE-INFILL', 'unique_code', 'created_at', 'updated_at', 'status');
+});
+
+test('the builder exposes component names codes and colours for the selected variant review', function () {
+    $variant = DoorVariant::factory()->create();
+    $variant->sideProfile->update(['code' => 'SIDE-1', 'description' => 'Side profile', 'color' => DoorColor::Black]);
+    $result = app(BuilderCatalogReadService::class)->read()->models[0]->variants[0];
+    $components = collect($result->components)->keyBy(fn (BuilderComponentCompatibilityData $component): string => $component->type->value);
+
+    expect($components[ComponentType::SideProfile->value]->code)->toBe('SIDE-1');
+    expect($components[ComponentType::SideProfile->value]->description)->toBe('Side profile');
+    expect($components[ComponentType::SideProfile->value]->color)->toBe(DoorColor::Black);
+    expect($result->components)->toHaveCount(5);
 });

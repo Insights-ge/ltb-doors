@@ -8,6 +8,7 @@ use App\Data\BuilderDoorModelData;
 use App\Data\BuilderDoorVariantData;
 use App\Data\BuilderInfillData;
 use App\Enums\ComponentType;
+use App\Enums\DoorColor;
 use App\Enums\DoorModelStatus;
 use App\Models\Component;
 use App\Models\DoorModel;
@@ -55,7 +56,7 @@ class BuilderCatalogReadService
         ];
 
         foreach (['sideProfile', 'topRail', 'bottomRail', 'partition', 'softCloseMechanism'] as $relation) {
-            $relationships[] = "variants.{$relation}:id,type";
+            $relationships[] = "variants.{$relation}:id,type,code,description,color";
             $relationships[] = "variants.{$relation}.incompatibleInfills:infills.id";
         }
 
@@ -113,6 +114,9 @@ class BuilderCatalogReadService
         return new BuilderComponentCompatibilityData(
             id: $component->id,
             type: $component->type,
+            code: $component->code,
+            description: $component->description,
+            color: is_string($color = $component->getRawOriginal('color')) ? DoorColor::tryFrom($color) : null,
             incompatibleInfillIds: array_values($component->incompatibleInfills
                 ->map(fn (Infill $infill): int => $infill->id)->sort()->all()),
         );

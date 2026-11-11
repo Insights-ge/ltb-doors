@@ -58,3 +58,16 @@ test('removed products, unknown layouts and missing panels cannot be exported', 
         assert.throws(()=>exportConfiguration(data.config,data.catalog,data.metadata),RangeError);
     }
 });
+
+test('review resolves every recorded component from the current variant without inventing missing hardware',()=>{
+    const {config,catalog,metadata}=fixture();
+    const types=['side_profile','top_rail','bottom_rail','partition','soft_close_mechanism'];
+    catalog.models[0].variants[0].components=types.map((type,index)=>({id:index+1,type,code:`C${index}`,description:`Part ${index}`,color:'black',incompatibleInfillIds:[]}));
+    const review=summarizeConfiguration(config,catalog,metadata);
+    assert.equal(review.components.length,5);
+    assert.deepEqual(review.components.map(c=>[c.type,c.code,c.description,c.colorLabel]),types.map((type,index)=>[type,`C${index}`,`Part ${index}`,'Black']));
+    catalog.models[0].variants[0].components.pop();
+    const updated=summarizeConfiguration(config,catalog,metadata);
+    assert.equal(updated.components.length,4);
+    assert.ok(!updated.components.some(c=>c.type==='soft_close_mechanism'));
+});

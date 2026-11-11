@@ -65,6 +65,7 @@ return [
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
+        'not_included' => 'Not included',
         'shared_panels' => 'Panels on both doors',
         'divisions' => 'Panel divisions',
 

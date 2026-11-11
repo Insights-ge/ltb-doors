@@ -123,6 +123,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return summarizeConfiguration(this.previewConfiguration, this.catalog, this.metadata);
         },
 
+        reviewComponentLabel(type) {
+            const component = this.reviewDesign?.components.find(item => item.type === type);
+            return component ? [component.code, component.description, component.colorLabel].filter(Boolean).join(' — ') : '';
+        },
+
         issueMessage(issue) {
             return (fieldValidationMessages[issue.field]?.[issue.code] ?? validationLabels[issue.code] ?? '')
                 .replace(':door', String((issue.doorIndex ?? 0) + 1))
