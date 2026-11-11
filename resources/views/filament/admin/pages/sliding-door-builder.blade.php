@@ -26,7 +26,6 @@
             <div class="builder-workspace grid items-start gap-4 sm:gap-6">
                 <x-sliding-door-builder.controls :steps="$steps" :initial-step="$initialStep" />
                 <x-sliding-door-builder.preview />
-                <x-sliding-door-builder.summary />
             </div>
         @endif
     </div>

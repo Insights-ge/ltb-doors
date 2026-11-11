@@ -333,7 +333,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
         self.assertEqual(page.locator('[data-builder-next]:visible').count(), 0)
         self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
-        self.assertEqual(page.locator('.builder-summary button').count(), 0)
+        self.assertEqual(page.locator('.builder-summary').count(), 0)
 
     def test_size_messages_use_the_matching_translated_validation_rule(self):
         page = self.page
