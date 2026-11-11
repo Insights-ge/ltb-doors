@@ -80,6 +80,11 @@ return [
         'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
+    'review' => [
+        'colour' => 'Colour',
+        'yes' => 'Yes',
+        'no' => 'No',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'Size',

@@ -156,6 +156,9 @@
                         </div>
                     </div>
                 @endif
+                @if ($step === \App\Enums\SlidingDoorBuilderStep::Review)
+                    <x-sliding-door-builder.review />
+                @endif
             </x-filament::section>
         </div>
     @endforeach

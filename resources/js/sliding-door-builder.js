@@ -1,3 +1,4 @@
+import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
@@ -24,6 +25,10 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        get reviewDesign() {
+            return summarizeConfiguration(this.previewConfiguration, this.catalog, this.metadata);
+        },
 
         issueMessage(issue) {
             return (validationLabels[issue.code] ?? '')
