@@ -20,42 +20,12 @@
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
                     <div class="mt-4">{{ $this->systemForm }}</div>
-                    <div x-show="sizingReference" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div x-show="selectedVariant" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
                         <p>{{ __('sliding_door_builder.system.range_note') }}</p>
-                        <dl class="mt-2 grid gap-1">
-                            @foreach (['width', 'height', 'variantHeight'] as $range)
-                                <div><dt class="inline">{{ __('sliding_door_builder.system.range_' . $range) }}:</dt> <dd class="inline"><span x-text="sizingReference?.{{ $range }}?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</dd></div>
-                            @endforeach
-                            <div x-show="sizingReference?.discouragedHeight"><dt class="inline">{{ __('sliding_door_builder.system.discouraged_height') }}:</dt> <dd class="inline"><span x-text="sizingReference?.discouragedHeight?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</dd></div>
-                        </dl>
+                        <p>{{ __('sliding_door_builder.system.range_variantHeight') }}: <span x-text="sizingReference?.variantHeight?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</p>
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
-                    <fieldset id="builder-layouts" x-bind:aria-invalid="Boolean(fieldError('builder-layouts'))" aria-describedby="builder-layouts-error" tabindex="-1" class="mt-4" x-bind:disabled="!hasPreview">
-                        <legend class="text-sm font-medium text-gray-950 dark:text-white">
-                            {{ __('sliding_door_builder.layouts.title') }}
-                        </legend>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {{ __('sliding_door_builder.layouts.shared_description') }}
-                            {{ __('sliding_door_builder.layouts.remapping_description') }}
-                        </p>
-                        <p x-show="selectedVariant && !selectedVariant.hasPartition" class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('sliding_door_builder.layouts.no_partition') }}</p>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <template x-for="preset in metadata.layoutPresets" :key="preset.id">
-                                <x-filament::button
-                                    color="gray"
-                                    class="builder-preview-selector"
-                                    x-on:click="selectLayout(preset.id)"
-                                    x-bind:aria-pressed="selectedLayoutId === preset.id"
-                                    x-bind:disabled="!layoutIsAvailable(preset)"
-                                    x-bind:data-layout-preset="preset.id"
-                                >
-                                    <span x-text="preset.label"></span>
-                                </x-filament::button>
-                            </template>
-                        </div>
-                    </fieldset>
-                    <x-sliding-door-builder.field-error field="builder-layouts" />
                     <fieldset id="builder-finishes" x-bind:aria-invalid="Boolean(fieldError('builder-finishes'))" aria-describedby="builder-finishes-error" tabindex="-1" class="mt-6" x-bind:disabled="!selectedPreviewPanel">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">
                             {{ __('sliding_door_builder.finishes.title') }}

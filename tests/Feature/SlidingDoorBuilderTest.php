@@ -228,19 +228,22 @@ test('builder size and system schemas use native Filament fields', function () {
     foreach (['openingWidth', 'openingHeight'] as $field) {
         $component->assertFormFieldExists($field, 'sizeForm', fn (Field $component): bool => $component instanceof TextInput);
     }
-    foreach (['modelId', 'frameDesignCode', 'variantId'] as $field) {
+    $component->assertFormFieldExists('modelId', 'sizeForm', fn (Field $component): bool => $component instanceof Select);
+    foreach (['frameDesignCode', 'variantId'] as $field) {
         $component->assertFormFieldExists($field, 'systemForm', fn (Field $component): bool => $component instanceof Select);
     }
     $component->assertFormFieldExists('softClose', 'systemForm', fn (Field $component): bool => $component instanceof Checkbox);
 });
 
 test('Filament validates builder measurements with the expected inline messages', function (string $value, string $rule, string $locale) {
+    $variant = DoorVariant::factory()->create();
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
     $this->actingAs($user);
     app()->setLocale($locale);
 
     $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.openingWidth', $value)
         ->set('builderFields.openingHeight', '2400')
         ->call('validateBuilderSection', 1)
@@ -262,11 +265,11 @@ test('restoring and clearing Filament field state preserves raw measurements and
 
     Livewire::test(SlidingDoorBuilder::class)
         ->call('restoreBuilderFields', [
-            'openingWidth' => '3000,5', 'openingHeight' => '2400',
+            'openingWidth' => '800,5', 'openingHeight' => '2400',
             'modelId' => $variant->door_model_id, 'frameDesignCode' => $variant->frame_design_code,
             'variantId' => $variant->id, 'softClose' => false,
         ])
-        ->assertSet('builderFields.openingWidth', '3000,5')
+        ->assertSet('builderFields.openingWidth', '800,5')
         ->call('validateBuilderSection', 1)->assertReturned(true)
         ->call('validateBuilderSection', 2)->assertReturned(true)
         ->assertHasNoErrors()
@@ -279,4 +282,31 @@ test('restoring and clearing Filament field state preserves raw measurements and
         ])
         ->assertHasNoErrors()
         ->assertSet('builderFields.variantId', null);
+});
+
+test('model selection enables sizes and enforces both inclusive model ranges', function () {
+    $variant = DoorVariant::factory()->create();
+    $variant->doorModel->update(['min_width' => 600, 'max_width' => 1000, 'min_height' => 1600, 'max_height' => 2500, 'partition_count' => 4]);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    $component = Livewire::test(SlidingDoorBuilder::class)
+        ->assertFormFieldIsDisabled('openingWidth', 'sizeForm')
+        ->assertFormFieldIsDisabled('openingHeight', 'sizeForm')
+        ->call('validateBuilderSection', 1)->assertReturned(false)
+        ->assertHasErrors('builderFields.modelId')
+        ->set('builderFields.modelId', $variant->door_model_id)
+        ->assertFormFieldIsEnabled('openingWidth', 'sizeForm')
+        ->assertFormFieldIsEnabled('openingHeight', 'sizeForm');
+
+    foreach ([[600, 1600], [1000, 2500]] as [$width,$height]) {
+        $component->set('builderFields.openingWidth', (string) $width)->set('builderFields.openingHeight', (string) $height)
+            ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
+    }
+    foreach ([['openingWidth', 599], ['openingWidth', 1001], ['openingHeight', 1599], ['openingHeight', 2501]] as [$field,$value]) {
+        $component->set('builderFields.openingWidth', '800')->set('builderFields.openingHeight', '2400')
+            ->set('builderFields.' . $field, (string) $value)
+            ->call('validateBuilderSection', 1)->assertReturned(false)->assertHasErrors('builderFields.' . $field);
+    }
 });

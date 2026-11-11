@@ -18,8 +18,8 @@ test('draft saving whitelists configuration facts and reports unavailable storag
 
 function fixture() {
     return {
-        config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,panelWeights:[1],doorIds:['d1','d2'],panelIdsByDoor:[['p1'],['p2']],infillIdsByDoor:[[7],[7]] },
-        catalog:{models:[{id:1,name:'System',variants:[{id:2,name:'Variant',color:'black',frameDesignCode:'A',components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
+        config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,panelWeights:[1,1],doorIds:['d1','d2'],panelIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
+        catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'System',variants:[{id:2,name:'Variant',color:'black',frameDesignCode:'A',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
         metadata:{layoutPresets:[{id:'full_panel',label:'Full',panelWeights:[1]}],frameColors:[{color:'black',label:'Black'}]},
     };
 }
@@ -35,7 +35,7 @@ test('draft round trips preserve identities and recheck the current catalog', ()
     catalog.infills=[];
     result=readDraft(storage,'draft',catalog,metadata);
     assert.equal(result.status,'outdated');
-    assert.deepEqual(result.configuration.infillIdsByDoor,[[7],[7]]);
+    assert.deepEqual(result.configuration.infillIdsByDoor,[[7,7],[7,7]]);
 });
 
 
@@ -48,4 +48,14 @@ test('malformed, oversized and legacy draft shapes are rejected without breaking
     }
     assert.equal(readDraft({getItem:()=>null},'draft',catalog,metadata).status,null);
     assert.equal(readDraft({getItem:()=>{throw Error('denied');}},'draft',catalog,metadata).status,'unavailable');
+});
+
+test('changed model divisions preserve the stored draft for explicit recovery', () => {
+    const {config,catalog,metadata}=fixture();
+    const raw=JSON.stringify(config);
+    catalog.models[0].partitionCount=4;
+    const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
+    assert.equal(result.status,'outdated_layout');
+    assert.equal(result.configuration,null);
+    assert.deepEqual(JSON.parse(raw),config);
 });

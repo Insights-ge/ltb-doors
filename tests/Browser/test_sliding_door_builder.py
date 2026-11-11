@@ -85,27 +85,31 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             for(const m of b.catalog.models) for(const v of m.variants) {{
                 const excluded=new Set(v.components.filter(c=>c.type!=='soft_close_mechanism').flatMap(c=>c.incompatibleInfillIds));
                 const infills=b.catalog.infills.filter(i=>!excluded.has(i.id));
-                if(v.hasPartition && infills.length>1) return {{model:m.id,variant:v.id,design:v.frameDesignCode,infills:infills.slice(0,2).map(i=>i.id)}};
+                if(v.hasPartition && infills.length>1) return {{model:m.id,variant:v.id,design:v.frameDesignCode,panels:m.partitionCount+1,width:Math.floor((m.minWidth+m.maxWidth)/2),height:Math.floor((m.minHeight+m.maxHeight)/2),infills:infills.slice(0,2).map(i=>i.id)}};
             }}
         }}''')
         self.assertIsNotNone(choices, 'Seed an active variant with a partition and two compatible infills.')
         return choices
 
+    def choose_model_and_size(self):
+        choices = self.catalog_choices()
+        self.page.locator('#builder-model').select_option(str(choices['model']))
+        self.page.wait_for_function("!document.querySelector('#builder-openingWidth').disabled")
+        self.page.locator('#builder-openingWidth').fill(str(choices['width']))
+        self.page.locator('#builder-openingHeight').fill(str(choices['height']))
+        return choices
+
     def configure(self):
         page = self.page
-        page.locator('#builder-openingWidth').fill('3000')
-        page.locator('#builder-openingHeight').fill('2400')
+        choices = self.choose_model_and_size()
         self.step(2)
-        choices = self.catalog_choices()
-        page.locator('#builder-model').select_option(str(choices['model']))
         page.locator('#builder-design').select_option(choices['design'])
         page.locator('#builder-variant').select_option(str(choices['variant']))
         self.step(3)
-        page.locator('[data-layout-preset=two_horizontal_panels]').click()
-        page.wait_for_function('document.querySelectorAll(".builder-preview-panel").length===4')
+        page.wait_for_function(f'document.querySelectorAll(".builder-preview-panel").length==={2*choices["panels"]}')
         for door in range(2):
             page.locator('[data-preview-door-control]').nth(door).click()
-            for panel in range(2):
+            for panel in range(choices['panels']):
                 page.locator('[data-preview-panel-control]').nth(panel).click()
                 page.locator(f'[data-infill-id="{choices["infills"][(door+panel)%2]}"]').click()
         page.wait_for_function(f'{ROOT}.canReview')
@@ -127,7 +131,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.locator('[data-export-design]').click()
                 with open(event.value.path()) as handle:
                     exported = json.load(handle)
-                self.assertEqual(exported['configuration']['infillIdsByDoor'], [choices['infills'], list(reversed(choices['infills']))])
+                self.assertEqual(exported['configuration']['infillIdsByDoor'], [[choices['infills'][(door+panel)%2] for panel in range(choices['panels'])] for door in range(2)])
                 self.assertEqual(exported['units'], 'mm')
                 page.reload()
                 self.ready()
@@ -136,7 +140,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 self.assertEqual(page.locator('#builder-design').input_value(), choices['design'])
                 self.assertEqual(page.locator('#builder-variant').input_value(), str(choices['variant']))
                 self.step(4)
-                self.assertIn(str(3000), page.locator('.builder-review').inner_text())
+                self.assertIn(str(choices['width']), page.locator('.builder-review').inner_text())
                 page.evaluate('window.__builderPrinted=false; window.print=()=>window.__builderPrinted=true')
                 page.locator('[data-print-design]').click()
                 page.wait_for_function('window.__builderPrinted')
@@ -150,7 +154,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
 
     def test_responsive_layout_and_focused_measurement_with_reduced_viewport(self):
         self.locale('ka')
-        self.configure()
+        choices = self.configure()
         page = self.page
         for width in [320, 390, 768, 1440]:
             for mode in ['light', 'dark']:
@@ -159,7 +163,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.evaluate("Alpine.store('sidebar').close()")
                     page.evaluate('(mode)=>window.dispatchEvent(new CustomEvent("theme-changed",{detail:mode}))', mode)
                     self.step(3)
-                    page.locator('[data-layout-preset=two_horizontal_panels]').wait_for(state='visible')
+                    page.locator('#builder-finishes').wait_for(state='visible')
                     self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
                     svg = page.locator('.builder-preview-svg').bounding_box()
                     self.assertGreater(svg['width'], 96)
@@ -176,7 +180,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     self.assertLessEqual(box['x'] + box['width'], width)
                     self.assertGreaterEqual(box['y'], 0)
                     self.assertLessEqual(box['y'] + box['height'], 420)
-                    self.assertEqual(field.input_value(), '3000')
+                    self.assertEqual(field.input_value(), str(choices['width']))
                     colors = page.evaluate("""() => {
                         const rgb = value => { const canvas=document.createElement('canvas'); canvas.width=canvas.height=1; const ctx=canvas.getContext('2d'); ctx.fillStyle=value; ctx.fillRect(0,0,1,1); return Array.from(ctx.getImageData(0,0,1,1).data); };
                         return {
@@ -195,7 +199,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.set_viewport_size({'width': width, 'height': 900})
 
     def test_keyboard_selection_focus_and_inline_validation(self):
-        self.configure()
+        choices = self.configure()
         page = self.page
         doors = page.locator('[data-preview-door-control]')
         doors.first.focus()
@@ -227,7 +231,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertNotEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
 
     def test_long_catalog_names_are_text_and_missing_visuals_use_neutral_fills(self):
-        self.configure()
+        choices = self.configure()
         page = self.page
         page.set_viewport_size({'width': 320, 'height': 900})
         page.evaluate("Alpine.store('sidebar').close()")
@@ -251,7 +255,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
 
     def test_preview_avoids_replacing_nodes_for_selection_and_nonvisual_changes(self):
-        self.configure()
+        choices = self.configure()
         page = self.page
         page.evaluate("window.__builderPanel=document.querySelector('.builder-preview-panel')")
         page.locator('[data-preview-door-control]').first.click()
@@ -266,7 +270,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.set_viewport_size({'width': 390, 'height': 900})
         page.wait_for_function("window.__builderPanel!==document.querySelector('.builder-preview-panel')")
         self.assertEqual(page.locator('.builder-preview-door').count(), 2)
-        self.assertEqual(page.locator('.builder-preview-panel').count(), 4)
+        self.assertEqual(page.locator('.builder-preview-panel').count(), 2*choices['panels'])
         # Exercise Filament's SPA teardown/remount instead of only a full page refresh.
         for _ in range(2):
             page.evaluate("Livewire.navigate('/admin/my-profile')")
@@ -275,7 +279,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             self.ready()
             page.wait_for_function(f'{ROOT}.hasPreview')
             self.assertEqual(page.locator('.builder-preview-door').count(), 2)
-            self.assertEqual(page.locator('.builder-preview-panel').count(), 4)
+            self.assertEqual(page.locator('.builder-preview-panel').count(), 2*choices['panels'])
             page.locator('[data-preview-door-control]').first.click()
             self.assertEqual(page.locator('.builder-preview-door.is-selected').count(), 1)
 
@@ -288,23 +292,14 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertTrue(page.locator('[data-builder-next]:visible').evaluate("el=>Boolean(el.closest('.fi-section'))"))
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
-        self.field_error('builder-openingWidth').wait_for(state='visible')
-        self.field_error('builder-openingHeight').wait_for(state='visible')
-        self.assertFalse(self.field_error('builder-model').is_visible())
-        self.assertEqual(page.locator('#builder-validation').count(), 0)
-        page.locator('#builder-openingWidth').fill('3000')
-        page.locator('#builder-openingHeight').fill('2400')
+        self.field_error('builder-model').wait_for(state='visible')
+        self.assertTrue(page.locator('#builder-openingWidth').is_disabled())
+        self.assertTrue(page.locator('#builder-openingHeight').is_disabled())
+        self.assertFalse(self.field_error('builder-openingWidth').is_visible())
+        choices = self.choose_model_and_size()
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
-        self.assertFalse(self.field_error('builder-model').is_visible())
-        self.assertEqual(page.locator('[data-builder-next]:visible').count(), 1)
-        self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
-        self.step(3)
-        self.field_error('builder-model').wait_for(state='visible')
-        self.assertEqual(page.evaluate('document.activeElement.id'), 'builder-model')
-        choices = self.catalog_choices()
-        page.locator('#builder-model').select_option(str(choices['model']))
-        self.field_error('builder-model').wait_for(state='hidden')
+        self.assertEqual(page.locator('[data-layout-preset]').count(), 0)
         self.step(3)
         self.field_error('builder-design').wait_for(state='visible')
         self.assertFalse(self.field_error('builder-variant').is_visible())
@@ -322,12 +317,12 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.locator('#builder-finishes-error').wait_for(state='visible')
         self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 0)
         self.assertTrue(page.locator('#builder-finishes-error').evaluate("el=>el.previousElementSibling.id==='builder-finishes'"))
-        page.locator(f'[data-infill-id="{choices["infills"][0]}"]').click()
-        page.locator('#builder-finishes-error').wait_for(state='hidden')
-        self.step(4)
-        self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 1)
-        page.locator(f'[data-infill-id="{choices["infills"][1]}"]').click()
-        self.step(4)
+        for door in range(2):
+            for panel in range(choices['panels']):
+                self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), door)
+                self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewPanel.index'), panel)
+                page.locator(f'[data-infill-id="{choices["infills"][door]}"]').click()
+                self.step(4)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
         self.assertEqual(page.locator('[data-builder-next]:visible').count(), 0)
         self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
@@ -337,6 +332,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page = self.page
         for locale in ['en', 'ka']:
             self.locale(locale)
+            choices = self.choose_model_and_size()
             for value, rule in [('', 'required'), ('abc', 'numeric'), ('0', 'gt'), ('-20', 'gt')]:
                 with self.subTest(locale=locale, value=value, rule=rule):
                     page.locator('#builder-openingWidth').fill(value)
@@ -347,15 +343,15 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     self.assertEqual(error.inner_text(), expected)
                     self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
                     self.assertEqual(page.locator('#builder-openingWidth').get_attribute('aria-invalid'), 'true')
-            page.locator('#builder-openingWidth').fill('3000')
-            page.locator('#builder-openingHeight').fill('2400')
+            page.locator('#builder-openingWidth').fill(str(choices['width']))
+            page.locator('#builder-openingHeight').fill(str(choices['height']))
             self.step(2)
             self.field_error('builder-openingWidth').wait_for(state='hidden')
             self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
             self.step(1)
 
     def test_native_filament_fields_resize_and_reset_without_reviving_old_values(self):
-        self.configure()
+        choices = self.configure()
         page = self.page
         before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor)')
         if page.evaluate(f'{ROOT}.selectedVariant.hasSoftCloseMechanism'):
@@ -366,9 +362,9 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             checkbox.uncheck()
             page.wait_for_function(f'!{ROOT}.previewConfiguration.softClose')
         self.step(1)
-        page.locator('#builder-openingWidth').fill('3200')
+        page.locator('#builder-openingWidth').fill(str(choices['width']+1))
         page.locator('#builder-openingHeight').focus()
-        page.wait_for_function(f'{ROOT}.previewConfiguration.openingWidth===3200')
+        page.wait_for_function(f'{ROOT}.previewConfiguration.openingWidth==={choices["width"]+1}')
         self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor)'), before)
         self.step(2)
         page.locator('[data-reset-builder]').click()
@@ -380,11 +376,11 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.variantId'))
         self.assertEqual(page.locator('.builder-preview-panel').count(), 0)
         self.assertTrue(page.locator('.builder-preview-placeholder').is_visible())
-        page.locator('#builder-openingWidth').fill('1800')
-        page.locator('#builder-openingHeight').fill('2200')
+        self.assertTrue(page.locator('#builder-openingWidth').is_disabled())
+        self.choose_model_and_size()
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
-        self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.modelId'))
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.modelId'), choices['model'])
 
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()
@@ -392,7 +388,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor)')
         page.evaluate(f'{ROOT}.selectedVariant.hasPartition=false')
         page.wait_for_function(f'!{ROOT}.canReview')
-        self.assertTrue(page.locator('[data-layout-preset=two_horizontal_panels]').is_disabled())
+        self.assertEqual(page.locator('[data-layout-preset]').count(), 0)
         self.step(4)
         self.assertNotEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
         self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor)'), before)
@@ -405,6 +401,37 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.ready()
         page.wait_for_function(f"{ROOT}.draftStatus==='restored'")
 
+    def test_model_bounds_and_fixed_divisions_follow_model_changes(self):
+        choices = self.configure()
+        page = self.page
+        self.step(1)
+        bounds = page.evaluate(f'({{min:{ROOT}.selectedModel.minWidth,max:{ROOT}.selectedModel.maxWidth}})')
+        for value, rule, limit in [(bounds['min']-1, 'min', bounds['min']), (bounds['max']+1, 'max', bounds['max'])]:
+            page.locator('#builder-openingWidth').fill(str(value))
+            self.step(2)
+            error = self.field_error('builder-openingWidth')
+            error.wait_for(state='visible')
+            self.assertEqual(error.inner_text(), page.evaluate(f"{ROOT}.issueMessage({{code:'{rule}',field:'builder-openingWidth',limit:{limit}}})"))
+            self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
+        page.locator('#builder-openingWidth').fill(str(choices['width']))
+        page.locator('#builder-openingHeight').focus()
+        page.wait_for_function(f'{ROOT}.previewConfiguration.openingWidth==={choices["width"]}')
+        smaller = page.evaluate(f'{ROOT}.catalog.models.find(m=>m.partitionCount+1 < {choices["panels"]} && m.variants.some(v=>v.hasPartition))?.id')
+        if smaller is not None:
+            before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)')
+            page.locator('#builder-model').select_option(str(smaller))
+            page.locator('[data-cancel-replacement]').click()
+            page.wait_for_function(f'!{ROOT}.formBusy')
+            self.assertEqual(page.locator('#builder-model').input_value(), str(choices['model']))
+            self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)'), before)
+            page.locator('#builder-model').select_option(str(smaller))
+            page.locator('[data-confirm-replacement]').click()
+            page.wait_for_function(f'{ROOT}.previewConfiguration.modelId==={smaller}')
+            count = page.evaluate(f'{ROOT}.selectedModel.partitionCount+1')
+            self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.panelWeights'), [1]*count)
+            self.assertEqual(page.locator('.builder-preview-panel').count(), count*2)
+        self.assertEqual(page.locator('[data-layout-preset]').count(), 0)
+
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page
         page.evaluate("localStorage.setItem(Object.keys(localStorage).find(k=>k.startsWith('sliding-door-builder:')) ?? document.querySelector('.sliding-door-builder').getAttribute('x-data').match(/sliding-door-builder:\\d+/)[0], '{')")
@@ -415,7 +442,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertIsNone(page.evaluate(f'{ROOT}.draftStatus'))
         # Only builder writes fail; Filament's unrelated theme/sidebar storage stays available.
         page.evaluate("() => { const original=Storage.prototype.setItem; Storage.prototype.setItem=function(key,value){if(key.startsWith('sliding-door-builder:'))throw new DOMException('Quota exceeded','QuotaExceededError');return original.call(this,key,value)}; }")
-        self.configure()
+        choices = self.configure()
         page.wait_for_function(f"{ROOT}.draftStatus==='unavailable'")
         self.assertTrue(page.evaluate(f'{ROOT}.canReview'))
 

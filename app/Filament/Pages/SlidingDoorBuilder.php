@@ -162,6 +162,8 @@ class SlidingDoorBuilder extends Page
                 'required' => __('validation.required', ['attribute' => $attribute]),
                 'numeric' => __('validation.numeric', ['attribute' => $attribute]),
                 'gt' => __('validation.gt.numeric', ['attribute' => $attribute, 'value' => 0]),
+                'min' => __('validation.min.numeric', ['attribute' => $attribute]),
+                'max' => __('validation.max.numeric', ['attribute' => $attribute]),
                 'exists' => __('validation.exists', ['attribute' => $attribute]),
                 'in' => __('validation.in', ['attribute' => $attribute]),
             ];

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { reconcilePreviewConfiguration, reconcilePreviewSelection, previewSelectionTargets } from '../../resources/js/sliding-door-selection.js';
 import { createPreviewScene } from '../../resources/js/sliding-door-preview.js';
+import { applyModelLayout } from '../../resources/js/sliding-door-state.js';
 import slidingDoorBuilder from '../../resources/js/sliding-door-builder.js';
 
 function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
@@ -10,7 +11,7 @@ function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
         validationLabels,
         fieldValidationMessages,
         payload: {
-            catalog: { models: [], infills: [] },
+            catalog: { models: [{id:1, partitionCount:2, minWidth:500, maxWidth:1100, minHeight:1600, maxHeight:2600, variants:[{id:11,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}], infills: [] },
             metadata: {
                 frameColors: [{ color: 'black', label: 'Black', visual: { fill: '#202020' } }],
                 infillVisuals: [{ infillId: 7, visual: { fill: '#AABBCC' } }],
@@ -18,8 +19,8 @@ function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
             },
         },
     });
-    builder.previewConfiguration = { openingWidth: 3000, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
-    builder.sizeInputs = { openingWidth: '3000', openingHeight: '2400' };
+    builder.previewConfiguration = { modelId:1, openingWidth: 800, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
+    builder.sizeInputs = { openingWidth: '800', openingHeight: '2400' };
     return builder;
 }
 
@@ -50,54 +51,10 @@ test('visual resolution does not add products or change selections', () => {
 });
 
 
-test('shared preset choices update both door divisions and preserve unrelated configuration', () => {
-    const builder = createBuilder();
-    builder.metadata.layoutPresets = [
-        { id: 'full_panel', panelWeights: [1] },
-        { id: 'two_horizontal_panels', panelWeights: [1, 1] },
-        { id: 'three_horizontal_panels', panelWeights: [1, 1, 1] },
-    ];
-    let id = 0;
-    const normalize = () => {
-        builder.previewConfiguration = reconcilePreviewConfiguration(builder.previewConfiguration, null, () => `preset-${++id}`);
-    };
-    normalize();
-    const doorIds = [...builder.previewConfiguration.doorIds];
-    for (const preset of builder.metadata.layoutPresets) {
-        builder.selectLayout(preset.id);
-        normalize();
-        const config = builder.previewConfiguration;
-        const scene = createPreviewScene(config, builder.metadata, { width: 600, height: 400 });
-        assert.equal(builder.selectedLayoutId, preset.id);
-        assert.deepEqual(config.doorIds, doorIds);
-        assert.equal(config.openingWidth, 3000);
-        assert.equal(config.openingHeight, 2400);
-        assert.equal(config.frameColor, 'black');
-        assert.deepEqual(scene.doors.map(door => door.panels.length), [preset.panelWeights.length, preset.panelWeights.length]);
-        assert.deepEqual(scene.doors[0].panels.map(panel => panel.y), scene.doors[1].panels.map(panel => panel.y));
-        const before = builder.previewConfiguration;
-        builder.selectLayout(preset.id);
-        assert.equal(builder.previewConfiguration, before);
-    }
-    assert.deepEqual(builder.metadata.layoutPresets.map(preset => preset.panelWeights), [[1], [1, 1], [1, 1, 1]]);
-    const before = builder.previewConfiguration;
-    builder.selectLayout('missing');
-    assert.equal(builder.previewConfiguration, before);
-    builder.previewConfiguration = null;
-    builder.selectLayout('full_panel');
-    assert.equal(builder.previewConfiguration, null);
-    assert.equal(builder.selectedLayoutId, null);
-});
-
 function editingBuilder(validationLabels = {}, fieldValidationMessages = {}) {
     const builder = createBuilder(validationLabels, fieldValidationMessages);
     builder.$dispatch = () => {};
     builder.catalog.infills = [{ id: 7, code: 'A', description: 'Mapped' }, { id: 8, code: 'B', description: 'Neutral' }];
-    builder.metadata.layoutPresets = [
-        { id: 'full_panel', panelWeights: [1] },
-        { id: 'two_horizontal_panels', panelWeights: [1, 1] },
-        { id: 'three_horizontal_panels', panelWeights: [1, 1, 1] },
-    ];
     let id = 0;
     builder.previewConfiguration = reconcilePreviewConfiguration(builder.previewConfiguration, null, () => `edit-${++id}`);
     builder.previewDoors = builder.previewConfiguration.doorIds.map((doorId, index) => ({
@@ -174,7 +131,7 @@ test('layout remapping preserves corresponding finishes and never resurrects rem
     builder.previewConfiguration.infillIdsByDoor = [[7,8,7], [8,7,8]];
     const original = structuredClone(builder.previewConfiguration);
     builder.selectPreviewPanel(builder.previewDoors[1].id, builder.previewDoors[1].panels[2].id);
-    builder.selectLayout('two_horizontal_panels');
+    builder.requestConfigurationChange(applyModelLayout(builder.previewConfiguration, {partitionCount:1}));
     builder.confirmConfigurationChange();
     let config = reconcilePreviewConfiguration(builder.previewConfiguration, original, () => 'unused');
     assert.deepEqual(config.infillIdsByDoor, [[7,8], [8,7]]);
@@ -182,18 +139,13 @@ test('layout remapping preserves corresponding finishes and never resurrects rem
     const selection = reconcilePreviewSelection(builder.previewSelection, previewSelectionTargets(config));
     assert.deepEqual(selection, { doorId: original.doorIds[1], panelId: null });
     builder.previewConfiguration = config;
-    builder.selectLayout('full_panel');
-    builder.confirmConfigurationChange();
-    config = reconcilePreviewConfiguration(builder.previewConfiguration, config, () => 'unused');
-    builder.previewConfiguration = config;
-    builder.selectLayout('three_horizontal_panels');
+    builder.requestConfigurationChange(applyModelLayout(builder.previewConfiguration, {partitionCount:2}));
     let id = 0;
     const expanded = reconcilePreviewConfiguration(builder.previewConfiguration, config, () => `new-${++id}`);
-    assert.deepEqual(expanded.infillIdsByDoor, [[7,null,null], [8,null,null]]);
+    assert.deepEqual(expanded.infillIdsByDoor, [[7,8,null], [8,7,null]]);
     assert.deepEqual(expanded.doorIds, original.doorIds);
     for (let index = 0; index < 2; index++) {
         assert.equal(expanded.panelIdsByDoor[index][0], original.panelIdsByDoor[index][0]);
-        assert.ok(!original.panelIdsByDoor.flat().includes(expanded.panelIdsByDoor[index][1]));
         assert.ok(!original.panelIdsByDoor.flat().includes(expanded.panelIdsByDoor[index][2]));
     }
 });
@@ -217,10 +169,10 @@ test('bulk overwrites require confirmation and cancel leaves the design intact',
     builder.confirmConfigurationChange();
     assert.deepEqual(builder.previewConfiguration.infillIdsByDoor, [[7,8,null], [7,8,null]]);
     assert.equal(builder.pendingChange, null);
-    builder.selectLayout('full_panel');
-    assert.equal(builder.previewConfiguration.panelWeights.length, 3);
+    builder.requestConfigurationChange(applyModelLayout(builder.previewConfiguration, {partitionCount:1}));
+    assert.equal(builder.previewConfiguration.panelWeights.length, 2);
     builder.confirmConfigurationChange();
-    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor, [[7], [7]]);
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor, [[7,8], [7,8]]);
 });
 
 test('stale confirmations cannot overwrite a newer design', () => {
@@ -271,7 +223,7 @@ test('clearing all finishes is protected and cancelling a smaller layout retains
     const builder = editingBuilder();
     builder.previewConfiguration.infillIdsByDoor = [[null,7,8], [8,null,7]];
     const before = structuredClone(builder.previewConfiguration);
-    builder.selectLayout('full_panel');
+    builder.requestConfigurationChange(applyModelLayout(builder.previewConfiguration, {partitionCount:1}));
     assert.ok(builder.pendingChange);
     builder.cancelConfigurationChange();
     assert.deepEqual(builder.previewConfiguration, before);
@@ -337,7 +289,7 @@ test('navigation gates incomplete size and product choices without losing panel 
 test('incomplete measurement entry retains committed geometry but blocks forward navigation', () => {
     const builder = editingBuilder();
     builder.setMeasurement('openingWidth', '12e');
-    assert.equal(builder.previewConfiguration.openingWidth, 3000);
+    assert.equal(builder.previewConfiguration.openingWidth, 800);
     assert.equal(builder.sizeInputs.openingWidth, '12e');
     assert.equal(builder.sizeErrors.openingWidth, true);
     builder.goToStep(2);
@@ -359,7 +311,7 @@ test('reset requests confirmation before discarding edits and restores a blank c
     builder.resetConfiguration();
     assert.equal(builder.previewConfiguration.openingWidth, null);
     assert.equal(builder.previewConfiguration.variantId, null);
-    assert.deepEqual(builder.previewConfiguration.panelWeights, [1]);
+    assert.deepEqual(builder.previewConfiguration.panelWeights, []);
     assert.deepEqual(builder.previewSelection, {doorId:null, panelId:null});
     assert.equal(builder.activeStep, 1);
 });
@@ -384,7 +336,7 @@ function sequentialBuilder() {
         'builder-variant': { required: 'Choose a variant.' },
         'builder-finishes': { required: 'Choose a finish.' },
     });
-    builder.catalog.models = [{ id: 1, name: 'System', variants: [
+    builder.catalog.models = [{ id: 1, name: 'System', partitionCount:2,minWidth:500,maxWidth:1100,minHeight:1600,maxHeight:2600, variants: [
         { id: 11, frameDesignCode: 'A', color: 'black', hasPartition: true, hasSoftCloseMechanism: false, components: [] },
     ] }];
     return builder;
@@ -398,8 +350,7 @@ test('sections advance sequentially with errors only on the attempted fields', (
     assert.equal(builder.fieldError('builder-finishes'), '');
     builder.goToStep(3);
     assert.equal(builder.activeStep, 2);
-    assert.equal(builder.fieldError('builder-model'), 'Choose a system.');
-    assert.equal(builder.fieldError('builder-design'), '');
+    assert.equal(builder.fieldError('builder-design'), 'Choose a design.');
     assert.equal(builder.fieldError('builder-variant'), '');
     builder.selectModel(1);
     assert.equal(builder.fieldError('builder-model'), '');
@@ -438,13 +389,13 @@ test('Next validates unblurred input and cannot reuse a previously committed siz
     builder.sizeInputs.openingWidth = '';
     builder.goToStep(2);
     assert.equal(builder.activeStep, 1);
-    assert.equal(builder.previewConfiguration.openingWidth, 3000);
+    assert.equal(builder.previewConfiguration.openingWidth, 800);
     assert.equal(builder.fieldError('builder-openingWidth'), 'Width is required.');
     assert.equal(builder.fieldError('builder-model'), '');
-    builder.sizeInputs.openingWidth = '3200';
+    builder.sizeInputs.openingWidth = '900';
     builder.goToStep(2);
     assert.equal(builder.activeStep, 2);
-    assert.equal(builder.previewConfiguration.openingWidth, 3200);
+    assert.equal(builder.previewConfiguration.openingWidth, 900);
     assert.equal(builder.fieldError('builder-openingWidth'), '');
 });
 
@@ -453,10 +404,37 @@ test('invalid draft text replaces the committed-size error with the matching fie
     const builder = sequentialBuilder();
     for (const [value, message] of [['', 'Width is required.'], ['abc', 'Width must be a number.'], ['0', 'Width must be greater than zero.'], ['-12', 'Width must be greater than zero.']]) {
         builder.setMeasurement('openingWidth', value);
-        assert.equal(builder.previewConfiguration.openingWidth, 3000);
+        assert.equal(builder.previewConfiguration.openingWidth, 800);
         assert.equal(builder.fieldError('builder-openingWidth'), message);
         assert.equal(builder.validation.errors.filter(issue => issue.field === 'builder-openingWidth').length, 1);
     }
-    builder.setMeasurement('openingWidth', '3200');
+    builder.setMeasurement('openingWidth', '900');
     assert.equal(builder.fieldError('builder-openingWidth'), '');
+});
+
+test('native model changes derive both doors and cancelling restores the previous model', async () => {
+    const builder = editingBuilder();
+    builder.catalog.models.push({...builder.catalog.models[0],id:2,partitionCount:1});
+    builder.previewConfiguration.infillIdsByDoor = [[7,8,7],[8,7,8]];
+    const before = structuredClone(builder.previewConfiguration);
+    builder.formState = {openingWidth:'800',openingHeight:'2400',modelId:2,variantId:null,frameDesignCode:null,softClose:false};
+    builder.$wire = {restoreBuilderFields:async () => {}};
+    builder.applyFormFields();
+    assert.equal(builder.pendingChange.kind,'model');
+    assert.deepEqual(builder.previewConfiguration,before);
+    builder.cancelConfigurationChange();
+    await Promise.resolve();
+    assert.equal(builder.formState.modelId,1);
+    assert.deepEqual(builder.previewConfiguration,before);
+    builder.formState.modelId=2;
+    builder.applyFormFields();
+    builder.confirmConfigurationChange();
+    assert.equal(builder.previewConfiguration.modelId,2);
+    assert.deepEqual(builder.previewConfiguration.panelWeights,[1,1]);
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor,[[7,8],[8,7]]);
+    builder.formState.modelId=1;
+    builder.applyFormFields();
+    assert.equal(builder.pendingChange,null);
+    assert.deepEqual(builder.previewConfiguration.panelWeights,[1,1,1]);
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor,[[7,8,null],[8,7,null]]);
 });

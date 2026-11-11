@@ -37,13 +37,15 @@ return [
         'unselected' => 'No finish selected',
     ],
     'size' => [
+        'partition_summary' => 'Partitions: :count; panels per door: :panels.',
+
         'unit' => 'mm',
         'width' => 'Width (mm)',
         'height' => 'Height (mm)',
     ],
     'system' => [
         'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
-        'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
+        'range_note' => 'Variant height ranges are for reference; their scope remains unconfirmed.',
         'range_width' => 'Catalog width',
         'range_height' => 'Catalog height',
         'range_variantHeight' => 'Variant height',
@@ -51,7 +53,7 @@ return [
         'soft_close' => 'Soft close preference',
         'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
 
-        'model' => 'Door system',
+        'model' => 'Door model',
         'design' => 'Frame design',
         'variant' => 'Colour and variant',
         'choose' => 'Choose an option',
@@ -65,15 +67,20 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
+        'model_unavailable' => 'This model has no variants with partition components. Choose another model.',
+        'model_structure_changed' => 'The panel divisions must match the selected model.',
+
         'geometry_invalid' => 'These dimensions cannot produce a preview.',
         'finish_incompatible' => 'Door :door, panel :panel: finish is incompatible with the selected system/options.',
-        'partition_missing' => 'This variant has no partition. Choose full panels or another variant.',
+        'partition_missing' => 'This variant has no partition component. Choose another variant.',
         'soft_close_missing' => 'Soft close is unavailable for this variant. Turn it off or choose another variant.',
-        'sizing_unconfirmed' => 'Catalog dimension scope remains unconfirmed.',
+        'sizing_unconfirmed' => 'Variant height range scope remains unconfirmed.',
         'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
+        'divisions' => 'Panel divisions',
+
         'export' => 'Download configuration (JSON)',
         'export_failed' => 'The configuration could not be downloaded. Please try again.',
 
@@ -81,13 +88,15 @@ return [
         'edit' => 'Edit',
         'edit_size' => 'Edit size',
         'edit_system' => 'Edit system',
-        'edit_layout' => 'Edit layout',
+        'edit_layout' => 'Edit finishes',
 
         'colour' => 'Colour',
         'yes' => 'Yes',
         'no' => 'No',
     ],
     'drafts' => [
+        'outdated_layout' => 'The saved panel divisions no longer match this model. Start a new design.',
+
         'discard' => 'Remove saved draft',
         'restored' => 'Your last valid design was restored from this browser.',
         'outdated' => 'Your saved design needs changes because catalog options have changed. Your choices are kept for correction.',
@@ -98,25 +107,16 @@ return [
     ],
     'steps' => [
         'opening' => [
-            'label' => 'Size',
-            'description' => 'Set the width and height of the opening.',
+            'label' => 'Model and size',
+            'description' => 'Choose a door model, then enter width and height.',
         ],
         'system' => [
-            'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
-            'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
-            'range_width' => 'Catalog width',
-            'range_height' => 'Catalog height',
-            'range_variantHeight' => 'Variant height',
-
-            'soft_close' => 'Soft close preference',
-            'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
-
-            'label' => 'Door system and colour',
-            'description' => 'Choose the door system and frame colour.',
+            'label' => 'Frame and colour',
+            'description' => 'Choose the frame design, colour and options.',
         ],
         'panels' => [
-            'label' => 'Layouts and finishes',
-            'description' => 'Choose a shared layout and panel finishes for each door.',
+            'label' => 'Panel finishes',
+            'description' => 'Choose a finish for each panel.',
         ],
         'review' => [
             'label' => 'Review',
@@ -124,6 +124,8 @@ return [
         ],
     ],
     'preview' => [
+        'layout_label' => ':panels panels (:partitions partitions)',
+
         'title' => 'Door preview',
         'drawing_label' => 'Illustrative sliding door front view with opening dimensions',
         'doors_label' => 'Select a door',

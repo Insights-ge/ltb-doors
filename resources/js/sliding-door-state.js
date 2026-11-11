@@ -7,7 +7,7 @@ export function createInitialConfiguration() {
         variantId: null,
         frameDesignCode: null,
         frameColor: null,
-        panelWeights: [1],
+        panelWeights: [],
         softClose: false,
     };
 }
@@ -30,4 +30,24 @@ export function measurementError(value) {
 
 export function parseMeasurement(value) {
     return measurementError(value) === null ? numericMeasurement(value) : null;
+}
+
+
+export function modelPanelWeights(model) {
+    return Number.isInteger(model?.partitionCount) && model.partitionCount >= 1 && model.partitionCount <= 4
+        ? Array(model.partitionCount + 1).fill(1) : [];
+}
+
+/** Preserve corresponding top-to-bottom finishes; new model panels start empty. */
+export function applyModelLayout(configuration, model) {
+    if (!model) return configuration;
+    const panelWeights = modelPanelWeights(model);
+    if (configuration.panelWeights?.length === panelWeights.length && configuration.panelWeights.every(weight => weight === 1)) return configuration;
+    return {
+        ...configuration,
+        panelWeights,
+        panelIdsByDoor: configuration.panelIdsByDoor?.map(ids => ids.slice(0, panelWeights.length)),
+        infillIdsByDoor: Array.from({length:2}, (_,doorIndex) => panelWeights.map((_,panelIndex) =>
+            panelIndex < (configuration.panelWeights?.length ?? 0) ? configuration.infillIdsByDoor?.[doorIndex]?.[panelIndex] ?? null : null)),
+    };
 }

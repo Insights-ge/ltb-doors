@@ -18,27 +18,66 @@ class SlidingDoorBuilderForms
 {
     public static function size(Schema $schema, SlidingDoorBuilder $page): Schema
     {
-        $fields = [];
+        $fields = [
+            Select::make('modelId')
+                ->id('builder-model')
+                ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'modelId') ? 'true' : 'false'])
+                ->label(__('sliding_door_builder.system.model'))
+                ->placeholder(__('sliding_door_builder.system.choose'))
+                ->options(fn (): array => collect($page->builderCatalog->models)->mapWithKeys(fn (BuilderDoorModelData $model): array => [$model->id => $model->name])->all())
+                ->disableOptionWhen(function (int|string $value) use ($page): bool {
+                    foreach ($page->builderCatalog->models as $model) {
+                        if ($model->id === self::id($value)) {
+                            return self::supportedVariants($model) === [];
+                        }
+                    }
+
+                    return true;
+                })
+                ->helperText(function (Get $get) use ($page): ?string {
+                    $model = self::model($page, $get);
+                    if ($model === null) {
+                        return null;
+                    }
+                    $summary = __('sliding_door_builder.size.partition_summary', ['count' => $model->partitionCount, 'panels' => $model->partitionCount + 1]);
+
+                    return is_string($summary) ? $summary : null;
+                })
+                ->required()
+                ->live()
+                ->afterStateUpdated(function (Set $set) use ($page): void {
+                    $set('frameDesignCode', null);
+                    $set('variantId', null);
+                    $page->resetValidation();
+                }),
+        ];
 
         foreach (['openingWidth' => 'width', 'openingHeight' => 'height'] as $name => $label) {
             $fields[] = TextInput::make($name)
                 ->id('builder-' . $name)
                 ->label(__('sliding_door_builder.size.' . $label))
                 ->inputMode('decimal')
-                ->required()
-                ->rules(['bail', 'numeric', 'gt:0'])
+                ->disabled(fn (Get $get): bool => self::model($page, $get) === null)
+                ->required(fn (Get $get): bool => self::model($page, $get) !== null)
+                ->rules(['bail', 'numeric'])
+                ->rule(fn (TextInput $component): Closure => function (string $attribute, mixed $value, Closure $fail) use ($component): void {
+                    if (is_numeric($value) && ! is_finite((float) $value)) {
+                        $fail(__('validation.numeric', ['attribute' => $component->getValidationAttribute()]));
+                    }
+                })
+                ->rule('gt:0')
+                ->minValue(fn (Get $get): ?int => self::sizeBound($page, $get, $label, 'min'))
+                ->maxValue(fn (Get $get): ?int => self::sizeBound($page, $get, $label, 'max'))
+                ->helperText(fn (Get $get): ?string => self::model($page, $get)
+                    ? self::sizeBound($page, $get, $label, 'min') . '–' . self::sizeBound($page, $get, $label, 'max') . ' ' . __('sliding_door_builder.size.unit')
+                    : null)
                 ->mutateStateForValidationUsing(fn ($state) => is_string($state) ? str_replace(',', '.', trim($state)) : $state)
                 ->live(onBlur: true)
                 ->afterStateUpdated(fn () => $page->resetValidation('builderFields.' . $name))
                 ->extraInputAttributes(fn (): array => [
                     'x-on:blur' => "setMeasurement('{$name}', \$event.target.value)",
                     'aria-invalid' => self::hasError($page, $name) ? 'true' : 'false',
-                ])
-                ->rule(fn (TextInput $component): Closure => function (string $attribute, mixed $value, Closure $fail) use ($component): void {
-                    if (is_numeric($value) && ! is_finite((float) $value)) {
-                        $fail(__('validation.numeric', ['attribute' => $component->getValidationAttribute()]));
-                    }
-                });
+                ]);
         }
 
         return self::configure($schema)->components($fields);
@@ -47,25 +86,12 @@ class SlidingDoorBuilderForms
     public static function system(Schema $schema, SlidingDoorBuilder $page): Schema
     {
         return self::configure($schema)->components([
-            Select::make('modelId')
-                ->id('builder-model')
-                ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'modelId') ? 'true' : 'false'])
-                ->label(__('sliding_door_builder.system.model'))
-                ->placeholder(__('sliding_door_builder.system.choose'))
-                ->options(fn (): array => collect($page->builderCatalog->models)->mapWithKeys(fn (BuilderDoorModelData $model): array => [$model->id => $model->name])->all())
-                ->required()
-                ->live()
-                ->afterStateUpdated(function (Set $set) use ($page): void {
-                    $set('frameDesignCode', null);
-                    $set('variantId', null);
-                    $page->resetValidation();
-                }),
             Select::make('frameDesignCode')
                 ->id('builder-design')
                 ->extraInputAttributes(fn (): array => ['aria-invalid' => self::hasError($page, 'frameDesignCode') ? 'true' : 'false'])
                 ->label(__('sliding_door_builder.system.design'))
                 ->placeholder(__('sliding_door_builder.system.choose'))
-                ->options(fn (Get $get): array => collect(self::model($page, $get)->variants ?? [])->mapWithKeys(fn (BuilderDoorVariantData $variant): array => [$variant->frameDesignCode => $variant->frameDesignCode])->all())
+                ->options(fn (Get $get): array => collect(self::supportedVariants(self::model($page, $get)))->mapWithKeys(fn (BuilderDoorVariantData $variant): array => [$variant->frameDesignCode => $variant->frameDesignCode])->all())
                 ->disabled(fn (Get $get): bool => self::model($page, $get) === null)
                 ->required(fn (Get $get): bool => self::model($page, $get) !== null)
                 ->live()
@@ -138,7 +164,26 @@ class SlidingDoorBuilderForms
     /** @return list<BuilderDoorVariantData> */
     private static function variants(SlidingDoorBuilder $page, Get $get): array
     {
-        return array_values(array_filter(self::model($page, $get)->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $variant->frameDesignCode === $get('frameDesignCode')));
+        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => $variant->frameDesignCode === $get('frameDesignCode')));
+    }
+
+    /** @return list<BuilderDoorVariantData> */
+    private static function supportedVariants(?BuilderDoorModelData $model): array
+    {
+        return array_values(array_filter($model->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $variant->hasPartition));
+    }
+
+    private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): ?int
+    {
+        $model = self::model($page, $get);
+
+        return match ($field . '.' . $bound) {
+            'width.min' => $model?->minWidth,
+            'width.max' => $model?->maxWidth,
+            'height.min' => $model?->minHeight,
+            'height.max' => $model?->maxHeight,
+            default => null,
+        };
     }
 
     private static function variant(SlidingDoorBuilder $page, Get $get): ?BuilderDoorVariantData

@@ -2,7 +2,7 @@ import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
-import { createInitialConfiguration, parseMeasurement, measurementError } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -45,10 +45,18 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             const id = (value) => value === null || value === undefined || value === '' ? null : Number(value);
             const modelId = id(state.modelId);
             const variantId = id(state.variantId);
-            const variant = this.catalog.models.find((model) => model.id === modelId)?.variants.find((candidate) => candidate.id === variantId);
+            const model = this.catalog.models.find((candidate) => candidate.id === modelId);
+            const variant = model?.variants.find((candidate) => candidate.id === variantId);
             const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(state.softClose) };
-            if (Object.entries(fields).some(([field, value]) => this.previewConfiguration[field] !== value)) {
-                this.previewConfiguration = { ...this.previewConfiguration, ...fields };
+            const next = applyModelLayout({ ...this.previewConfiguration, ...fields }, model);
+            const modelChange = fields.modelId !== this.previewConfiguration.modelId
+                || next.panelWeights !== this.previewConfiguration.panelWeights;
+            if (this.pendingChange?.kind === 'model') {
+                this.pendingChange.configuration = next;
+            } else if (modelChange) {
+                this.requestConfigurationChange(next, 'model');
+            } else if (Object.entries(fields).some(([field, value]) => this.previewConfiguration[field] !== value)) {
+                this.previewConfiguration = next;
             }
         },
 
@@ -103,6 +111,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (this.draftStatus === 'saved') lastSaved = fingerprint;
         },
 
+        get layoutSummary() {
+            if (!this.selectedModel) return '';
+            return (previewLabels.layout_label ?? '')
+                .replace(':panels', String(this.selectedModel.partitionCount + 1))
+                .replace(':partitions', String(this.selectedModel.partitionCount));
+        },
+
         get reviewDesign() {
             return summarizeConfiguration(this.previewConfiguration, this.catalog, this.metadata);
         },
@@ -110,7 +125,9 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         issueMessage(issue) {
             return (fieldValidationMessages[issue.field]?.[issue.code] ?? validationLabels[issue.code] ?? '')
                 .replace(':door', String((issue.doorIndex ?? 0) + 1))
-                .replace(':panel', String((issue.panelIndex ?? 0) + 1));
+                .replace(':panel', String((issue.panelIndex ?? 0) + 1))
+                .replace(':min', String(issue.limit ?? ''))
+                .replace(':max', String(issue.limit ?? ''));
         },
 
         infillIsIncompatible(infillId) {
@@ -120,14 +137,14 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         get validation() {
             const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);
             for (const [field, invalid] of Object.entries(this.sizeErrors)) {
-                if (invalid) {
+                if (invalid && this.selectedModel) {
                     const errorField = `builder-${field}`;
                     const code = measurementError(this.sizeInputs[field]);
                     result.errors = result.errors.filter((issue) => issue.field !== errorField);
                     if (code) result.errors.unshift({ code, step: 1, field: errorField });
                 }
             }
-            const sizeFields = ['builder-openingWidth', 'builder-openingHeight'];
+            const sizeFields = ['builder-model', 'builder-openingWidth', 'builder-openingHeight'];
             result.errors.sort((first, second) => first.step - second.step
                 || (first.step === 1 ? sizeFields.indexOf(first.field) - sizeFields.indexOf(second.field) : 0));
             return result;
@@ -301,14 +318,14 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             }
         },
 
-        requestConfigurationChange(configuration) {
+        requestConfigurationChange(configuration, kind = null) {
             const current = this.previewConfiguration;
             const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, panelIndex) => (
                 infillId !== null && infillId !== undefined
                 && infillId !== configuration.infillIdsByDoor?.[doorIndex]?.[panelIndex]
             )));
             if (replacesFinish) {
-                this.pendingChange = { before: JSON.stringify(current), configuration };
+                this.pendingChange = { before: JSON.stringify(current), configuration, kind };
                 this.$dispatch('open-modal', { id: 'builder-confirm-replacement' });
             } else {
                 this.previewConfiguration = configuration;
@@ -317,16 +334,21 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         confirmConfigurationChange() {
             const pending = this.pendingChange;
-            // A confirmation only applies to the exact design the user reviewed.
-            if (pending && pending.before === JSON.stringify(this.previewConfiguration)) {
-                this.previewConfiguration = pending.configuration;
+            const applied = pending && pending.before === JSON.stringify(this.previewConfiguration);
+            if (applied) this.previewConfiguration = pending.configuration;
+            this.pendingChange = null;
+            this.$dispatch('close-modal', { id: 'builder-confirm-replacement' });
+            if (pending?.kind === 'model') {
+                if (applied) this.applyFormFields();
+                else this.restoreFormFields();
             }
-            this.cancelConfigurationChange();
         },
 
         cancelConfigurationChange() {
+            const restore = this.pendingChange?.kind === 'model';
             this.pendingChange = null;
             this.$dispatch('close-modal', { id: 'builder-confirm-replacement' });
+            if (restore) this.restoreFormFields();
         },
 
         applyFinishToAllDoors() {
@@ -346,36 +368,6 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.requestConfigurationChange({
                 ...this.previewConfiguration,
                 infillIdsByDoor: this.previewDoors.map(() => [...finishes]),
-            });
-        },
-
-        get selectedLayoutId() {
-            const weights = this.previewConfiguration?.panelWeights;
-            return this.metadata.layoutPresets?.find((preset) => weights?.length === preset.panelWeights.length
-                && weights.every((weight, index) => weight === preset.panelWeights[index]))?.id ?? null;
-        },
-
-        layoutIsAvailable(preset) {
-            return preset.panelWeights.length === 1 || !this.selectedVariant || this.selectedVariant.hasPartition;
-        },
-
-        selectLayout(layoutId) {
-            const preset = this.metadata.layoutPresets?.find((candidate) => candidate.id === layoutId);
-            if (!preset || !this.layoutIsAvailable(preset) || !this.previewConfiguration || this.selectedLayoutId === layoutId) {
-                return;
-            }
-            const configuration = this.previewConfiguration;
-            // Corresponding panels are matched by their top-to-bottom position.
-            // Trim discarded values so increasing the count cannot revive removed finishes.
-            this.requestConfigurationChange({
-                ...configuration,
-                panelWeights: [...preset.panelWeights],
-                panelIdsByDoor: configuration.panelIdsByDoor?.map((ids) => ids.slice(0, preset.panelWeights.length)),
-                infillIdsByDoor: Array.from({ length: 2 }, (_, doorIndex) => preset.panelWeights.map((_, panelIndex) => (
-                    panelIndex < configuration.panelWeights.length
-                        ? configuration.infillIdsByDoor?.[doorIndex]?.[panelIndex] ?? null
-                        : null
-                ))),
             });
         },
 
