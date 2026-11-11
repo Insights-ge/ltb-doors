@@ -2,12 +2,12 @@ import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
-import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, storageKey = null }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
@@ -70,7 +70,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         issueMessage(issue) {
-            return (validationLabels[issue.code] ?? '')
+            return (fieldValidationMessages[issue.field]?.[issue.code] ?? validationLabels[issue.code] ?? '')
                 .replace(':door', String((issue.doorIndex ?? 0) + 1))
                 .replace(':panel', String((issue.panelIndex ?? 0) + 1));
         },
@@ -82,10 +82,16 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         get validation() {
             const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);
             for (const [field, invalid] of Object.entries(this.sizeErrors)) {
-                if (invalid && !result.errors.some((issue) => issue.field === `builder-${field}`)) {
-                    result.errors.push({ code: 'size_invalid', step: 1, field: `builder-${field}` });
+                if (invalid) {
+                    const errorField = `builder-${field}`;
+                    const code = measurementError(this.sizeInputs[field]);
+                    result.errors = result.errors.filter((issue) => issue.field !== errorField);
+                    if (code) result.errors.unshift({ code, step: 1, field: errorField });
                 }
             }
+            const sizeFields = ['builder-openingWidth', 'builder-openingHeight'];
+            result.errors.sort((first, second) => first.step - second.step
+                || (first.step === 1 ? sizeFields.indexOf(first.field) - sizeFields.indexOf(second.field) : 0));
             return result;
         },
 

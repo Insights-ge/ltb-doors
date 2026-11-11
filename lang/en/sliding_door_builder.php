@@ -40,7 +40,6 @@ return [
         'unit' => 'mm',
         'width' => 'Width (mm)',
         'height' => 'Height (mm)',
-        'invalid' => 'Enter a positive measurement in millimetres.',
     ],
     'system' => [
         'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
@@ -66,13 +65,7 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
-        'design_required' => 'Choose an available frame design.',
-        'size_invalid' => 'Enter positive opening dimensions.',
         'geometry_invalid' => 'These dimensions cannot produce a preview.',
-        'model_required' => 'Choose a door system.',
-        'variant_required' => 'Choose an available frame design and colour variant.',
-        'layout_required' => 'Choose a shared layout.',
-        'finish_required' => 'Door :door, panel :panel: choose an available finish.',
         'finish_incompatible' => 'Door :door, panel :panel: finish is incompatible with the selected system/options.',
         'partition_missing' => 'This variant has no partition. Choose full panels or another variant.',
         'soft_close_missing' => 'Soft close is unavailable for this variant. Turn it off or choose another variant.',

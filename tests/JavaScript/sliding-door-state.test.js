@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInitialConfiguration, parseMeasurement } from '../../resources/js/sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError } from '../../resources/js/sliding-door-state.js';
 
 test('new configurations contain no fabricated product or dimension choices and do not share mutable state', () => {
     const first = createInitialConfiguration();
@@ -21,4 +21,12 @@ test('committed finite numeric measurements retain validity even when their stri
     assert.equal(parseMeasurement(1e22),1e22);
     assert.equal(parseMeasurement(1e-10),1e-10);
     assert.equal(parseMeasurement(Infinity),null);
+});
+
+
+test('measurement errors distinguish required, numeric and greater-than-zero rules', () => {
+    for (const value of ['', ' ', null, undefined]) assert.equal(measurementError(value), 'required');
+    for (const value of ['abc', '12e', '0x10', NaN, Infinity, '1e999']) assert.equal(measurementError(value), 'numeric');
+    for (const value of ['0', '-12', '-0.5', 0, -12]) assert.equal(measurementError(value), 'gt');
+    for (const value of ['.5', '12.', '+12', '1e3', '12,5', 2400]) assert.equal(measurementError(value), null);
 });

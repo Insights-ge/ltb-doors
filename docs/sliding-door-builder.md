@@ -22,6 +22,7 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 ## Implemented rules and limitations
 
 - Exactly two equal-width illustrative doors; one shared layout, independent finishes and stable instance IDs.
+- Standard field errors come from the same `validation.php` translations and field-label casing used by Filament: missing values use `required`, nonnumeric values use `numeric`, zero/negative measurements use `gt.numeric`, and removed catalog choices use `exists` or `in`. Domain-specific compatibility messages remain separate.
 - Positive finite opening dimensions and representable geometry are enforced. Model width/height limits, variant height ranges and discouraged heights have **unconfirmed measurement scope**: one finished door versus an entire opening. They remain raw reference/advisory values. `sliding-door-rules.js` records the scopes as `unconfirmed`. Confirm scope and track/overlap deductions before applying product sizing limits. Estimated half-width geometry is never a cutting size.
 - Recorded infill exclusions apply to all used frame components, partitions when divided, and soft-close components only when selected. An empty exclusion list means no recorded exclusions, not a complete certification of compatibility.
 - Soft close is a preference available with the relevant component. Hardware quantities and installation eligibility remain unconfirmed.
@@ -53,10 +54,12 @@ Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Optional `B
 
 Verified on this branch:
 
-- **352 PHP tests**, 3429 assertions; **101 individual Node tests**; **eight Chromium regression cases**; production Vite build and repository-wide Duster all pass.
+- **352 PHP tests**, 3429 assertions; **104 individual Node tests**; **nine Chromium regression cases**; production Vite build and repository-wide Duster all pass.
 - Catalog-backed journeys in English/Georgian, independent finishes, review, JSON download, refresh/restore and print PDF, without blocking console errors.
 - 320/390/768/1440px widths and light/dark themes; Georgian/long names, no horizontal overflow, 44px controls and reduced-height focused inputs.
 - Keyboard selection, context labels, pressed/live states, section/invalid-field focus, annotation contrast of at least 4.5:1 and focus accents of at least 3:1 against the preview surface.
 - Empty/incomplete catalogs, removed/changed options, missing visuals, names rendered as text, malformed drafts and storage failures.
 - No SVG node replacement for selection/nonvisual changes; correct resize redraw and two clean Filament SPA teardown/remount cycles.
 - Print output uses white surfaces, actual frame colour and no selection markers. The dev server and its hot-file configuration remain available after the production-build check.
+
+Latest validation-message verification: 22 PHP feature tests (200 assertions), 104 individual Node tests, nine Chromium cases, targeted PHPStan and Duster pass.

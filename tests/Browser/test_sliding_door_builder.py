@@ -325,6 +325,27 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
         self.assertEqual(page.locator('.builder-summary button').count(), 0)
 
+    def test_size_messages_use_the_matching_translated_validation_rule(self):
+        page = self.page
+        for locale in ['en', 'ka']:
+            self.locale(locale)
+            for value, rule in [('', 'required'), ('abc', 'numeric'), ('0', 'gt'), ('-20', 'gt')]:
+                with self.subTest(locale=locale, value=value, rule=rule):
+                    page.locator('#builder-openingWidth').fill(value)
+                    self.step(2)
+                    error = page.locator('#builder-openingWidth-error')
+                    error.wait_for(state='visible')
+                    expected = page.evaluate(f"{ROOT}.issueMessage({{code:'{rule}',field:'builder-openingWidth'}})")
+                    self.assertEqual(error.inner_text(), expected)
+                    self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
+                    self.assertEqual(page.locator('#builder-openingWidth').get_attribute('aria-invalid'), 'true')
+            page.locator('#builder-openingWidth').fill('3000')
+            page.locator('#builder-openingHeight').fill('2400')
+            self.step(2)
+            page.locator('#builder-openingWidth-error').wait_for(state='hidden')
+            self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
+            self.step(1)
+
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()
         page = self.page

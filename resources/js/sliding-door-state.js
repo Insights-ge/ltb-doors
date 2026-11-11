@@ -12,10 +12,22 @@ export function createInitialConfiguration() {
     };
 }
 
+function numericMeasurement(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value !== 'string') return null;
+    const text = value.trim().replace(',', '.');
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(text)) return null;
+    const number = Number(text);
+    return Number.isFinite(number) ? number : null;
+}
+
+export function measurementError(value) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return 'required';
+    const number = numericMeasurement(value);
+    if (number === null) return 'numeric';
+    return number > 0 ? null : 'gt';
+}
+
 export function parseMeasurement(value) {
-    if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : null;
-    const text = String(value ?? '').trim();
-    if (!/^\d+(?:[.,]\d+)?$/.test(text)) return null;
-    const number = Number(text.replace(',', '.'));
-    return Number.isFinite(number) && number > 0 ? number : null;
+    return measurementError(value) === null ? numericMeasurement(value) : null;
 }

@@ -10,7 +10,10 @@ use Database\Seeders\AdminPermissionSeeder;
 use Database\Seeders\GeneralSettingsSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\SuperAdminPermissionSeeder;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as PermissionRole;
@@ -173,3 +176,40 @@ test('empty catalogs render a localized empty state instead of configuration con
         ->assertDontSee('id="builder-model"', false)
         ->assertDontSee('data-export-design', false);
 })->with([false, true])->with(['en', 'ka']);
+
+test('builder field messages match the validation translations used by Filament', function (string $locale) {
+    $permission = Permission::findOrCreate('View:SlidingDoorBuilder', 'web');
+    $user = User::factory()->create();
+    $user->givePermissionTo($permission);
+    $this->actingAs($user)->withSession(['locale' => $locale]);
+    app()->setLocale($locale);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->assertViewHas('fieldValidationMessages', function (array $messages): bool {
+            foreach (['openingWidth' => 'width', 'openingHeight' => 'height'] as $field => $label) {
+                $attribute = TextInput::make($field)
+                    ->label(__('sliding_door_builder.size.' . $label))
+                    ->getValidationAttribute();
+
+                foreach (['required' => '', 'numeric' => 'abc', 'gt' => -1] as $rule => $value) {
+                    $expected = Validator::make(
+                        ['measurement' => $value],
+                        ['measurement' => 'bail|required|numeric|gt:0'],
+                        [],
+                        ['measurement' => $attribute],
+                    )->errors()->first('measurement');
+
+                    expect($messages['builder-' . $field][$rule])->toBe($expected);
+                }
+            }
+
+            expect($messages['builder-model']['required'])->toBe(__('validation.required', [
+                'attribute' => Str::lcfirst(__('sliding_door_builder.system.model')),
+            ]));
+            expect($messages['builder-finishes']['exists'])->toBe(__('validation.exists', [
+                'attribute' => Str::lcfirst(__('sliding_door_builder.finishes.title')),
+            ]));
+
+            return true;
+        });
+})->with(['en', 'ka']);

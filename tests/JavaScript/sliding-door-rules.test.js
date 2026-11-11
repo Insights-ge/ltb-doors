@@ -100,7 +100,7 @@ test('positive measurement boundaries pass while zero, invalid and unrepresentab
     }
     for (const value of [0,-1,NaN,Infinity,null,'']) {
         config.openingWidth=value;
-        assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'size_invalid'));
+        assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.field === 'builder-openingWidth'));
     }
     config.openingWidth=Number.MAX_VALUE;
     config.openingHeight=Number.MIN_VALUE;
@@ -111,13 +111,30 @@ test('catalog and upstream changes invalidate prior choices without mutating the
     const {config,catalog,metadata} = fixture();
     const before=structuredClone(config);
     catalog.models[0].variants[0].color='silver';
-    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'variant_required'));
+    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'in' && issue.field === 'builder-variant'));
     catalog.models[0].variants[0].color='black';
     catalog.models[0].variants[0].components=[{type:'top_rail',incompatibleInfillIds:[7]}];
     assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length,2);
     catalog.infills=[];
-    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_required').length,2);
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'exists' && issue.field === 'builder-finishes').length,2);
     catalog.models=[];
-    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'model_required'));
+    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'exists' && issue.field === 'builder-model'));
     assert.deepEqual(config,before);
+});
+
+
+test('missing catalog choices are required while removed choices use exists or in', () => {
+    const {config,catalog,metadata}=fixture();
+    config.modelId=null;
+    config.variantId=null;
+    config.infillIdsByDoor=[[null],[999]];
+    let result=validateBuilder(config,catalog,metadata);
+    assert.ok(result.errors.some(issue=>issue.field==='builder-model' && issue.code==='required'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-variant' && issue.code==='required'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-finishes' && issue.doorIndex===0 && issue.code==='required'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-finishes' && issue.doorIndex===1 && issue.code==='exists'));
+    config.modelId=1;
+    config.frameDesignCode='removed';
+    result=validateBuilder(config,catalog,metadata);
+    assert.ok(result.errors.some(issue=>issue.field==='builder-design' && issue.code==='in'));
 });

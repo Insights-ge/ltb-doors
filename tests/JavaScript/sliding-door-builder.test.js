@@ -4,10 +4,11 @@ import { reconcilePreviewConfiguration, reconcilePreviewSelection, previewSelect
 import { createPreviewScene } from '../../resources/js/sliding-door-preview.js';
 import slidingDoorBuilder from '../../resources/js/sliding-door-builder.js';
 
-function createBuilder(validationLabels = {}) {
+function createBuilder(validationLabels = {}, fieldValidationMessages = {}) {
     const builder = slidingDoorBuilder({
         initialStep: 1,
         validationLabels,
+        fieldValidationMessages,
         payload: {
             catalog: { models: [], infills: [] },
             metadata: {
@@ -88,8 +89,8 @@ test('shared preset choices update both door divisions and preserve unrelated co
     assert.equal(builder.selectedLayoutId, null);
 });
 
-function editingBuilder(validationLabels = {}) {
-    const builder = createBuilder(validationLabels);
+function editingBuilder(validationLabels = {}, fieldValidationMessages = {}) {
+    const builder = createBuilder(validationLabels, fieldValidationMessages);
     builder.$dispatch = () => {};
     builder.catalog.infills = [{ id: 7, code: 'A', description: 'Mapped' }, { id: 8, code: 'B', description: 'Neutral' }];
     builder.metadata.layoutPresets = [
@@ -335,9 +336,9 @@ test('navigation gates incomplete size and product choices without losing panel 
 
 test('incomplete measurement entry retains committed geometry but blocks forward navigation', () => {
     const builder = editingBuilder();
-    builder.setMeasurement('openingWidth', '12.');
+    builder.setMeasurement('openingWidth', '12e');
     assert.equal(builder.previewConfiguration.openingWidth, 3000);
-    assert.equal(builder.sizeInputs.openingWidth, '12.');
+    assert.equal(builder.sizeInputs.openingWidth, '12e');
     assert.equal(builder.sizeErrors.openingWidth, true);
     builder.goToStep(2);
     assert.equal(builder.activeStep, 1);
@@ -375,10 +376,13 @@ test('invalid review requests route back to a correctable issue and preserve the
 
 
 function sequentialBuilder() {
-    const builder = editingBuilder({
-        size_invalid: 'Enter a valid size.', model_required: 'Choose a system.',
-        design_required: 'Choose a design.', variant_required: 'Choose a variant.',
-        finish_required: 'Door :door, panel :panel: choose a finish.',
+    const builder = editingBuilder({}, {
+        'builder-openingWidth': { required: 'Width is required.', numeric: 'Width must be a number.', gt: 'Width must be greater than zero.' },
+        'builder-openingHeight': { required: 'Height is required.' },
+        'builder-model': { required: 'Choose a system.' },
+        'builder-design': { required: 'Choose a design.' },
+        'builder-variant': { required: 'Choose a variant.' },
+        'builder-finishes': { required: 'Choose a finish.' },
     });
     builder.catalog.models = [{ id: 1, name: 'System', variants: [
         { id: 11, frameDesignCode: 'A', color: 'black', hasPartition: true, hasSoftCloseMechanism: false, components: [] },
@@ -411,13 +415,13 @@ test('sections advance sequentially with errors only on the attempted fields', (
     assert.equal(builder.fieldError('builder-finishes'), '');
     builder.goToStep(4);
     assert.equal(builder.activeStep, 3);
-    assert.equal(builder.fieldError('builder-finishes'), 'Door 1, panel 1: choose a finish.');
+    assert.equal(builder.fieldError('builder-finishes'), 'Choose a finish.');
     builder.chooseInfill(7);
     assert.equal(builder.fieldError('builder-finishes'), '');
     builder.goToStep(4);
     assert.equal(builder.activeStep, 3);
     assert.equal(builder.selectedPreviewPanel.index, 1);
-    assert.equal(builder.fieldError('builder-finishes'), 'Door 1, panel 2: choose a finish.');
+    assert.equal(builder.fieldError('builder-finishes'), 'Choose a finish.');
     builder.chooseInfill(7);
     builder.applyFinishToAllDoors();
     builder.goToStep(4);
@@ -435,11 +439,24 @@ test('Next validates unblurred input and cannot reuse a previously committed siz
     builder.goToStep(2);
     assert.equal(builder.activeStep, 1);
     assert.equal(builder.previewConfiguration.openingWidth, 3000);
-    assert.equal(builder.fieldError('builder-openingWidth'), 'Enter a valid size.');
+    assert.equal(builder.fieldError('builder-openingWidth'), 'Width is required.');
     assert.equal(builder.fieldError('builder-model'), '');
     builder.sizeInputs.openingWidth = '3200';
     builder.goToStep(2);
     assert.equal(builder.activeStep, 2);
     assert.equal(builder.previewConfiguration.openingWidth, 3200);
+    assert.equal(builder.fieldError('builder-openingWidth'), '');
+});
+
+
+test('invalid draft text replaces the committed-size error with the matching field rule', () => {
+    const builder = sequentialBuilder();
+    for (const [value, message] of [['', 'Width is required.'], ['abc', 'Width must be a number.'], ['0', 'Width must be greater than zero.'], ['-12', 'Width must be greater than zero.']]) {
+        builder.setMeasurement('openingWidth', value);
+        assert.equal(builder.previewConfiguration.openingWidth, 3000);
+        assert.equal(builder.fieldError('builder-openingWidth'), message);
+        assert.equal(builder.validation.errors.filter(issue => issue.field === 'builder-openingWidth').length, 1);
+    }
+    builder.setMeasurement('openingWidth', '3200');
     assert.equal(builder.fieldError('builder-openingWidth'), '');
 });
