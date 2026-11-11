@@ -65,6 +65,7 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
         }
         sceneKey = nextSceneKey;
         svg.replaceChildren();
+        svg.style.setProperty('--builder-frame-fill', scene.frameFill);
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         drawScene(svg, scene, configuration, labels, locale);

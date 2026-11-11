@@ -242,6 +242,12 @@
 }
 
 @media print {
+    body:has(.sliding-door-builder),
+    .sliding-door-builder { background: white !important; }
+    .sliding-door-builder .builder-preview-door.is-selected > .builder-preview-frame { stroke: var(--builder-frame-fill); }
+    .sliding-door-builder .builder-preview-door.is-selected > .builder-preview-door-label { fill: currentColor; font-weight: 400; text-decoration: none; }
+    .sliding-door-builder .builder-preview-panel-highlight { display: none; }
+
     body:has(.sliding-door-builder) .fi-sidebar,
     body:has(.sliding-door-builder) .fi-topbar,
     body:has(.sliding-door-builder) .fi-page-header,

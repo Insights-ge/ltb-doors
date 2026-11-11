@@ -125,6 +125,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 self.assertTrue(page.locator('.builder-preview-svg').is_visible())
                 self.assertTrue(page.locator('.builder-review').is_visible())
                 self.assertFalse(page.locator('.builder-step-navigation').is_visible())
+                self.assertEqual(page.evaluate('getComputedStyle(document.body).backgroundColor'), 'rgb(255, 255, 255)')
+                self.assertFalse(page.locator('.builder-preview-panel-highlight.is-selected').is_visible())
                 page.emulate_media(media='screen')
 
     def test_responsive_layout_and_focused_measurement_with_reduced_viewport(self):
