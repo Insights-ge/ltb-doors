@@ -360,3 +360,13 @@ test('reset requests confirmation before discarding edits and restores a blank c
     assert.deepEqual(builder.previewSelection, {doorId:null, panelId:null});
     assert.equal(builder.activeStep, 1);
 });
+
+
+test('invalid review requests route back to a correctable issue and preserve the design', () => {
+    const builder = editingBuilder();
+    const before = structuredClone(builder.previewConfiguration);
+    builder.goToStep(4);
+    assert.notEqual(builder.activeStep, 4);
+    assert.equal(builder.validationAttempted, true);
+    assert.deepEqual(builder.previewConfiguration, before);
+});

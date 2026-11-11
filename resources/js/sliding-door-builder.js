@@ -49,6 +49,19 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return this.validation.errors.length === 0;
         },
 
+        focusIssue(issue) {
+            if (issue.doorIndex !== undefined) {
+                const door = this.previewDoors[issue.doorIndex];
+                const panel = door?.panels[issue.panelIndex];
+                if (panel) this.selectPreviewPanel(door.id, panel.id);
+            }
+            this.goToStep(issue.step);
+            this.$nextTick?.(() => {
+                const field = rootElement?.querySelector(`#${issue.field}`);
+                (field?.querySelector('button:not(:disabled), input:not(:disabled), select:not(:disabled)') ?? field)?.focus();
+            });
+        },
+
         requestReset() {
             if (JSON.stringify(this.previewConfiguration) === JSON.stringify(createInitialConfiguration()) && !Object.values(this.sizeInputs).some(Boolean)) return;
             this.$dispatch('open-modal', { id: 'builder-confirm-reset' });
@@ -68,6 +81,10 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         goToStep(step) {
             if (![1,2,3,4].includes(step)) return;
             this.validationAttempted = true;
+            if (step === 4 && !this.canReview) {
+                this.focusIssue(this.validation.errors[0]);
+                return;
+            }
             if (step > 1 && (Object.values(this.sizeErrors).some(Boolean) || !parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
                 this.sizeErrors = { openingWidth: this.sizeErrors.openingWidth || !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: this.sizeErrors.openingHeight || !parseMeasurement(this.previewConfiguration?.openingHeight) };
                 step = 1;

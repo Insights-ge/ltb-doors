@@ -80,7 +80,7 @@
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
-                    <fieldset class="mt-4" x-bind:disabled="!hasPreview">
+                    <fieldset id="builder-layouts" tabindex="-1" class="mt-4" x-bind:disabled="!hasPreview">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">
                             {{ __('sliding_door_builder.layouts.title') }}
                         </legend>
@@ -104,7 +104,7 @@
                             </template>
                         </div>
                     </fieldset>
-                    <fieldset class="mt-6" x-bind:disabled="!selectedPreviewPanel">
+                    <fieldset id="builder-finishes" tabindex="-1" class="mt-6" x-bind:disabled="!selectedPreviewPanel">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">
                             {{ __('sliding_door_builder.finishes.title') }}
                         </legend>
