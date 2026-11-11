@@ -17,7 +17,7 @@
                 :description="__('sliding_door_builder.catalog.no_infills_description')"
             />
         @else
-            <p x-show="draftStatus" x-cloak role="status" class="builder-draft-status text-sm text-gray-500 dark:text-gray-400" x-text="@js(__('sliding_door_builder.drafts'))[draftStatus] ?? ''"></p>
+            <p x-show="draftStatus && draftStatus !== 'restored'" x-cloak role="status" class="builder-draft-status text-sm text-gray-500 dark:text-gray-400" x-text="@js(__('sliding_door_builder.drafts'))[draftStatus] ?? ''"></p>
             <div x-show="['invalid', 'outdated', 'outdated_layout', 'outdated_infills'].includes(draftStatus)" x-cloak class="builder-draft-recovery">
                 <x-filament::button color="gray" x-on:click="discardStoredDraft()">{{ __('sliding_door_builder.drafts.discard') }}</x-filament::button>
             </div>
