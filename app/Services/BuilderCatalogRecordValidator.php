@@ -13,7 +13,8 @@ class BuilderCatalogRecordValidator
 {
     public function isModelUsable(DoorModel $model): bool
     {
-        return trim($model->name) !== ''
+        return $model->partition_count >= 1 && $model->partition_count <= 4
+            && trim($model->name) !== ''
             && $model->min_height > 0 && $model->max_height >= $model->min_height
             && $model->min_width > 0 && $model->max_width >= $model->min_width;
     }

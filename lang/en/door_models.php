@@ -7,6 +7,7 @@ return [
         'edit_door_model' => 'Edit Door Model',
     ],
     'table' => [
+        'partition_count' => 'Partitions',
         'status' => 'Status',
         'name' => 'Name',
         'height_range' => 'Height range',
@@ -18,6 +19,7 @@ return [
         'empty_description' => 'Door models are seeded from the catalog import.',
     ],
     'form' => [
+        'partition_count' => 'Partitions',
         'status' => 'Status',
         'name' => 'Name',
         'sizing_section' => 'Sizing',

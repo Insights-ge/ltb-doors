@@ -16,6 +16,7 @@ readonly class BuilderDoorModelData
         public int $maxHeight,
         public int $minWidth,
         public int $maxWidth,
+        public int $partitionCount,
         public ?int $notRecommendedHeightMin,
         public ?int $notRecommendedHeightMax,
         public array $variants,

@@ -79,7 +79,7 @@
         "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
+            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "partitionCount", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "name": { "type": "string" },
@@ -87,6 +87,7 @@
                 "maxHeight": { "type": "integer" },
                 "minWidth": { "type": "integer" },
                 "maxWidth": { "type": "integer" },
+                "partitionCount": { "type": "integer", "minimum": 1, "maximum": 4 },
                 "notRecommendedHeightMin": { "type": ["integer", "null"] },
                 "notRecommendedHeightMax": { "type": ["integer", "null"] },
                 "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } }

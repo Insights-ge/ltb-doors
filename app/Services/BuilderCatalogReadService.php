@@ -35,7 +35,7 @@ class BuilderCatalogReadService
     {
         return array_values(DoorModel::query()
             ->where('status', DoorModelStatus::Active)
-            ->select(['id', 'name', 'min_height', 'max_height', 'min_width', 'max_width', 'not_recommended_height_min', 'not_recommended_height_max'])
+            ->select(['id', 'name', 'min_height', 'max_height', 'min_width', 'max_width', 'partition_count', 'not_recommended_height_min', 'not_recommended_height_max'])
             ->with($this->variantRelationships())
             ->orderBy('name')->orderBy('id')
             ->get()
@@ -71,6 +71,7 @@ class BuilderCatalogReadService
             maxHeight: $model->max_height,
             minWidth: $model->min_width,
             maxWidth: $model->max_width,
+            partitionCount: $model->partition_count,
             notRecommendedHeightMin: $this->validator->hasUsableAdvisoryRange($model) ? $model->not_recommended_height_min : null,
             notRecommendedHeightMax: $this->validator->hasUsableAdvisoryRange($model) ? $model->not_recommended_height_max : null,
             variants: array_values($model->variants

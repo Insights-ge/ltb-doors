@@ -23,15 +23,19 @@ class DoorCatalogSeeder extends Seeder
         'სილვერი' => DoorColor::Silver,
     ];
 
+    /** @var array<string, DoorModel> */
+    private array $seededModels = [];
+
     public function run(): void
     {
+        $this->seededModels = [];
         $handle = fopen(database_path('seeders/data/sliding-doors-catalog.csv'), 'r');
 
         if ($handle === false) {
             throw new RuntimeException('Unable to open sliding doors catalog CSV.');
         }
 
-        $header = fgetcsv($handle);
+        $header = fgetcsv($handle, escape: '\\');
 
         if ($header === false) {
             throw new RuntimeException('Sliding doors catalog CSV has no header row.');
@@ -39,7 +43,7 @@ class DoorCatalogSeeder extends Seeder
 
         $header = array_map(static fn (?string $value): string => $value ?? '', $header);
 
-        while (($row = fgetcsv($handle)) !== false) {
+        while (($row = fgetcsv($handle, escape: '\\')) !== false) {
             /** @var array<string, string> $data */
             $data = array_combine($header, array_map(static fn (?string $value): string => trim($value ?? ''), $row));
 
@@ -88,18 +92,29 @@ class DoorCatalogSeeder extends Seeder
      */
     private function firstOrCreateDoorModel(array $data): DoorModel
     {
-        return DoorModel::query()->firstOrCreate(
-            ['name' => $data['model_name']],
+        $name = $data['model_name'];
+
+        if (isset($this->seededModels[$name])) {
+            return $this->seededModels[$name];
+        }
+
+        $partitionCount = random_int(1, 4);
+        $model = DoorModel::query()->firstOrCreate(
+            ['name' => $name],
             [
                 'status' => DoorModelStatus::Active,
                 'min_height' => (int) $data['min_height'],
                 'max_height' => (int) $data['max_height'],
                 'min_width' => (int) $data['min_width'],
                 'max_width' => (int) $data['max_width'],
+                'partition_count' => $partitionCount,
                 'not_recommended_height_min' => (int) $data['not_recommended_height_min'],
                 'not_recommended_height_max' => (int) $data['not_recommended_height_max'],
             ]
         );
+        $model->update(['partition_count' => $partitionCount]);
+
+        return $this->seededModels[$name] = $model;
     }
 
     /**
