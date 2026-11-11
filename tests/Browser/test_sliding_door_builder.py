@@ -62,7 +62,14 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.ready()
 
     def step(self, number):
-        self.page.locator(f'[aria-controls=builder-step-{number}]').click()
+        current = self.page.evaluate(f'{ROOT}.activeStep')
+        while current != number:
+            direction = 'next' if number > current else 'previous'
+            self.page.locator(f'#builder-step-{current} [data-builder-{direction}]').click()
+            next_step = self.page.evaluate(f'{ROOT}.activeStep')
+            if next_step == current:
+                break
+            current = next_step
 
     def configure(self):
         page = self.page
@@ -175,7 +182,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                         page.screenshot(path=str(directory / f'keyboard-{width}-{mode}.png'))
                     page.set_viewport_size({'width': width, 'height': 900})
 
-    def test_keyboard_selection_focus_and_actionable_validation(self):
+    def test_keyboard_selection_focus_and_inline_validation(self):
         self.configure()
         page = self.page
         doors = page.locator('[data-preview-door-control]')
@@ -203,8 +210,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function(f'{ROOT}.sizeErrors.openingWidth')
         self.assertEqual(width.get_attribute('aria-invalid'), 'true')
         page.locator('#builder-openingWidth-error').wait_for(state='visible')
-        page.locator('#builder-validation').wait_for(state='visible')
-        page.locator('#builder-validation button').first.click()
+        self.assertEqual(page.locator('#builder-validation').count(), 0)
         page.wait_for_function('document.activeElement.id === "builder-openingWidth"')
         self.assertNotEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
 

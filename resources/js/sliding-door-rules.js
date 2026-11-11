@@ -48,6 +48,7 @@ export function validateBuilder(configuration, catalog, metadata) {
         advisories.push({ code: 'discouraged_height_reference', step: 2, field: 'builder-variant' });
     }
     if (!model) add('model_required', 2, 'builder-model');
+    if (model && !model.variants.some((item) => item.frameDesignCode === config.frameDesignCode)) add('design_required', 2, 'builder-design');
     if (!variant || variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('variant_required', 2, 'builder-variant');
     if (!metadata.layoutPresets?.some((preset) => preset.panelWeights.length === config.panelWeights?.length
         && preset.panelWeights.every((weight, index) => weight === config.panelWeights[index]))) add('layout_required', 3, 'builder-layouts');

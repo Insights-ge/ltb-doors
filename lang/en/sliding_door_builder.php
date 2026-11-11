@@ -66,7 +66,7 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
-        'heading' => 'Resolve these items before review',
+        'design_required' => 'Choose an available frame design.',
         'size_invalid' => 'Enter positive opening dimensions.',
         'geometry_invalid' => 'These dimensions cannot produce a preview.',
         'model_required' => 'Choose a door system.',

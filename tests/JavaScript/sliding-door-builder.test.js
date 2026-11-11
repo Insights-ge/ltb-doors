@@ -17,6 +17,7 @@ function createBuilder() {
         },
     });
     builder.previewConfiguration = { openingWidth: 3000, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
+    builder.sizeInputs = { openingWidth: '3000', openingHeight: '2400' };
     return builder;
 }
 
@@ -325,7 +326,7 @@ test('navigation gates incomplete size and product choices without losing panel 
     builder.previewConfiguration.openingWidth = null;
     builder.goToStep(2);
     assert.equal(builder.activeStep, 1);
-    assert.equal(builder.sizeErrors.openingWidth, true);
+    assert.ok(builder.validation.errors.some(issue => issue.field === 'builder-openingWidth'));
     builder.goToStep(99);
     assert.equal(builder.activeStep, 1);
 });
@@ -367,6 +368,6 @@ test('invalid review requests route back to a correctable issue and preserve the
     const before = structuredClone(builder.previewConfiguration);
     builder.goToStep(4);
     assert.notEqual(builder.activeStep, 4);
-    assert.equal(builder.validationAttempted, true);
+    assert.ok(builder.attemptedSteps.includes(1));
     assert.deepEqual(builder.previewConfiguration, before);
 });

@@ -24,7 +24,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         previewConfiguration: createInitialConfiguration(),
         exportFailed: false,
         draftStatus: null,
-        validationAttempted: false,
+        attemptedSteps: [],
         pendingChange: null,
         sizeInputs: { openingWidth: '', openingHeight: '' },
         sizeErrors: { openingWidth: false, openingHeight: false },
@@ -93,14 +93,32 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return this.validation.errors.length === 0;
         },
 
+        fieldError(field) {
+            if (field === 'builder-design' && !this.selectedModel) return '';
+            if (field === 'builder-variant' && (!this.selectedModel || !this.previewConfiguration.frameDesignCode)) return '';
+            const issue = this.validation.errors.find((candidate) => {
+                if (candidate.field !== field) return false;
+                const sizeField = field.replace('builder-', '');
+                if (!this.attemptedSteps.includes(candidate.step) && !this.sizeErrors[sizeField]) return false;
+                if (field === 'builder-finishes') {
+                    return candidate.doorIndex === this.selectedPreviewDoor?.index
+                        && candidate.panelIndex === this.selectedPreviewPanel?.index;
+                }
+                return true;
+            });
+            return issue ? this.issueMessage(issue) : '';
+        },
+
         focusIssue(issue) {
+            issue = this.validation.errors.find((candidate) => candidate.step < issue.step) ?? issue;
+            this.attemptedSteps = [...new Set([...this.attemptedSteps, issue.step])];
             if (issue.doorIndex !== undefined) {
                 const door = this.previewDoors[issue.doorIndex];
                 if (door) this.selectPreviewDoor(door.id);
                 const panel = door?.panels[issue.panelIndex];
                 if (panel) this.selectPreviewPanel(door.id, panel.id);
             }
-            this.goToStep(issue.step);
+            this.activeStep = issue.step;
             this.$nextTick?.(() => {
                 const field = rootElement?.querySelector(`#${issue.field}`);
                 (field?.querySelector('button:not(:disabled), input:not(:disabled), select:not(:disabled)') ?? field)?.focus();
@@ -121,25 +139,25 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.previewSelection = { doorId: null, panelId: null };
             this.sizeInputs = { openingWidth: '', openingHeight: '' };
             this.sizeErrors = { openingWidth: false, openingHeight: false };
+            this.attemptedSteps = [];
             this.goToStep(1);
             this.$dispatch('close-modal', { id: 'builder-confirm-reset' });
         },
 
         goToStep(step) {
-            if (![1,2,3,4].includes(step)) return;
-            this.validationAttempted = true;
-            if (step === 4 && !this.canReview) {
-                this.focusIssue(this.validation.errors[0]);
-                return;
+            if (![1, 2, 3, 4].includes(step)) return;
+            const target = step > this.activeStep ? Math.min(step, this.activeStep + 1) : step;
+            if (target > this.activeStep && this.activeStep === 1) {
+                for (const field of ['openingWidth', 'openingHeight']) this.setMeasurement(field, this.sizeInputs[field]);
             }
-            if (step > 1 && (Object.values(this.sizeErrors).some(Boolean) || !parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
-                this.sizeErrors = { openingWidth: this.sizeErrors.openingWidth || !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: this.sizeErrors.openingHeight || !parseMeasurement(this.previewConfiguration?.openingHeight) };
-                step = 1;
-            } else if (step > 2 && !this.selectedVariant) {
-                step = 2;
+            if (target > 1) {
+                const attempted = Array.from({ length: target - 1 }, (_, index) => index + 1);
+                this.attemptedSteps = [...new Set([...this.attemptedSteps, ...attempted])];
+                const issue = this.validation.errors.find((candidate) => candidate.step < target);
+                if (issue) { this.focusIssue(issue); return; }
             }
-            this.activeStep = step;
-            this.$nextTick?.(() => rootElement?.querySelector(`#builder-step-${step}`)?.focus());
+            this.activeStep = target;
+            this.$nextTick?.(() => rootElement?.querySelector(`#builder-step-${target}`)?.focus());
         },
 
         setMeasurement(field, value) {
@@ -333,7 +351,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                         if (draft.configuration) {
                             this.previewConfiguration = draft.configuration;
                             this.sizeInputs = { openingWidth: String(draft.configuration.openingWidth), openingHeight: String(draft.configuration.openingHeight) };
-                            this.validationAttempted = draft.status === 'outdated';
+                            this.attemptedSteps = draft.status === 'outdated' ? [1, 2, 3] : [];
                             if (draft.status === 'restored') lastSaved = JSON.stringify(configurationSnapshot(draft.configuration));
                         }
                     }
@@ -434,7 +452,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 .filter((button) => button.getClientRects().length > 0);
             const control = controls.find((button) => button.dataset.previewDoorControl === doorId)
                 ?? controls[0]
-                ?? rootElement?.querySelector('.builder-step-navigation button');
+                ?? rootElement?.querySelector(`#builder-step-${this.activeStep}`);
             control?.focus({ preventScroll: true });
         },
 
