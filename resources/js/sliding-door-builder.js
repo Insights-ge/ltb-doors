@@ -1,4 +1,4 @@
-import { saveDraft } from './sliding-door-draft.js';
+import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
@@ -32,7 +32,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         saveLocalDraft() {
             if (!storageKey || !storage || !this.canReview) return;
-            const fingerprint = JSON.stringify(this.previewConfiguration);
+            const fingerprint = JSON.stringify(configurationSnapshot(this.previewConfiguration));
             if (fingerprint === lastSaved) return;
             this.draftStatus = saveDraft(storage, storageKey, this.previewConfiguration);
             if (this.draftStatus === 'saved') lastSaved = fingerprint;
@@ -300,6 +300,16 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 rootElement = this.$el;
                 if (storageKey) {
                     try { storage = window.localStorage; } catch { this.draftStatus = 'unavailable'; }
+                    if (storage) {
+                        const draft = readDraft(storage, storageKey, this.catalog, this.metadata);
+                        this.draftStatus = draft.status;
+                        if (draft.configuration) {
+                            this.previewConfiguration = draft.configuration;
+                            this.sizeInputs = { openingWidth: String(draft.configuration.openingWidth), openingHeight: String(draft.configuration.openingHeight) };
+                            this.validationAttempted = draft.status === 'outdated';
+                            if (draft.status === 'restored') lastSaved = JSON.stringify(configurationSnapshot(draft.configuration));
+                        }
+                    }
                 }
                 const svg = this.$el.querySelector('.builder-preview-svg');
                 if (destroyed || !svg) {
