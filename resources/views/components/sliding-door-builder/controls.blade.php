@@ -62,6 +62,14 @@
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
+                    <div x-show="sizingReference" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                        <p>{{ __('sliding_door_builder.system.range_note') }}</p>
+                        <dl class="mt-2 grid gap-1">
+                            @foreach (['width', 'height', 'variantHeight'] as $range)
+                                <div><dt class="inline">{{ __('sliding_door_builder.system.range_' . $range) }}:</dt> <dd class="inline"><span x-text="sizingReference?.{{ $range }}?.join(' – ')"></span> {{ __('sliding_door_builder.size.unit') }}</dd></div>
+                            @endforeach
+                        </dl>
+                    </div>
                     <div class="mt-4" x-show="selectedVariant && (selectedVariant.hasSoftCloseMechanism || previewConfiguration.softClose)">
                         <label for="builder-soft-close" class="flex items-center gap-2 text-sm text-gray-950 dark:text-white">
                             <x-filament::input.checkbox id="builder-soft-close" x-bind:checked="previewConfiguration.softClose" x-on:change="setSoftClose($event.target.checked)" />

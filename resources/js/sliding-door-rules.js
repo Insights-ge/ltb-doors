@@ -1,6 +1,18 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
 import { parseMeasurement } from './sliding-door-state.js';
 
+export const sizingScopes = Object.freeze({ model: 'unconfirmed', variantHeight: 'unconfirmed', discouragedHeight: 'unconfirmed' });
+
+/** Raw catalog ranges are reference facts, not bounds on the opening or cutting sizes. */
+export function catalogSizingReference(model, variant) {
+    return model && variant ? {
+        width: [model.minWidth, model.maxWidth],
+        height: [model.minHeight, model.maxHeight],
+        variantHeight: [variant.heightRangeMin, variant.heightRangeMax],
+        scopes: sizingScopes,
+    } : null;
+}
+
 /** Catalog constraints with unconfirmed measurement scope remain informational. */
 export function usedComponents(configuration, variant) {
     const types = ['side_profile', 'top_rail', 'bottom_rail'];

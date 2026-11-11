@@ -1,4 +1,4 @@
-import { validateBuilder, incompatibleInfillIds } from './sliding-door-rules.js';
+import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
@@ -76,6 +76,10 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.sizeErrors[field] = number === null;
             this.sizeInputs[field] = String(value ?? '');
             if (number !== null) this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
+        },
+
+        get sizingReference() {
+            return catalogSizingReference(this.selectedModel, this.selectedVariant);
         },
 
         get selectedModel() {

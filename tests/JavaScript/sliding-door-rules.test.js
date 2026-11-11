@@ -66,3 +66,14 @@ test('soft close is a provisional preference and unavailable hardware blocks val
     assert.deepEqual(result.errors, []);
     assert.ok(result.assumptions.some(issue => issue.code === 'soft_close_provisional'));
 });
+
+
+test('unconfirmed catalog measurement scope does not invent opening or half-door limits', () => {
+    const {config,catalog,metadata} = fixture();
+    Object.assign(catalog.models[0], {minWidth:600,maxWidth:1000,minHeight:2000,maxHeight:2500});
+    Object.assign(catalog.models[0].variants[0], {heightRangeMin:2100,heightRangeMax:2300});
+    for (const [width,height] of [[599,1999],[600,2000],[1000,2500],[1001,2501]]) {
+        config.openingWidth=width; config.openingHeight=height;
+        assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
+    }
+});

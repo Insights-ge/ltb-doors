@@ -36,11 +36,17 @@ return [
         'unselected' => 'No finish selected',
     ],
     'size' => [
+        'unit' => 'mm',
         'width' => 'Width (mm)',
         'height' => 'Height (mm)',
         'invalid' => 'Enter a positive measurement in millimetres.',
     ],
     'system' => [
+        'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
+        'range_width' => 'Catalog width',
+        'range_height' => 'Catalog height',
+        'range_variantHeight' => 'Variant height',
+
         'soft_close' => 'Soft close preference',
         'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
 
@@ -63,6 +69,11 @@ return [
             'description' => 'Set the width and height of the opening.',
         ],
         'system' => [
+            'range_note' => 'Catalog ranges are for reference. Whether they describe the opening or a finished door is unconfirmed.',
+            'range_width' => 'Catalog width',
+            'range_height' => 'Catalog height',
+            'range_variantHeight' => 'Variant height',
+
             'soft_close' => 'Soft close preference',
             'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
 
