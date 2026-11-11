@@ -91,3 +91,33 @@ test('discouraged height references remain advisory while their scope is unconfi
     catalog.models[0].notRecommendedHeightMin=null;
     assert.deepEqual(validateBuilder(config,catalog,metadata).advisories, []);
 });
+
+test('positive measurement boundaries pass while zero, invalid and unrepresentable geometry fail', () => {
+    const {config,catalog,metadata} = fixture();
+    for (const value of [0.1,1,600,2400,1000000]) {
+        config.openingWidth=value;
+        assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
+    }
+    for (const value of [0,-1,NaN,Infinity,null,'']) {
+        config.openingWidth=value;
+        assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'size_invalid'));
+    }
+    config.openingWidth=Number.MAX_VALUE;
+    config.openingHeight=Number.MIN_VALUE;
+    assert.ok(validateBuilder(config,catalog,metadata).errors.length > 0);
+});
+
+test('catalog and upstream changes invalidate prior choices without mutating them', () => {
+    const {config,catalog,metadata} = fixture();
+    const before=structuredClone(config);
+    catalog.models[0].variants[0].color='silver';
+    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'variant_required'));
+    catalog.models[0].variants[0].color='black';
+    catalog.models[0].variants[0].components=[{type:'top_rail',incompatibleInfillIds:[7]}];
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_incompatible').length,2);
+    catalog.infills=[];
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue => issue.code === 'finish_required').length,2);
+    catalog.models=[];
+    assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue => issue.code === 'model_required'));
+    assert.deepEqual(config,before);
+});
