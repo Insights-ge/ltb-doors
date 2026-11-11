@@ -3,6 +3,8 @@
 <div class="builder-controls">
     @foreach ($steps as $step)
         <div
+            tabindex="-1"
+            class="builder-step-content"
             id="builder-step-{{ $step->value }}"
             x-show="activeStep === {{ $step->value }}"
             @if ($step !== $initialStep) x-cloak @endif
@@ -22,6 +24,10 @@
                                 <p id="builder-{{ $field }}-error" x-show="sizeErrors.{{ $field }}" x-cloak class="mt-1 text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.size.invalid') }}</p>
                             </div>
                         @endforeach
+    <div class="mt-4 flex flex-wrap justify-between gap-2">
+        <x-filament::button color="gray" x-bind:disabled="activeStep === 1" x-on:click="goToStep(activeStep - 1)">{{ __('sliding_door_builder.navigation.previous') }}</x-filament::button>
+        <x-filament::button x-show="activeStep < 4" x-on:click="goToStep(activeStep + 1)">{{ __('sliding_door_builder.navigation.next') }}</x-filament::button>
+    </div>
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
@@ -130,6 +136,10 @@
             </x-filament::section>
         </div>
     @endforeach
+    <div class="mt-4 flex flex-wrap justify-between gap-2">
+        <x-filament::button color="gray" x-bind:disabled="activeStep === 1" x-on:click="goToStep(activeStep - 1)">{{ __('sliding_door_builder.navigation.previous') }}</x-filament::button>
+        <x-filament::button x-show="activeStep < 4" x-on:click="goToStep(activeStep + 1)">{{ __('sliding_door_builder.navigation.next') }}</x-filament::button>
+    </div>
     <x-filament::modal
         id="builder-confirm-replacement"
         teleport="body"

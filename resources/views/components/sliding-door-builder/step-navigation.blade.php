@@ -6,7 +6,7 @@
             <x-filament::tabs.item
                 :badge="$step->value"
                 :alpine-active="'activeStep === ' . $step->value"
-                x-on:click="activeStep = {{ $step->value }}"
+                x-on:click="goToStep({{ $step->value }})"
                 x-bind:aria-current="activeStep === {{ $step->value }} ? 'step' : null"
                 aria-controls="builder-step-{{ $step->value }}"
             >

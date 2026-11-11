@@ -44,6 +44,10 @@ return [
         'variant' => 'ფერი და ვარიანტი',
         'choose' => 'აირჩიეთ ვარიანტი',
     ],
+    'navigation' => [
+        'previous' => 'წინა',
+        'next' => 'შემდეგი',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'ზომები',

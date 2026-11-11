@@ -22,6 +22,18 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
 
+        goToStep(step) {
+            if (![1,2,3,4].includes(step)) return;
+            if (step > 1 && (!parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
+                this.sizeErrors = { openingWidth: !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: !parseMeasurement(this.previewConfiguration?.openingHeight) };
+                step = 1;
+            } else if (step > 2 && !this.selectedVariant) {
+                step = 2;
+            }
+            this.activeStep = step;
+            this.$nextTick?.(() => rootElement?.querySelector(`#builder-step-${step}`)?.focus());
+        },
+
         setMeasurement(field, value) {
             if (!['openingWidth', 'openingHeight'].includes(field)) return;
             const number = parseMeasurement(value);

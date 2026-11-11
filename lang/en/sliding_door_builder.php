@@ -44,6 +44,10 @@ return [
         'variant' => 'Colour and variant',
         'choose' => 'Choose an option',
     ],
+    'navigation' => [
+        'previous' => 'Previous',
+        'next' => 'Next',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'Size',

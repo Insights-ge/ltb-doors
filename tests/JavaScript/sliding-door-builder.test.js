@@ -314,3 +314,18 @@ test('system controls resolve only real design and colour variants and preserve 
     assert.equal(builder.previewConfiguration.frameColor, 'silver');
     assert.deepEqual(builder.previewConfiguration.infillIdsByDoor, [[7,null,null],[8,null,null]]);
 });
+
+
+test('navigation gates incomplete size and product choices without losing panel edits', () => {
+    const builder = editingBuilder();
+    const before = structuredClone(builder.previewConfiguration);
+    builder.goToStep(3);
+    assert.equal(builder.activeStep, 2);
+    assert.deepEqual(builder.previewConfiguration, before);
+    builder.previewConfiguration.openingWidth = null;
+    builder.goToStep(2);
+    assert.equal(builder.activeStep, 1);
+    assert.equal(builder.sizeErrors.openingWidth, true);
+    builder.goToStep(99);
+    assert.equal(builder.activeStep, 1);
+});
