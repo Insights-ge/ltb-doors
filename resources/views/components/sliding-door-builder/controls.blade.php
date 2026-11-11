@@ -61,6 +61,15 @@
                         </div>
                     </div>
                 @endif
+                @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
+                    <div class="mt-4" x-show="selectedVariant && (selectedVariant.hasSoftCloseMechanism || previewConfiguration.softClose)">
+                        <label for="builder-soft-close" class="flex items-center gap-2 text-sm text-gray-950 dark:text-white">
+                            <x-filament::input.checkbox id="builder-soft-close" x-bind:checked="previewConfiguration.softClose" x-on:change="setSoftClose($event.target.checked)" />
+                            {{ __('sliding_door_builder.system.soft_close') }}
+                        </label>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('sliding_door_builder.system.soft_close_note') }}</p>
+                    </div>
+                @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
                     <fieldset class="mt-4" x-bind:disabled="!hasPreview">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">

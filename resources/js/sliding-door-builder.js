@@ -97,18 +97,23 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         selectModel(value) {
             const id = Number(value);
             if (!this.catalog.models.some((model) => model.id === id)) return;
-            this.previewConfiguration = { ...this.previewConfiguration, modelId: id, variantId: null, frameDesignCode: null, frameColor: null, softClose: false };
+            this.previewConfiguration = { ...this.previewConfiguration, modelId: id, variantId: null, frameDesignCode: null, frameColor: null };
         },
 
         selectFrameDesign(code) {
             if (!this.frameDesigns.includes(code)) return;
-            this.previewConfiguration = { ...this.previewConfiguration, frameDesignCode: code, variantId: null, frameColor: null, softClose: false };
+            this.previewConfiguration = { ...this.previewConfiguration, frameDesignCode: code, variantId: null, frameColor: null };
         },
 
         selectVariant(value) {
             const variant = this.availableVariants.find((candidate) => candidate.id === Number(value));
             if (!variant) return;
-            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color, softClose: false };
+            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color };
+        },
+
+        setSoftClose(enabled) {
+            if (enabled && !this.selectedVariant?.hasSoftCloseMechanism) return;
+            this.previewConfiguration = { ...this.previewConfiguration, softClose: Boolean(enabled) };
         },
 
         variantLabel(variant) {

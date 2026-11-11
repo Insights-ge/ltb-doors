@@ -54,3 +54,15 @@ test('an upstream variant without partitions invalidates a retained divided layo
     catalog.models[0].variants[0].hasPartition = true;
     assert.deepEqual(validateBuilder(config,catalog,metadata).errors, []);
 });
+
+
+test('soft close is a provisional preference and unavailable hardware blocks validation', () => {
+    const {config,catalog,metadata} = fixture();
+    config.softClose = true;
+    let result = validateBuilder(config,catalog,metadata);
+    assert.ok(result.errors.some(issue => issue.code === 'soft_close_missing'));
+    catalog.models[0].variants[0].hasSoftCloseMechanism = true;
+    result = validateBuilder(config,catalog,metadata);
+    assert.deepEqual(result.errors, []);
+    assert.ok(result.assumptions.some(issue => issue.code === 'soft_close_provisional'));
+});

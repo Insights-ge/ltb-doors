@@ -34,6 +34,10 @@ export function validateBuilder(configuration, catalog, metadata) {
     if (!metadata.layoutPresets?.some((preset) => preset.panelWeights.length === config.panelWeights?.length
         && preset.panelWeights.every((weight, index) => weight === config.panelWeights[index]))) add('layout_required', 3, 'builder-layouts');
     if (variant && config.panelWeights?.length > 1 && !variant.hasPartition) add('partition_missing', 3, 'builder-layouts');
+    if (config.softClose) {
+        assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-soft-close' });
+        if (!variant?.hasSoftCloseMechanism) add('soft_close_missing', 2, 'builder-soft-close');
+    }
     const excluded = incompatibleInfillIds(config, variant);
     for (let doorIndex = 0; doorIndex < 2; doorIndex++) {
         for (let panelIndex = 0; panelIndex < (config.panelWeights?.length ?? 0); panelIndex++) {

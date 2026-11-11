@@ -41,6 +41,9 @@ return [
         'invalid' => 'Enter a positive measurement in millimetres.',
     ],
     'system' => [
+        'soft_close' => 'Soft close preference',
+        'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
+
         'model' => 'Door system',
         'design' => 'Frame design',
         'variant' => 'Colour and variant',
@@ -60,6 +63,9 @@ return [
             'description' => 'Set the width and height of the opening.',
         ],
         'system' => [
+            'soft_close' => 'Soft close preference',
+            'soft_close_note' => 'Hardware quantity and installation eligibility require confirmation.',
+
             'label' => 'Door system and colour',
             'description' => 'Choose the door system and frame colour.',
         ],
