@@ -8,8 +8,16 @@
                 x-bind:class="{ 'is-active': activeStep === {{ $step->value }} }"
                 x-bind:aria-current="activeStep === {{ $step->value }} ? 'step' : null"
             >
-                <x-filament::badge color="gray">{{ $step->value }}</x-filament::badge>
-                <span class="builder-step-label">{{ $step->getLabel() }}</span>
+                <button
+                    type="button"
+                    class="builder-step-trigger"
+                    x-bind:disabled="formBusy || activeStep <= {{ $step->value }}"
+                    x-on:click="if (activeStep > {{ $step->value }}) goToStep({{ $step->value }})"
+                    data-builder-step="{{ $step->value }}"
+                >
+                    <x-filament::badge color="gray">{{ $step->value }}</x-filament::badge>
+                    <span class="builder-step-label">{{ $step->getLabel() }}</span>
+                </button>
             </li>
         @endforeach
     </ol>

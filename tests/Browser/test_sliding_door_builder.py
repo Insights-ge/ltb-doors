@@ -299,7 +299,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
 
     def test_sequential_sections_have_single_footer_and_only_inline_errors(self):
         page = self.page
-        self.assertEqual(page.locator('.builder-step-navigation button, .builder-step-navigation a').count(), 0)
+        self.assertEqual(page.locator('.builder-step-navigation button').count(), 4)
+        self.assertEqual(page.locator('.builder-step-navigation button:disabled').count(), 4)
         self.assertEqual(page.locator('.builder-step-navigation [role=tab]').count(), 0)
         self.assertEqual(page.locator('[data-builder-next]:visible').count(), 1)
         self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 0)
@@ -517,6 +518,24 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             page.keyboard.press('Escape')
             modal.wait_for(state='hidden')
             page.wait_for_function('(selector)=>document.activeElement?.matches(selector)', arg=f'[data-review-{name}]')
+
+    def test_step_navigation_centres_content_and_only_allows_previous_steps(self):
+        self.configure()
+        page = self.page
+        before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)')
+        for number in [1,2]:
+            self.assertTrue(page.locator(f'[data-builder-step="{number}"]').is_enabled())
+        for number in [3,4]:
+            self.assertTrue(page.locator(f'[data-builder-step="{number}"]').is_disabled())
+        self.assertEqual(page.locator('[data-builder-step="1"]').evaluate('el=>getComputedStyle(el).justifyContent'), 'center')
+        self.assertEqual(page.locator('[data-builder-step="1"] .builder-step-label').evaluate('el=>getComputedStyle(el).textAlign'), 'center')
+        page.locator('[data-builder-step="2"]').click()
+        page.wait_for_function(f'{ROOT}.activeStep===2')
+        self.assertTrue(page.locator('[data-builder-step="3"]').is_disabled())
+        page.locator('[data-builder-step="1"]').click()
+        page.wait_for_function(f'{ROOT}.activeStep===1')
+        self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)'), before)
+        self.assertTrue(page.locator('[data-builder-step="2"]').is_disabled())
 
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page

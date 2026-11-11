@@ -10,7 +10,7 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 
 ## Demonstration script
 
-1. Choose a door model, then enter width and height in millimetres. Size fields stay disabled until a model is selected and enforce its inclusive minimum/maximum bounds. The progress indicator is read-only; each section must be complete before advancing, with one Previous/Next row and inline errors.
+1. Choose a door model, then enter width and height in millimetres. Size fields stay disabled until a model is selected and enforce its inclusive minimum/maximum bounds. The progress indicator centres each number/label and allows returning to earlier steps; current/future steps stay disabled, and each section must be complete before advancing, with one Previous/Next row and inline errors.
 2. Choose a frame design and actual colour/variant combination. Frame and colour choices only include variants whose recorded height range contains the entered height.
 3. Both doors inherit the model's partition count: 1–4 horizontal dividers create 2–5 equal infills on each door. There is no layout/count selector. All numbered infill selects are visible immediately; choosing an infill sets that infill on both doors. Each option includes an escaped label and database-backed colour/texture swatch. Preview controls select infill positions only and highlight both doors. Tab and Enter/Space operate these controls; Escape clears selection.
 4. Changing to a model with fewer partitions asks for confirmation if filled infills would be removed. Cancel restores the previous model; surviving finishes follow their top-to-bottom positions, new infills start empty, and removed finishes do not return.
