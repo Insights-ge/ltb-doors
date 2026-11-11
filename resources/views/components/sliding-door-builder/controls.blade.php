@@ -112,6 +112,7 @@
                             {{ __('sliding_door_builder.finishes.select_panel') }}
                         </p>
                         <p x-show="selectedPreviewPanel" class="mt-1 text-sm text-gray-500 dark:text-gray-400" x-text="previewPanelAccessibleLabel(selectedPreviewPanel?.index)"></p>
+                        <p x-show="paletteInfillId !== null && !catalog.infills.some(infill => infill.id === paletteInfillId)" class="mt-1 text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.finishes.unavailable') }}</p>
                         <div class="mt-3 grid gap-2">
                             <x-filament::button
                                 color="gray"

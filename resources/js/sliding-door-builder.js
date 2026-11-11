@@ -4,7 +4,7 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {} }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {} }) {
     let preview;
     let stopWatching;
     let destroyed = false;
@@ -17,12 +17,19 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         catalog: payload.catalog,
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
+        validationAttempted: false,
         pendingChange: null,
         sizeInputs: { openingWidth: '', openingHeight: '' },
         sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        issueMessage(issue) {
+            return (validationLabels[issue.code] ?? '')
+                .replace(':door', String((issue.doorIndex ?? 0) + 1))
+                .replace(':panel', String((issue.panelIndex ?? 0) + 1));
+        },
 
         infillIsIncompatible(infillId) {
             return incompatibleInfillIds(this.previewConfiguration, this.selectedVariant).has(infillId);
@@ -60,6 +67,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         goToStep(step) {
             if (![1,2,3,4].includes(step)) return;
+            this.validationAttempted = true;
             if (step > 1 && (Object.values(this.sizeErrors).some(Boolean) || !parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
                 this.sizeErrors = { openingWidth: this.sizeErrors.openingWidth || !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: this.sizeErrors.openingHeight || !parseMeasurement(this.previewConfiguration?.openingHeight) };
                 step = 1;

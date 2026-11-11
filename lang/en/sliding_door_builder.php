@@ -20,6 +20,7 @@ return [
         'three_horizontal_panels' => 'Three equal horizontal panels',
     ],
     'finishes' => [
+        'unavailable' => 'This finish is no longer available. Choose another finish or clear it.',
         'incompatible' => 'Incompatible with the selected system and options',
         'replace_heading' => 'Replace panel finishes?',
         'replace_description' => 'This change will replace or remove existing panel finishes. Continue?',
@@ -63,6 +64,21 @@ return [
 
         'previous' => 'Previous',
         'next' => 'Next',
+    ],
+    'validation' => [
+        'heading' => 'Resolve these items before review',
+        'size_invalid' => 'Enter positive opening dimensions.',
+        'geometry_invalid' => 'These dimensions cannot produce a preview.',
+        'model_required' => 'Choose a door system.',
+        'variant_required' => 'Choose an available frame design and colour variant.',
+        'layout_required' => 'Choose a shared layout.',
+        'finish_required' => 'Door :door, panel :panel: choose an available finish.',
+        'finish_incompatible' => 'Door :door, panel :panel: finish is incompatible with the selected system/options.',
+        'partition_missing' => 'This variant has no partition. Choose full panels or another variant.',
+        'soft_close_missing' => 'Soft close is unavailable for this variant. Turn it off or choose another variant.',
+        'sizing_unconfirmed' => 'Catalog dimension scope remains unconfirmed.',
+        'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
+        'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'steps' => [
         'opening' => [
