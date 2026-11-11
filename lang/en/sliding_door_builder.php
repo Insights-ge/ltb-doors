@@ -81,6 +81,9 @@ return [
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
+        'export' => 'Download configuration (JSON)',
+        'export_failed' => 'The configuration could not be downloaded. Please try again.',
+
         'print' => 'Print design',
         'edit' => 'Edit',
         'edit_size' => 'Edit size',

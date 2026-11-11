@@ -1,3 +1,4 @@
+import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
@@ -21,6 +22,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         catalog: payload.catalog,
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
+        exportFailed: false,
         draftStatus: null,
         validationAttempted: false,
         pendingChange: null,
@@ -29,6 +31,20 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        exportDesign() {
+            if (!this.canReview) { this.goToStep(4); return; }
+            this.exportFailed = false;
+            try {
+                const content = exportConfiguration(this.previewConfiguration, this.catalog, this.metadata);
+                const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'sliding-door-design.json';
+                try { document.body.appendChild(link); link.click(); }
+                finally { link.remove(); setTimeout(() => URL.revokeObjectURL(url), 0); }
+            } catch { this.exportFailed = true; }
+        },
 
         printDesign() {
             if (!this.canReview) { this.goToStep(4); return; }

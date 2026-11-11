@@ -1,7 +1,9 @@
 <div class="builder-review mt-4 space-y-4" x-show="canReview">
     <div class="builder-print-actions flex flex-wrap gap-2">
         <x-filament::button x-bind:disabled="!canReview" x-on:click="printDesign()" data-print-design>{{ __('sliding_door_builder.review.print') }}</x-filament::button>
+        <x-filament::button color="gray" x-bind:disabled="!canReview" x-on:click="exportDesign()" data-export-design>{{ __('sliding_door_builder.review.export') }}</x-filament::button>
     </div>
+    <p x-show="exportFailed" role="alert" class="text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.review.export_failed') }}</p>
     <div class="builder-review-edit flex flex-wrap gap-2">
         <x-filament::button color="gray" x-on:click="goToStep(1)">{{ __('sliding_door_builder.review.edit_size') }}</x-filament::button>
         <x-filament::button color="gray" x-on:click="goToStep(2)">{{ __('sliding_door_builder.review.edit_system') }}</x-filament::button>
