@@ -10,12 +10,12 @@ The catalog must contain an active usable model/variant and infills. Divided lay
 
 ## Demonstration script
 
-1. Enter opening width and height in millimetres. Incomplete text keeps the last valid preview and prevents advancing.
+1. Enter opening width and height in millimetres, then click Next. The progress indicator is read-only. Each section must be complete before advancing, with one Previous/Next row in its footer. Incomplete text keeps the last valid preview and shows a red error under the field.
 2. Choose a system, frame design, and actual colour/variant combination. Catalog ranges are available as references.
 3. Choose full panels, two equal horizontal panels, or three equal horizontal panels. Both doors always share the layout.
 4. Select a numbered door and panel in the preview; choose finishes independently. Tab and Enter/Space operate the same controls. Escape clears selection.
 5. Try applying a finish to all panels, copying a door, or reducing the layout after customizing finishes. Confirm or cancel the replacement dialog. Surviving panel choices follow their top-to-bottom positions; new panels start empty and removed values do not return.
-6. Change the system/variant/options and inspect compatibility messages. Existing finishes remain visible for correction. Follow an error link to the affected control. A variant without partitions cannot introduce a divided layout.
+6. Change the system/variant/options and inspect compatibility messages. Existing finishes remain visible for correction. Click Next to validate the section. Errors appear only beneath their fields; an unfinished or incompatible panel is selected automatically for correction. A variant without partitions cannot introduce a divided layout.
 7. Complete every panel and open review. Check the opening dimensions, system/variant/colour, shared layout, independent finishes and options. Edit links return to the appropriate step/door/panel.
 8. Refresh to restore the last valid design on this browser/device. Print the summary or download its JSON configuration. Reset requires confirmation and clears the saved draft. Neither action submits a quote or order.
 
@@ -53,10 +53,10 @@ Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Optional `B
 
 Verified on this branch:
 
-- **352 PHP tests**, 3429 assertions; **99 individual Node tests**; **seven Chromium regression cases**; production Vite build and repository-wide Duster all pass.
+- **352 PHP tests**, 3429 assertions; **101 individual Node tests**; **eight Chromium regression cases**; production Vite build and repository-wide Duster all pass.
 - Catalog-backed journeys in English/Georgian, independent finishes, review, JSON download, refresh/restore and print PDF, without blocking console errors.
 - 320/390/768/1440px widths and light/dark themes; Georgian/long names, no horizontal overflow, 44px controls and reduced-height focused inputs.
-- Keyboard selection, context labels, pressed/live states, step/error-link focus, annotation contrast of at least 4.5:1 and focus accents of at least 3:1 against the preview surface.
+- Keyboard selection, context labels, pressed/live states, section/invalid-field focus, annotation contrast of at least 4.5:1 and focus accents of at least 3:1 against the preview surface.
 - Empty/incomplete catalogs, removed/changed options, missing visuals, names rendered as text, malformed drafts and storage failures.
 - No SVG node replacement for selection/nonvisual changes; correct resize redraw and two clean Filament SPA teardown/remount cycles.
 - Print output uses white surfaces, actual frame colour and no selection markers. The dev server and its hot-file configuration remain available after the production-build check.

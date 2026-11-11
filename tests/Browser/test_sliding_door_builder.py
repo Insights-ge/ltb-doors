@@ -69,14 +69,12 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             next_step = self.page.evaluate(f'{ROOT}.activeStep')
             if next_step == current:
                 break
+            self.page.locator(f'#builder-step-{current}').wait_for(state='hidden')
+            self.page.locator(f'#builder-step-{next_step}').wait_for(state='visible')
             current = next_step
 
-    def configure(self):
-        page = self.page
-        page.locator('#builder-openingWidth').fill('3000')
-        page.locator('#builder-openingHeight').fill('2400')
-        self.step(2)
-        choices = page.evaluate(f'''() => {{
+    def catalog_choices(self):
+        choices = self.page.evaluate(f'''() => {{
             const b={ROOT};
             for(const m of b.catalog.models) for(const v of m.variants) {{
                 const excluded=new Set(v.components.filter(c=>c.type!=='soft_close_mechanism').flatMap(c=>c.incompatibleInfillIds));
@@ -85,6 +83,14 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             }}
         }}''')
         self.assertIsNotNone(choices, 'Seed an active variant with a partition and two compatible infills.')
+        return choices
+
+    def configure(self):
+        page = self.page
+        page.locator('#builder-openingWidth').fill('3000')
+        page.locator('#builder-openingHeight').fill('2400')
+        self.step(2)
+        choices = self.catalog_choices()
         page.locator('#builder-model').select_option(str(choices['model']))
         page.locator('#builder-design').select_option(choices['design'])
         page.locator('#builder-variant').select_option(str(choices['variant']))
@@ -266,6 +272,58 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             self.assertEqual(page.locator('.builder-preview-panel').count(), 4)
             page.locator('[data-preview-door-control]').first.click()
             self.assertEqual(page.locator('.builder-preview-door.is-selected').count(), 1)
+
+    def test_sequential_sections_have_single_footer_and_only_inline_errors(self):
+        page = self.page
+        self.assertEqual(page.locator('.builder-step-navigation button, .builder-step-navigation a').count(), 0)
+        self.assertEqual(page.locator('.builder-step-navigation [role=tab]').count(), 0)
+        self.assertEqual(page.locator('[data-builder-next]:visible').count(), 1)
+        self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 0)
+        self.assertTrue(page.locator('[data-builder-next]:visible').evaluate("el=>Boolean(el.closest('.fi-section'))"))
+        self.step(2)
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
+        page.locator('#builder-openingWidth-error').wait_for(state='visible')
+        page.locator('#builder-openingHeight-error').wait_for(state='visible')
+        self.assertFalse(page.locator('#builder-model-error').is_visible())
+        self.assertEqual(page.locator('#builder-validation').count(), 0)
+        page.locator('#builder-openingWidth').fill('3000')
+        page.locator('#builder-openingHeight').fill('2400')
+        self.step(2)
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
+        self.assertFalse(page.locator('#builder-model-error').is_visible())
+        self.assertEqual(page.locator('[data-builder-next]:visible').count(), 1)
+        self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
+        self.step(3)
+        page.locator('#builder-model-error').wait_for(state='visible')
+        self.assertEqual(page.evaluate('document.activeElement.id'), 'builder-model')
+        choices = self.catalog_choices()
+        page.locator('#builder-model').select_option(str(choices['model']))
+        page.locator('#builder-model-error').wait_for(state='hidden')
+        page.locator('#builder-design-error').wait_for(state='visible')
+        self.assertFalse(page.locator('#builder-variant-error').is_visible())
+        self.step(3)
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
+        page.locator('#builder-design').select_option(choices['design'])
+        page.locator('#builder-variant-error').wait_for(state='visible')
+        self.step(3)
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
+        page.locator('#builder-variant').select_option(str(choices['variant']))
+        self.step(3)
+        self.assertFalse(page.locator('#builder-finishes-error').is_visible())
+        self.step(4)
+        page.locator('#builder-finishes-error').wait_for(state='visible')
+        self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 0)
+        self.assertTrue(page.locator('#builder-finishes-error').evaluate("el=>el.previousElementSibling.id==='builder-finishes'"))
+        page.locator(f'[data-infill-id="{choices["infills"][0]}"]').click()
+        page.locator('#builder-finishes-error').wait_for(state='hidden')
+        self.step(4)
+        self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 1)
+        page.locator(f'[data-infill-id="{choices["infills"][1]}"]').click()
+        self.step(4)
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
+        self.assertEqual(page.locator('[data-builder-next]:visible').count(), 0)
+        self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
+        self.assertEqual(page.locator('.builder-summary button').count(), 0)
 
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()

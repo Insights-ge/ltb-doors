@@ -4,9 +4,10 @@ import { reconcilePreviewConfiguration, reconcilePreviewSelection, previewSelect
 import { createPreviewScene } from '../../resources/js/sliding-door-preview.js';
 import slidingDoorBuilder from '../../resources/js/sliding-door-builder.js';
 
-function createBuilder() {
+function createBuilder(validationLabels = {}) {
     const builder = slidingDoorBuilder({
         initialStep: 1,
+        validationLabels,
         payload: {
             catalog: { models: [], infills: [] },
             metadata: {
@@ -87,8 +88,8 @@ test('shared preset choices update both door divisions and preserve unrelated co
     assert.equal(builder.selectedLayoutId, null);
 });
 
-function editingBuilder() {
-    const builder = createBuilder();
+function editingBuilder(validationLabels = {}) {
+    const builder = createBuilder(validationLabels);
     builder.$dispatch = () => {};
     builder.catalog.infills = [{ id: 7, code: 'A', description: 'Mapped' }, { id: 8, code: 'B', description: 'Neutral' }];
     builder.metadata.layoutPresets = [
@@ -370,4 +371,75 @@ test('invalid review requests route back to a correctable issue and preserve the
     assert.notEqual(builder.activeStep, 4);
     assert.ok(builder.attemptedSteps.includes(1));
     assert.deepEqual(builder.previewConfiguration, before);
+});
+
+
+function sequentialBuilder() {
+    const builder = editingBuilder({
+        size_invalid: 'Enter a valid size.', model_required: 'Choose a system.',
+        design_required: 'Choose a design.', variant_required: 'Choose a variant.',
+        finish_required: 'Door :door, panel :panel: choose a finish.',
+    });
+    builder.catalog.models = [{ id: 1, name: 'System', variants: [
+        { id: 11, frameDesignCode: 'A', color: 'black', hasPartition: true, hasSoftCloseMechanism: false, components: [] },
+    ] }];
+    return builder;
+}
+
+test('sections advance sequentially with errors only on the attempted fields', () => {
+    const builder = sequentialBuilder();
+    builder.goToStep(4);
+    assert.equal(builder.activeStep, 2);
+    assert.equal(builder.fieldError('builder-model'), '');
+    assert.equal(builder.fieldError('builder-finishes'), '');
+    builder.goToStep(3);
+    assert.equal(builder.activeStep, 2);
+    assert.equal(builder.fieldError('builder-model'), 'Choose a system.');
+    assert.equal(builder.fieldError('builder-design'), '');
+    assert.equal(builder.fieldError('builder-variant'), '');
+    builder.selectModel(1);
+    assert.equal(builder.fieldError('builder-model'), '');
+    assert.equal(builder.fieldError('builder-design'), 'Choose a design.');
+    builder.goToStep(3);
+    assert.equal(builder.activeStep, 2);
+    builder.selectFrameDesign('A');
+    assert.equal(builder.fieldError('builder-design'), '');
+    assert.equal(builder.fieldError('builder-variant'), 'Choose a variant.');
+    builder.selectVariant(11);
+    builder.goToStep(3);
+    assert.equal(builder.activeStep, 3);
+    assert.equal(builder.fieldError('builder-finishes'), '');
+    builder.goToStep(4);
+    assert.equal(builder.activeStep, 3);
+    assert.equal(builder.fieldError('builder-finishes'), 'Door 1, panel 1: choose a finish.');
+    builder.chooseInfill(7);
+    assert.equal(builder.fieldError('builder-finishes'), '');
+    builder.goToStep(4);
+    assert.equal(builder.activeStep, 3);
+    assert.equal(builder.selectedPreviewPanel.index, 1);
+    assert.equal(builder.fieldError('builder-finishes'), 'Door 1, panel 2: choose a finish.');
+    builder.chooseInfill(7);
+    builder.applyFinishToAllDoors();
+    builder.goToStep(4);
+    assert.equal(builder.activeStep, 4);
+    const before = structuredClone(builder.previewConfiguration);
+    builder.goToStep(3);
+    builder.goToStep(2);
+    builder.goToStep(1);
+    assert.deepEqual(builder.previewConfiguration, before);
+});
+
+test('Next validates unblurred input and cannot reuse a previously committed size', () => {
+    const builder = sequentialBuilder();
+    builder.sizeInputs.openingWidth = '';
+    builder.goToStep(2);
+    assert.equal(builder.activeStep, 1);
+    assert.equal(builder.previewConfiguration.openingWidth, 3000);
+    assert.equal(builder.fieldError('builder-openingWidth'), 'Enter a valid size.');
+    assert.equal(builder.fieldError('builder-model'), '');
+    builder.sizeInputs.openingWidth = '3200';
+    builder.goToStep(2);
+    assert.equal(builder.activeStep, 2);
+    assert.equal(builder.previewConfiguration.openingWidth, 3200);
+    assert.equal(builder.fieldError('builder-openingWidth'), '');
 });
