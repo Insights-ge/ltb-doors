@@ -206,6 +206,30 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function('document.activeElement.id === "builder-openingWidth"')
         self.assertNotEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
 
+    def test_long_catalog_names_are_text_and_missing_visuals_use_neutral_fills(self):
+        self.configure()
+        page = self.page
+        page.set_viewport_size({'width': 320, 'height': 900})
+        page.evaluate("Alpine.store('sidebar').close()")
+        page.evaluate(f"""() => {{
+            const b={ROOT};
+            const text='<img data-untrusted onerror=alert(1)> ძალიან გრძელი დასახელება '.repeat(6);
+            b.selectedModel.name=text;
+            b.selectedVariant.name=text;
+            b.catalog.infills.forEach(infill=>infill.description=text);
+            b.metadata.infillVisuals=[];
+            b.metadata.frameColors=[];
+            b.updatePreview();
+        }}""")
+        self.assertEqual(page.locator('[data-untrusted]').count(), 0)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+        self.assertTrue(page.evaluate(f"Array.from(document.querySelectorAll('.builder-preview-panel')).every(panel=>panel.getAttribute('fill')==={ROOT}.metadata.neutralVisual.fill)"))
+        self.step(4)
+        page.locator('.builder-review').wait_for(state='visible')
+        self.assertIn('<img data-untrusted', page.locator('.builder-review').inner_text())
+        self.assertEqual(page.locator('[data-untrusted]').count(), 0)
+        self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()
         page = self.page

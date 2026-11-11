@@ -156,3 +156,20 @@ test('the builder route has no locale prefix', function () {
     $this->get('/en/sliding-door-builder')->assertNotFound();
     $this->get('/ka/sliding-door-builder')->assertNotFound();
 });
+
+test('empty catalogs render a localized empty state instead of configuration controls', function (bool $hasModel, string $locale) {
+    if ($hasModel) {
+        DoorVariant::factory()->create();
+    }
+
+    $permission = Permission::findOrCreate('View:SlidingDoorBuilder', 'web');
+    $user = User::factory()->create();
+    $user->givePermissionTo($permission);
+
+    $this->actingAs($user)->withSession(['locale' => $locale])
+        ->get(SlidingDoorBuilder::getUrl(panel: 'admin'))
+        ->assertOk()
+        ->assertSee(__('sliding_door_builder.catalog.' . ($hasModel ? 'no_infills_heading' : 'no_models_heading'), [], $locale))
+        ->assertDontSee('id="builder-model"', false)
+        ->assertDontSee('data-export-design', false);
+})->with([false, true])->with(['en', 'ka']);
