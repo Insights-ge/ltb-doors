@@ -164,8 +164,7 @@
         visibility: visible;
     }
 
-    .sliding-door-builder .builder-preview-panel,
-    .sliding-door-builder .builder-preview-frame {
+    .sliding-door-builder .builder-preview-panel {
         cursor: pointer;
     }
 

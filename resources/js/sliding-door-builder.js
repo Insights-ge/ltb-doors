@@ -7,7 +7,7 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = null }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = [] }) {
     let preview;
     let stopWatching;
     let destroyed = false;
@@ -162,10 +162,6 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 if (candidate.field !== field) return false;
                 const sizeField = field.replace('builder-', '');
                 if (!this.attemptedSteps.includes(candidate.step) && !this.sizeErrors[sizeField]) return false;
-                if (field === 'builder-finishes') {
-                    return candidate.doorIndex === this.selectedPreviewDoor?.index
-                        && candidate.panelIndex === this.selectedPreviewPanel?.index;
-                }
                 return true;
             });
             return issue ? this.issueMessage(issue) : '';
@@ -176,7 +172,6 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.attemptedSteps = [...new Set([...this.attemptedSteps, issue.step])];
             if (issue.doorIndex !== undefined) {
                 const door = this.previewDoors[issue.doorIndex];
-                if (door) this.selectPreviewDoor(door.id);
                 const panel = door?.panels[issue.panelIndex];
                 if (panel) this.selectPreviewPanel(door.id, panel.id);
             }
@@ -302,31 +297,29 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         chooseInfill(infillId) {
-            if (this.selectedPreviewPanel && (infillId === null || this.catalog.infills.some((infill) => infill.id === infillId))) {
-                const door = this.selectedPreviewDoor;
-                const panel = this.selectedPreviewPanel;
-                const infillIdsByDoor = this.previewDoors.map((candidate) => candidate.panels.map((item) => (
-                    candidate.id === door.id && item.id === panel.id
-                        ? infillId
-                        : this.previewConfiguration.infillIdsByDoor?.[candidate.index]?.[item.index] ?? null
-                )));
-                this.previewConfiguration = { ...this.previewConfiguration, infillIdsByDoor };
-            }
+            if (this.selectedPreviewPanel) this.setPanelInfill(this.selectedPreviewPanel.index, infillId);
+        },
+
+        setPanelInfill(index, infillId) {
+            const config = this.previewConfiguration;
+            if (!Number.isInteger(index) || index < 0 || index >= (config?.panelWeights.length ?? 0)) return;
+            if (infillId !== null && (!this.catalog.infills.some(infill => infill.id === infillId) || this.infillIsIncompatible(infillId))) return;
+            const finishes = config.panelWeights.map((_, position) => position === index ? infillId : config.infillIdsByDoor?.[0]?.[position] ?? null);
+            this.previewConfiguration = { ...config, infillIdsByDoor: [[...finishes], [...finishes]] };
         },
 
         syncInfillField() {
-            const value = this.paletteInfillId;
-            if (this.infillState !== value) this.infillState = value;
+            const values = this.previewConfiguration?.panelWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
+            if (JSON.stringify(this.infillState) !== JSON.stringify(values)) this.infillState = values;
         },
 
-        applyInfillField(value) {
-            const id = value === null || value === '' || value === undefined ? null : Number(value);
-            if (id === this.paletteInfillId || !this.selectedPreviewPanel) return;
-            if (id !== null && this.infillIsIncompatible(id)) {
-                this.syncInfillField();
-                return;
-            }
-            this.chooseInfill(id);
+        applyInfillField(values) {
+            if (!Array.isArray(values)) return;
+            values.forEach((value, index) => {
+                const id = value === null || value === '' || value === undefined ? null : Number(value);
+                if (id !== (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null)) this.setPanelInfill(index, id);
+            });
+            this.syncInfillField();
         },
 
         requestConfigurationChange(configuration, kind = null) {
@@ -362,46 +355,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (restore) this.restoreFormFields();
         },
 
-        applyFinishToAllDoors() {
-            if (!this.selectedPreviewPanel) {
-                return;
-            }
-            const infillIdsByDoor = this.previewDoors.map((door) => door.panels.map(() => this.paletteInfillId));
-            this.requestConfigurationChange({ ...this.previewConfiguration, infillIdsByDoor });
-        },
-
-        copySelectedDoor() {
-            const door = this.selectedPreviewDoor;
-            if (!door) {
-                return;
-            }
-            const finishes = door.panels.map((panel) => this.previewConfiguration.infillIdsByDoor?.[door.index]?.[panel.index] ?? null);
-            this.requestConfigurationChange({
-                ...this.previewConfiguration,
-                infillIdsByDoor: this.previewDoors.map(() => [...finishes]),
-            });
-        },
-
         get selectedPreviewDoor() {
             return this.previewDoors.find((door) => door.id === this.previewSelection.doorId) ?? null;
         },
 
-        get previewPanelGroupLabel() {
-            const door = this.selectedPreviewDoor;
-            return door
-                ? (previewLabels.panels_for_door ?? '').replace(':number', String(door.index + 1))
-                : (previewLabels.panels_label ?? '');
-        },
-
         get previewSelectionAnnouncement() {
-            const door = this.selectedPreviewDoor;
-            if (!door) {
-                return previewLabels.no_selection ?? '';
-            }
-            const panel = door.panels.find((candidate) => candidate.id === this.previewSelection.panelId);
-            return panel
-                ? (previewLabels.panel_selected ?? '').replace(':door', String(door.index + 1)).replace(':panel', String(panel.index + 1))
-                : (previewLabels.door_selected ?? '').replace(':number', String(door.index + 1));
+            const panel = this.selectedPreviewPanel;
+            return panel ? (previewLabels.panel_selected ?? '').replace(':panel', String(panel.index + 1)) : (previewLabels.no_selection ?? '');
         },
 
         init() {
@@ -434,8 +394,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     onSelect: ({ doorId, panelId }) => {
                         if (panelId !== null) {
                             this.selectPreviewPanel(doorId, panelId);
-                        } else if (doorId !== null) {
-                            this.selectPreviewDoor(doorId);
+
                         } else {
                             this.clearPreviewSelection();
                         }
@@ -479,7 +438,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 this.clearPreviewSelection();
                 preview?.render(null);
                 if (focusedPanelId || focusedDoorId) {
-                    this.$nextTick(() => this.focusPreviewDoor(null));
+                    this.$nextTick(() => this.focusPanelControls(null));
                 }
                 return;
             }
@@ -492,7 +451,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.previewSelection = reconcilePreviewSelection(this.previewSelection, this.previewDoors);
             if ((focusedPanelId && !this.previewDoors.some((door) => door.panels.some((panel) => panel.id === focusedPanelId)))
                 || (focusedDoorId && !this.previewDoors.some((door) => door.id === focusedDoorId))) {
-                this.$nextTick(() => this.focusPreviewDoor(this.previewSelection.doorId));
+                this.$nextTick(() => this.focusPanelControls(this.previewSelection.panelId));
             }
             this.syncInfillField();
             preview?.setSelection(this.previewSelection);
@@ -500,33 +459,31 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.saveLocalDraft();
         },
 
-        selectPreviewDoor(doorId) {
-            if (this.previewDoors.some((door) => door.id === doorId)) {
-                this.previewSelection = { doorId, panelId: null };
-            }
+        selectPanelIndex(index) {
+            const door = this.previewDoors[0];
+            const panel = door?.panels[index];
+            if (panel) this.previewSelection = { doorId: door.id, panelId: panel.id };
         },
 
         selectPreviewPanel(doorId, panelId) {
-            const door = this.previewDoors.find((candidate) => candidate.id === doorId);
-            if (door?.panels.some((panel) => panel.id === panelId)) {
-                this.previewSelection = { doorId, panelId };
-            }
+            const panel = this.previewDoors.find(door => door.id === doorId)?.panels.find(panel => panel.id === panelId);
+            if (panel) this.selectPanelIndex(panel.index);
         },
 
         clearPreviewSelection() {
             if (rootElement?.ownerDocument.activeElement?.hasAttribute('data-preview-panel-control')) {
-                this.focusPreviewDoor(this.previewSelection.doorId);
+                this.focusPanelControls(this.previewSelection.panelId);
             }
             this.previewSelection = { doorId: null, panelId: null };
         },
 
-        focusPreviewDoor(doorId) {
+        focusPanelControls(panelId) {
             if (destroyed) {
                 return;
             }
-            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-door-control]') ?? [])
+            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-panel-control]') ?? [])
                 .filter((button) => button.getClientRects().length > 0);
-            const control = controls.find((button) => button.dataset.previewDoorControl === doorId)
+            const control = controls.find((button) => button.dataset.previewPanelControl === panelId)
                 ?? controls[0]
                 ?? rootElement?.querySelector(`#builder-step-${this.activeStep}`);
             control?.focus({ preventScroll: true });
@@ -541,11 +498,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         previewPanelAccessibleLabel(index) {
-            if (!this.selectedPreviewDoor) {
-                return '';
-            }
             return (previewLabels.panel_label ?? '')
-                .replace(':door', String(this.selectedPreviewDoor.index + 1))
                 .replace(':panel', String(index + 1));
         },
 

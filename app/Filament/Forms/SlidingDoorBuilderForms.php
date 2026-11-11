@@ -5,6 +5,7 @@ namespace App\Filament\Forms;
 use App\Data\BuilderDoorModelData;
 use App\Data\BuilderDoorVariantData;
 use App\Data\BuilderInfillData;
+use App\Enums\InfillTexture;
 use App\Filament\Pages\SlidingDoorBuilder;
 use Closure;
 use Filament\Forms\Components\Select;
@@ -128,19 +129,49 @@ class SlidingDoorBuilderForms
 
     public static function infill(Schema $schema, SlidingDoorBuilder $page): Schema
     {
-        return $schema->columns(1)->components([
-            Select::make('selectedInfillId')
-                ->id('builder-finishes')
-                ->label(__('sliding_door_builder.finishes.title'))
-                ->placeholder(__('sliding_door_builder.finishes.unselected'))
-                ->searchable()
-                ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => $infill->code . ' — ' . $infill->description])->all())
-                ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true))
-                ->extraInputAttributes([
-                    'x-bind:aria-invalid' => "Boolean(fieldError('builder-finishes'))",
-                    'aria-describedby' => 'builder-finishes-error',
-                ]),
-        ]);
+        $fields = [];
+        foreach ($page->builderCatalog->models as $model) {
+            if ($model->id !== self::id($page->builderFields['modelId'])) {
+                continue;
+            }
+            for ($index = 0; $index <= $model->partitionCount; $index++) {
+                $field = 'builder-panel-' . $index;
+                $fields[] = Select::make((string) $index)
+                    ->id($field)
+                    ->label(__('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1]))
+                    ->placeholder(__('sliding_door_builder.finishes.unselected'))
+                    ->searchable()->allowHtml()
+                    ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => self::infillOptionLabel($page, $infill)])->all())
+                    ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true))
+                    ->belowContent(view('components.sliding-door-builder.field-error', ['field' => $field]))
+                    ->extraInputAttributes([
+                        'x-on:focusin' => 'selectPanelIndex(' . $index . ')',
+                        'x-bind:aria-invalid' => "Boolean(fieldError('{$field}'))",
+                        'aria-describedby' => $field . '-error',
+                    ]);
+            }
+        }
+
+        return $schema->statePath('panelInfillIds')->columns(1)->components($fields);
+    }
+
+    private static function infillOptionLabel(SlidingDoorBuilder $page, BuilderInfillData $infill): string
+    {
+        $visual = $page->builderMetadata->neutralVisual;
+        foreach ($page->builderMetadata->infillVisuals as $mapping) {
+            if ($mapping->infillId === $infill->id) {
+                $visual = $mapping->visual;
+                break;
+            }
+        }
+        $background = match ($visual->texture) {
+            InfillTexture::WoodStraight, InfillTexture::WoodCathedral => 'repeating-linear-gradient(90deg, transparent 0 3px, #0002 3px 4px), ' . $visual->fill,
+            InfillTexture::Mirror => 'linear-gradient(135deg, #0003, #fff9, transparent, #fff6, #0003), ' . $visual->fill,
+            InfillTexture::Glass => 'linear-gradient(135deg, transparent 35%, #fff9 49%, transparent 60%), ' . $visual->fill,
+            default => $visual->fill,
+        };
+
+        return '<span style="display:flex;align-items:center;gap:0.5rem"><span aria-hidden="true" style="display:inline-block;width:1.5rem;height:1.5rem;flex-shrink:0;border:1px solid #888;border-radius:0.25rem;background:' . $background . '"></span><span>' . e($infill->code) . ' — ' . e($infill->description) . '</span></span>';
     }
 
     /** @return list<int> */

@@ -25,28 +25,7 @@
                     </div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
-                    <p x-show="!selectedPreviewPanel" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                        {{ __('sliding_door_builder.finishes.select_panel') }}
-                    </p>
-                    <div x-show="selectedPreviewPanel" class="mt-4">
-                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400" x-text="previewPanelAccessibleLabel(selectedPreviewPanel?.index)"></p>
-                        {{ $this->infillForm }}
-                    </div>
-                    <x-sliding-door-builder.field-error field="builder-finishes" />
-                    <div class="mt-6 space-y-3">
-                        <div>
-                            <x-filament::button color="gray" class="builder-preview-selector" x-bind:disabled="!selectedPreviewPanel" x-on:click="applyFinishToAllDoors()" data-apply-finish-all>
-                                {{ __('sliding_door_builder.finishes.apply_all') }}
-                            </x-filament::button>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('sliding_door_builder.finishes.apply_all_description') }}</p>
-                        </div>
-                        <div>
-                            <x-filament::button color="gray" class="builder-preview-selector" x-bind:disabled="!selectedPreviewDoor" x-on:click="copySelectedDoor()" data-copy-door>
-                                {{ __('sliding_door_builder.finishes.copy_door') }}
-                            </x-filament::button>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('sliding_door_builder.finishes.copy_description') }}</p>
-                        </div>
-                    </div>
+                    <div class="mt-4">{{ $this->infillForm }}</div>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Review)
                     <x-sliding-door-builder.review />

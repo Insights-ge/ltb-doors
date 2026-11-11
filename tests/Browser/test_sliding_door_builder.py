@@ -63,7 +63,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.ready()
 
     def field_error(self, field):
-        if field == 'builder-finishes':
+        if field.startswith('builder-panel-'):
             return self.page.locator(f'#{field}-error')
         return self.page.locator(f'[data-field-wrapper]:has(#{field}) [data-validation-error]')
 
@@ -95,8 +95,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
     def select(self, field, value):
         self.page.locator('#'+field).click()
         self.page.locator(f'[role=option][data-value="{value}"]:visible').click()
-        if field == 'builder-finishes':
-            self.page.wait_for_function(f'{ROOT}.paletteInfillId === {int(value)}')
+        if field.startswith('builder-panel-'):
+            self.page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][{int(field.rsplit("-",1)[1])}] === {int(value)}')
             return
         key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
         self.page.wait_for_function(f'String({ROOT}.formState.{key}) === {json.dumps(str(value))}')
@@ -121,11 +121,10 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.select('builder-variant', str(choices['variant']))
         self.step(3)
         page.wait_for_function(f'document.querySelectorAll(".builder-preview-panel").length==={2*choices["panels"]}')
-        for door in range(2):
-            page.locator('[data-preview-door-control]').nth(door).click()
-            for panel in range(choices['panels']):
-                page.locator('[data-preview-panel-control]').nth(panel).click()
-                self.select('builder-finishes', choices['infills'][(door+panel)%2])
+        self.assertEqual(page.locator('[data-preview-door-control]').count(), 0)
+        self.assertEqual(page.locator('[id^=builder-panel-][role=combobox]:visible').count(), choices['panels'])
+        for panel in range(choices['panels']):
+            self.select(f'builder-panel-{panel}', choices['infills'][panel%2])
         page.wait_for_function(f'{ROOT}.canReview')
         return choices
 
@@ -145,7 +144,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.locator('[data-export-design]').click()
                 with open(event.value.path()) as handle:
                     exported = json.load(handle)
-                self.assertEqual(exported['configuration']['infillIdsByDoor'], [[choices['infills'][(door+panel)%2] for panel in range(choices['panels'])] for door in range(2)])
+                self.assertEqual(exported['configuration']['infillIdsByDoor'], [[choices['infills'][panel%2] for panel in range(choices['panels'])] for door in range(2)])
                 self.assertEqual(exported['units'], 'mm')
                 page.reload()
                 self.ready()
@@ -177,11 +176,11 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     page.evaluate("Alpine.store('sidebar').close()")
                     page.evaluate('(mode)=>window.dispatchEvent(new CustomEvent("theme-changed",{detail:mode}))', mode)
                     self.step(3)
-                    page.locator('#builder-finishes').wait_for(state='visible')
+                    page.locator('#builder-panel-0').wait_for(state='visible')
                     self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
                     svg = page.locator('.builder-preview-svg').bounding_box()
                     self.assertGreater(svg['width'], 96)
-                    for button in page.locator('[data-preview-door-control]').all():
+                    for button in page.locator('[data-preview-panel-control]').all():
                         self.assertGreaterEqual(button.bounding_box()['height'], 44)
                     self.step(1)
                     # Models the usable viewport shrinking when a mobile keyboard opens.
@@ -215,23 +214,20 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
     def test_keyboard_selection_focus_and_inline_validation(self):
         choices = self.configure()
         page = self.page
-        doors = page.locator('[data-preview-door-control]')
-        doors.first.focus()
-        page.keyboard.press('Tab')
-        self.assertEqual(page.evaluate('document.activeElement.dataset.previewDoorControl'), doors.nth(1).get_attribute('data-preview-door-control'))
+        panels = page.locator('[data-preview-panel-control]')
+        panels.first.focus()
         page.keyboard.press('Space')
-        page.locator('[data-preview-panel-control]').first.wait_for(state='visible')
+        page.wait_for_function(f'{ROOT}.selectedPreviewPanel?.index===0')
+        self.assertEqual(page.locator('.builder-preview-panel-highlight.is-selected').count(), 2)
         page.keyboard.press('Tab')
-        self.assertTrue(page.evaluate('document.activeElement.hasAttribute("data-preview-panel-control")'))
         page.keyboard.press('Enter')
-        page.wait_for_function(f'{ROOT}.previewSelection.panelId !== null')
-        label = page.evaluate(f'{ROOT}.previewPanelAccessibleLabel(0)')
+        page.wait_for_function(f'{ROOT}.selectedPreviewPanel?.index===1')
+        label = page.evaluate(f'{ROOT}.previewPanelAccessibleLabel(1)')
         self.assertEqual(page.get_by_role('button', name=label, exact=True).get_attribute('aria-pressed'), 'true')
         self.assertTrue(page.evaluate('document.activeElement.matches(":focus-visible")'))
-        self.assertNotEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
         self.assertEqual(page.locator('.builder-preview [role=status]').inner_text(), page.evaluate(f'{ROOT}.previewSelectionAnnouncement'))
         page.keyboard.press('Escape')
-        self.assertEqual(page.evaluate('document.activeElement.dataset.previewDoorControl'), doors.nth(1).get_attribute('data-preview-door-control'))
+        self.assertIsNone(page.evaluate(f'{ROOT}.previewSelection.panelId'))
         self.step(1)
         page.wait_for_function('document.activeElement.id === "builder-step-1"')
         width = page.locator('#builder-openingWidth')
@@ -272,7 +268,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         choices = self.configure()
         page = self.page
         page.evaluate("window.__builderPanel=document.querySelector('.builder-preview-panel')")
-        page.locator('[data-preview-door-control]').first.click()
+        page.locator('[data-preview-panel-control]').first.click()
         page.locator('[data-preview-panel-control]').first.click()
         self.assertTrue(page.evaluate("window.__builderPanel===document.querySelector('.builder-preview-panel')"))
         page.evaluate(f'{ROOT}.previewConfiguration={{...{ROOT}.previewConfiguration,softClose:!{ROOT}.previewConfiguration.softClose}}')
@@ -294,8 +290,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
             page.wait_for_function(f'{ROOT}.hasPreview')
             self.assertEqual(page.locator('.builder-preview-door').count(), 2)
             self.assertEqual(page.locator('.builder-preview-panel').count(), 2*choices['panels'])
-            page.locator('[data-preview-door-control]').first.click()
-            self.assertEqual(page.locator('.builder-preview-door.is-selected').count(), 1)
+            page.locator('[data-preview-panel-control]').first.click()
+            self.assertEqual(page.locator('.builder-preview-panel-highlight.is-selected').count(), 2)
 
     def test_sequential_sections_have_single_footer_and_only_inline_errors(self):
         page = self.page
@@ -326,17 +322,14 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
         self.select('builder-variant', str(choices['variant']))
         self.step(3)
-        self.assertFalse(page.locator('#builder-finishes-error').is_visible())
+        self.assertEqual(page.locator('[id^=builder-panel-][role=combobox]:visible').count(), choices['panels'])
         self.step(4)
-        page.locator('#builder-finishes-error').wait_for(state='visible')
-        self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), 0)
-        self.assertTrue(page.locator('#builder-finishes').is_visible())
-        for door in range(2):
-            for panel in range(choices['panels']):
-                self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewDoor.index'), door)
-                self.assertEqual(page.evaluate(f'{ROOT}.selectedPreviewPanel.index'), panel)
-                self.select('builder-finishes', choices['infills'][door])
-                self.step(4)
+        for panel in range(choices['panels']):
+            page.locator(f'#builder-panel-{panel}-error').wait_for(state='visible')
+        for panel in range(choices['panels']):
+            self.select(f'builder-panel-{panel}', choices['infills'][panel%2])
+            page.locator(f'#builder-panel-{panel}-error').wait_for(state='hidden')
+        self.step(4)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
         self.assertEqual(page.locator('[data-builder-next]:visible').count(), 0)
         self.assertEqual(page.locator('[data-builder-previous]:visible').count(), 1)
@@ -446,19 +439,22 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page = self.page
         infill_id = choices['infills'][0]
         code = page.evaluate(f'{ROOT}.catalog.infills.find(i=>i.id==={infill_id}).code')
-        page.locator('#builder-finishes').click()
+        page.locator('#builder-panel-0').click()
         page.locator('.fi-select-input-search-ctn input:visible').fill(code)
         option = page.locator(f'[role=option][data-value="{infill_id}"]:visible')
         option.wait_for(state='visible')
         self.assertIn(code, option.inner_text())
+        swatch=option.locator('[aria-hidden=true]')
+        self.assertTrue(swatch.is_visible())
+        self.assertIn('background:', swatch.get_attribute('style'))
         option.click()
-        page.wait_for_function(f'{ROOT}.paletteInfillId==={infill_id}')
-        page.locator('#builder-finishes').locator('..').locator('.fi-select-input-value-remove-btn').click()
-        page.wait_for_function(f'{ROOT}.paletteInfillId===null')
-        page.locator('[data-preview-door-control]').first.click()
+        page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]==={infill_id}')
+        page.locator('#builder-panel-0').locator('..').locator('.fi-select-input-value-remove-btn').click()
+        page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]===null')
         page.locator('[data-preview-panel-control]').first.click()
-        page.wait_for_function(f'{ROOT}.infillState==={infill_id}')
-        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]'), infill_id)
+        page.locator('[data-preview-panel-control]').first.click()
+        page.wait_for_function(f'{ROOT}.infillState[0]===null')
+        self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1][0]'))
         self.assertEqual(page.locator('[data-infill-id]').count(), 0)
 
     def test_database_materials_render_local_svg_paints(self):

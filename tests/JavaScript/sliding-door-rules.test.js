@@ -53,13 +53,13 @@ test('compatibility checks every used component and enables soft-close exclusion
     const variant=catalog.models[0].variants[0];
     for (const type of ['side_profile','top_rail','bottom_rail','partition']) {
         variant.components=[{type,incompatibleInfillIds:[7]}];
-        assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue=>issue.code==='finish_incompatible').length,4);
+        assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue=>issue.code==='finish_incompatible').length,2);
     }
     variant.components=[{type:'soft_close_mechanism',incompatibleInfillIds:[7]}];
     assert.deepEqual(validateBuilder(config,catalog,metadata).errors,[]);
     config.softClose=true;
     variant.hasSoftCloseMechanism=true;
-    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue=>issue.code==='finish_incompatible').length,4);
+    assert.equal(validateBuilder(config,catalog,metadata).errors.filter(issue=>issue.code==='finish_incompatible').length,2);
 });
 
 test('variants without required partition hardware cannot be reviewed', () => {
@@ -75,10 +75,10 @@ test('variants without required partition hardware cannot be reviewed', () => {
 test('removed products and finishes stay present but invalidate the design', () => {
     const {config,catalog,metadata}=fixture();
     config.infillIdsByDoor[0][0]=null;
-    config.infillIdsByDoor[1][0]=999;
+    config.infillIdsByDoor[0][1]=999;
     let result=validateBuilder(config,catalog,metadata);
-    assert.ok(result.errors.some(issue=>issue.field==='builder-finishes' && issue.doorIndex===0 && issue.code==='required'));
-    assert.ok(result.errors.some(issue=>issue.field==='builder-finishes' && issue.doorIndex===1 && issue.code==='exists'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-panel-0' && issue.doorIndex===0 && issue.code==='required'));
+    assert.ok(result.errors.some(issue=>issue.field==='builder-panel-1' && issue.doorIndex===0 && issue.code==='exists'));
     catalog.models[0].variants=[];
     assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue=>issue.field==='builder-variant' && issue.code==='exists'));
 });
@@ -105,7 +105,7 @@ test('height and components cannot be combined into a variant absent from the ca
     variant.components=[{type:'soft_close_mechanism',incompatibleInfillIds:[7]}];
     errors=validateBuilder(config,catalog,metadata).errors;
     assert.ok(errors.some(issue=>issue.code==='variant_components_mismatch'));
-    assert.equal(errors.filter(issue=>issue.code==='finish_incompatible').length,4);
+    assert.equal(errors.filter(issue=>issue.code==='finish_incompatible').length,2);
     config.softClose=true;
     variant.components[0].incompatibleInfillIds=[];
     assert.deepEqual(validateBuilder(config,catalog,metadata).errors,[]);

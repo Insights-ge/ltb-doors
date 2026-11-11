@@ -161,15 +161,15 @@ function drawScene(svg, scene, configuration, labels, locale) {
 }
 
 function applySelection(svg, selection) {
+    const selected = Array.from(svg.querySelectorAll('.builder-preview-panel')).find(panel => panel.dataset.panelId === selection.panelId);
+    const index = selected?.dataset.panelIndex;
     for (const group of svg.querySelectorAll('.builder-preview-door')) {
-        const selected = group.dataset.doorId === selection.doorId;
-        group.classList.toggle('is-selected', selected);
+        group.classList.toggle('is-selected', index !== undefined);
         for (const panel of group.querySelectorAll('.builder-preview-panel')) {
-            const active = selected && panel.dataset.panelId === selection.panelId;
+            const active = index !== undefined && panel.dataset.panelIndex === index;
             panel.classList.toggle('is-selected', active);
-        }
-        for (const highlight of group.querySelectorAll('.builder-preview-panel-highlight')) {
-            highlight.classList.toggle('is-selected', selected && highlight.dataset.highlightPanelId === selection.panelId);
+            const highlight = Array.from(group.querySelectorAll('.builder-preview-panel-highlight')).find(item => item.dataset.highlightPanelId === panel.dataset.panelId);
+            highlight?.classList.toggle('is-selected', active);
         }
     }
 }

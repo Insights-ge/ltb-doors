@@ -100,45 +100,14 @@ test('duplicate invalid and malformed instance IDs are rejected', () => {
     }
 });
 
-test('selection actions update builder state without modifying the door configuration', () => {
-    const normalized = reconcilePreviewConfiguration(configuration(), null, identifiers());
-    const builder = slidingDoorBuilder({ initialStep: 1, payload: { catalog: {}, metadata: {} } });
-    builder.previewConfiguration = normalized;
-    builder.previewDoors = previewSelectionTargets(normalized);
-    const before = structuredClone(normalized);
-    const door = builder.previewDoors[1];
-
-    builder.selectPreviewPanel(door.id, door.panels[1].id);
-    assert.deepEqual(builder.previewSelection, { doorId: door.id, panelId: door.panels[1].id });
-    builder.selectPreviewPanel(door.id, 'missing-panel');
-    assert.equal(builder.previewSelection.panelId, door.panels[1].id);
-    builder.selectPreviewDoor(door.id);
-    assert.deepEqual(builder.previewSelection, { doorId: door.id, panelId: null });
+test('clicking a panel on either door selects the shared panel index without changing finishes', () => {
+    const config=reconcilePreviewConfiguration(configuration(),null,identifiers());
+    const builder=slidingDoorBuilder({initialStep:1,payload:{catalog:{},metadata:{}}});
+    builder.previewConfiguration=config;
+    builder.previewDoors=previewSelectionTargets(config);
+    builder.selectPreviewPanel(builder.previewDoors[1].id,builder.previewDoors[1].panels[1].id);
+    assert.deepEqual(builder.previewSelection,{doorId:builder.previewDoors[0].id,panelId:builder.previewDoors[0].panels[1].id});
     builder.clearPreviewSelection();
-    assert.deepEqual(builder.previewSelection, { doorId: null, panelId: null });
-    assert.deepEqual(builder.previewConfiguration, before);
-});
-
-test('accessible selection names include door context and reflect current selection', () => {
-    const builder = slidingDoorBuilder({
-        initialStep: 1,
-        payload: { catalog: {}, metadata: {} },
-        previewLabels: {
-            panels_label: 'Select a panel', panels_for_door: 'Panels for door :number',
-            no_selection: 'No door or panel selected.', door_selected: 'Door :number selected.',
-            panel_selected: 'Door :door, panel :panel selected.', panel_label: 'Door :door, panel :panel',
-        },
-    });
-    builder.previewDoors = previewSelectionTargets(reconcilePreviewConfiguration(configuration(), null, identifiers()));
-    const door = builder.previewDoors[1];
-
-    assert.equal(builder.previewSelectionAnnouncement, 'No door or panel selected.');
-    builder.selectPreviewDoor(door.id);
-    assert.equal(builder.previewSelectionAnnouncement, 'Door 2 selected.');
-    assert.equal(builder.previewPanelGroupLabel, 'Panels for door 2');
-    assert.equal(builder.previewPanelAccessibleLabel(1), 'Door 2, panel 2');
-    builder.selectPreviewPanel(door.id, door.panels[1].id);
-    assert.equal(builder.previewSelectionAnnouncement, 'Door 2, panel 2 selected.');
-    builder.clearPreviewSelection();
-    assert.equal(builder.previewSelectionAnnouncement, 'No door or panel selected.');
+    assert.deepEqual(builder.previewSelection,{doorId:null,panelId:null});
+    assert.equal(builder.previewConfiguration,config);
 });

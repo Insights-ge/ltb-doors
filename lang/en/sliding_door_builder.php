@@ -18,13 +18,7 @@ return [
         'cancel' => 'Cancel',
         'replace' => 'Replace finishes',
 
-        'apply_all' => 'Apply finish to all doors',
-        'apply_all_description' => 'Use the selected finish on every panel of both doors.',
-        'copy_door' => 'Copy this door',
-        'copy_description' => 'Copy all panel finishes from the selected door to the other door.',
-
         'title' => 'Panel finish',
-        'select_panel' => 'Select a door and panel in the preview to edit its finish.',
         'unselected' => 'No finish selected',
     ],
     'size' => [
@@ -56,6 +50,7 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
+        'shared_infills_mismatch' => 'Use the same infill for this panel on both doors.',
         'no_variant_for_height' => 'No available variant supports this height.',
         'variant_components_mismatch' => 'The components must match the selected variant. Choose an available variant.',
         'variant_height_mismatch' => 'Choose a variant available for this height.',
@@ -70,6 +65,7 @@ return [
         'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
     ],
     'review' => [
+        'shared_panels' => 'Panels on both doors',
         'divisions' => 'Panel divisions',
 
         'export' => 'Download configuration (JSON)',
@@ -86,6 +82,7 @@ return [
         'no' => 'No',
     ],
     'drafts' => [
+        'outdated_panels' => 'This saved design has different infills on each door. Start a new design to use shared panels.',
         'outdated_layout' => 'The saved panel divisions no longer match this model. Start a new design.',
 
         'discard' => 'Remove saved draft',
@@ -119,15 +116,12 @@ return [
 
         'title' => 'Door preview',
         'drawing_label' => 'Illustrative sliding door front view with opening dimensions',
-        'doors_label' => 'Select a door',
         'panels_label' => 'Select a panel',
         'door_label' => 'Door :number',
         'panel_short_label' => 'Panel :number',
-        'panel_label' => 'Door :door, panel :panel',
-        'panels_for_door' => 'Panels for door :number',
-        'no_selection' => 'No door or panel selected.',
-        'door_selected' => 'Door :number selected.',
-        'panel_selected' => 'Door :door, panel :panel selected.',
+        'panel_label' => 'Panel :panel on both doors',
+        'no_selection' => 'No panel selected.',
+        'panel_selected' => 'Panel :panel selected on both doors.',
         'width_annotation' => 'Opening width: :value mm',
         'height_annotation' => 'Opening height: :value mm',
         'empty_heading' => 'No preview yet',

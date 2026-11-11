@@ -55,13 +55,8 @@ test('admins and super admins can open the builder using their session locale', 
         ->assertSee(__('sliding_door_builder.steps.opening.label', [], $locale))
         ->assertSee(__('sliding_door_builder.preview.title', [], $locale))
         ->assertSee(__('sliding_door_builder.preview.drawing_label', [], $locale))
-        ->assertSee(__('sliding_door_builder.preview.doors_label', [], $locale))
         ->assertSee(__('sliding_door_builder.preview.panels_label', [], $locale))
         ->assertSee(__('sliding_door_builder.summary.title', [], $locale))
-        ->assertSee(__('sliding_door_builder.finishes.title', [], $locale))
-        ->assertSee(__('sliding_door_builder.finishes.select_panel', [], $locale))
-        ->assertSee(__('sliding_door_builder.finishes.apply_all', [], $locale))
-        ->assertSee(__('sliding_door_builder.finishes.copy_door', [], $locale))
         ->assertSee(__('sliding_door_builder.finishes.replace_heading', [], $locale))
         ->assertSee(__('sliding_door_builder.finishes.replace_description', [], $locale))
         ->assertSee(__('sliding_door_builder.finishes.cancel', [], $locale))
@@ -208,8 +203,8 @@ test('builder field messages match the validation translations used by Filament'
             expect($messages['builder-model']['required'])->toBe(__('validation.required', [
                 'attribute' => Str::lcfirst(__('sliding_door_builder.system.model')),
             ]));
-            expect($messages['builder-finishes']['exists'])->toBe(__('validation.exists', [
-                'attribute' => Str::lcfirst(__('sliding_door_builder.finishes.title')),
+            expect($messages['builder-panel-0']['exists'])->toBe(__('validation.exists', [
+                'attribute' => Str::lcfirst(__('sliding_door_builder.preview.panel_short_label', ['number' => 1])),
             ]));
 
             return true;
@@ -352,7 +347,7 @@ test('the infill control is a searchable Filament select with variant incompatib
     Livewire::test(SlidingDoorBuilder::class)
         ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.variantId', $variant->id)
-        ->assertFormFieldExists('selectedInfillId', 'infillForm', function (Select $field) use ($allowed, $excluded): bool {
+        ->assertFormFieldExists('0', 'infillForm', function (Select $field) use ($allowed, $excluded): bool {
             $options = $field->getOptions();
 
             return $field->isSearchable()
@@ -360,4 +355,26 @@ test('the infill control is a searchable Filament select with variant incompatib
                 && ! $field->isOptionDisabled($allowed->id, $options[$allowed->id])
                 && $field->isOptionDisabled($excluded->id, $options[$excluded->id]);
         });
+});
+
+test('all model panels have visible numbered searchable selects with escaped material swatches', function () {
+    $variant = DoorVariant::factory()->create();
+    $variant->doorModel->update(['partition_count' => 4]);
+    $infill = Infill::factory()->create(['description' => '<img src=x onerror=alert(1)>', 'visual_color' => '#AABBCC']);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+    $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.modelId', $variant->door_model_id)
+        ->set('builderFields.variantId', $variant->id);
+    for ($index = 0; $index < 5; $index++) {
+        $component->assertFormFieldExists((string) $index, 'infillForm', function (Select $field) use ($index, $infill): bool {
+            $label = $field->getOptions()[$infill->id];
+
+            return $field->isSearchable()
+                && $field->getLabel() === __('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1])
+                && str_contains($label, 'background:#AABBCC')
+                && str_contains($label, '&lt;img') && ! str_contains($label, '<img');
+        });
+    }
 });

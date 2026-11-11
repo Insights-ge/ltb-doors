@@ -46,6 +46,9 @@ export function readDraft(storage, key, catalog, metadata) {
         if (model && (configuration.panelWeights.length!==modelPanelWeights(model).length || configuration.panelWeights.some(weight=>weight!==1))) {
             return {status:'outdated_layout',configuration:null};
         }
+        if (configuration.infillIdsByDoor[0].some((id, index) => id !== configuration.infillIdsByDoor[1][index])) {
+            return {status:'outdated_panels',configuration:null};
+        }
         // This also checks representability and the supplied instance identities.
         const normalized=reconcilePreviewConfiguration(configuration,null);
         const valid=validateBuilder(normalized,catalog,metadata).errors.length === 0;

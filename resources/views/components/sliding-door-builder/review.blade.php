@@ -16,16 +16,15 @@
         <div><dt class="font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.soft_close') }}</dt><dd x-text="reviewDesign?.softClose ? @js(__('sliding_door_builder.review.yes')) : @js(__('sliding_door_builder.review.no'))"></dd></div>
         <div><dt class="font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.review.divisions') }}</dt><dd x-text="layoutSummary"></dd></div>
     </dl>
-    <template x-for="door in (reviewDesign?.doors ?? [])" :key="door.id">
+    <template x-for="door in (reviewDesign?.doors ?? []).slice(0, 1)" :key="door.id">
         <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h3 class="font-medium" x-text="previewDoorLabel(door.index)"></h3>
-                <x-filament::button color="gray" size="sm" class="builder-review-edit" x-on:click="focusIssue({step:3,field:'builder-finishes',doorIndex:door.index})" x-bind:aria-label="{{ \Illuminate\Support\Js::from(__('sliding_door_builder.review.edit')) }} + ' ' + previewDoorLabel(door.index)">{{ __('sliding_door_builder.review.edit') }}</x-filament::button>
+                <h3 class="font-medium">{{ __('sliding_door_builder.review.shared_panels') }}</h3>
             </div>
             <p class="text-sm" x-text="layoutSummary"></p>
             <dl class="mt-2 space-y-2 text-sm">
                 <template x-for="panel in door.panels" :key="panel.id">
-                    <div><dt class="flex flex-wrap items-center justify-between gap-2"><span x-text="previewPanelLabel(panel.index)"></span><button type="button" class="builder-review-edit underline" x-on:click="focusIssue({step:3,field:'builder-finishes',doorIndex:door.index,panelIndex:panel.index})" x-bind:aria-label="{{ \Illuminate\Support\Js::from(__('sliding_door_builder.review.edit')) }} + ' ' + previewDoorLabel(door.index) + ', ' + previewPanelLabel(panel.index)">{{ __('sliding_door_builder.review.edit') }}</button></dt><dd class="text-gray-600 dark:text-gray-300" x-text="panel.infill ? `${panel.infill.code} — ${panel.infill.description}` : @js(__('sliding_door_builder.finishes.unselected'))"></dd></div>
+                    <div><dt class="flex flex-wrap items-center justify-between gap-2"><span x-text="previewPanelLabel(panel.index)"></span><button type="button" class="builder-review-edit underline" x-on:click="focusIssue({step:3,field:'builder-panel-'+panel.index,doorIndex:0,panelIndex:panel.index})" x-bind:aria-label="{{ \Illuminate\Support\Js::from(__('sliding_door_builder.review.edit')) }} + ' ' + previewPanelLabel(panel.index)">{{ __('sliding_door_builder.review.edit') }}</button></dt><dd class="text-gray-600 dark:text-gray-300" x-text="panel.infill ? `${panel.infill.code} — ${panel.infill.description}` : @js(__('sliding_door_builder.finishes.unselected'))"></dd></div>
                 </template>
             </dl>
         </div>

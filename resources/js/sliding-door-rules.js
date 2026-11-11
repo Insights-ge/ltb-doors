@@ -74,12 +74,12 @@ export function validateBuilder(configuration, catalog, metadata) {
         assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-variant' });
     }
     const excluded = incompatibleInfillIds(config, variant);
-    for (let doorIndex = 0; doorIndex < 2; doorIndex++) {
-        for (let panelIndex = 0; panelIndex < (config.panelWeights?.length ?? 0); panelIndex++) {
-            const infillId = config.infillIdsByDoor?.[doorIndex]?.[panelIndex];
-            if (!catalog.infills.some((infill) => infill.id === infillId)) add(missing(infillId) ? 'required' : 'exists', 3, 'builder-finishes', { doorIndex, panelIndex });
-            else if (excluded.has(infillId)) add('finish_incompatible', 3, 'builder-finishes', { doorIndex, panelIndex });
-        }
+    for (let panelIndex = 0; panelIndex < (config.panelWeights?.length ?? 0); panelIndex++) {
+        const infillId = config.infillIdsByDoor?.[0]?.[panelIndex];
+        const field = `builder-panel-${panelIndex}`;
+        if (infillId !== (config.infillIdsByDoor?.[1]?.[panelIndex] ?? null)) add('shared_infills_mismatch', 3, field, { panelIndex, doorIndex: 0 });
+        if (!catalog.infills.some(infill => infill.id === infillId)) add(missing(infillId) ? 'required' : 'exists', 3, field, { panelIndex, doorIndex: 0 });
+        else if (excluded.has(infillId)) add('finish_incompatible', 3, field, { panelIndex, doorIndex: 0 });
     }
     return { errors, advisories, assumptions };
 }

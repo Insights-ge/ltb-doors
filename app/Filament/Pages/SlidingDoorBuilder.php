@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Data\BuilderBrowserPayloadData;
 use App\Data\BuilderCatalogData;
+use App\Data\BuilderMetadataData;
 use App\Enums\SlidingDoorBuilderStep;
 use App\Filament\Forms\SlidingDoorBuilderForms;
 use App\Services\BuilderCatalogReadService;
@@ -20,6 +21,7 @@ use Livewire\Attributes\Computed;
 
 /**
  * @property-read BuilderCatalogData $builderCatalog
+ * @property-read BuilderMetadataData $builderMetadata
  * @property-read Schema $sizeForm
  * @property-read Schema $infillForm
  * @property-read Schema $systemForm
@@ -38,7 +40,8 @@ class SlidingDoorBuilder extends Page
         'frameDesignCode' => null, 'variantId' => null,
     ];
 
-    public ?int $selectedInfillId = null;
+    /** @var array<int, int|string|null> */
+    public array $panelInfillIds = [];
 
     protected string $view = 'filament.admin.pages.sliding-door-builder';
 
@@ -51,6 +54,12 @@ class SlidingDoorBuilder extends Page
     public function builderCatalog(): BuilderCatalogData
     {
         return app(BuilderCatalogReadService::class)->read();
+    }
+
+    #[Computed]
+    public function builderMetadata(): BuilderMetadataData
+    {
+        return app(BuilderMetadataReadService::class)->read();
     }
 
     public function sizeForm(Schema $schema): Schema
@@ -140,7 +149,7 @@ class SlidingDoorBuilder extends Page
             'fieldValidationMessages' => $this->fieldValidationMessages(),
             'builderPayload' => new BuilderBrowserPayloadData(
                 catalog: $this->builderCatalog,
-                metadata: app(BuilderMetadataReadService::class)->read(),
+                metadata: $this->builderMetadata,
             ),
         ];
     }
@@ -158,8 +167,10 @@ class SlidingDoorBuilder extends Page
             'builder-model' => __('sliding_door_builder.system.model'),
             'builder-design' => __('sliding_door_builder.system.design'),
             'builder-variant' => __('sliding_door_builder.system.variant'),
-            'builder-finishes' => __('sliding_door_builder.finishes.title'),
         ];
+        for ($index = 0; $index < 5; $index++) {
+            $labels['builder-panel-' . $index] = __('sliding_door_builder.preview.panel_short_label', ['number' => $index + 1]);
+        }
         $messages = [];
 
         foreach ($labels as $field => $label) {

@@ -2,7 +2,7 @@ import { calculateDoorGeometry } from './sliding-door-geometry.js';
 
 const DOOR_COUNT = 2;
 
-/** Two doors share one panel layout; identities and finishes remain independent. */
+/** Two doors share one panel layout; instance identities remain independent. */
 export function reconcilePreviewConfiguration(configuration, previous, createId = () => globalThis.crypto.randomUUID()) {
     if (configuration === null) {
         return null;

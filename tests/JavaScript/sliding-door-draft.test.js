@@ -59,3 +59,13 @@ test('changed model divisions preserve the stored draft for explicit recovery', 
     assert.equal(result.configuration,null);
     assert.deepEqual(JSON.parse(raw),config);
 });
+
+test('older independently filled doors require explicit recovery without losing the stored design',()=>{
+    const {config,catalog,metadata}=fixture();
+    config.infillIdsByDoor[1][0]=null;
+    const raw=JSON.stringify(config);
+    const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
+    assert.equal(result.status,'outdated_panels');
+    assert.equal(result.configuration,null);
+    assert.deepEqual(JSON.parse(raw).infillIdsByDoor,config.infillIdsByDoor);
+});
