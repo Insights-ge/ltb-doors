@@ -37,3 +37,15 @@ test('draft round trips preserve identities and recheck the current catalog', ()
     assert.equal(result.status,'outdated');
     assert.deepEqual(result.configuration.infillIdsByDoor,[[7],[7]]);
 });
+
+
+test('malformed, oversized and legacy draft shapes are rejected without breaking configuration', () => {
+    const {config,catalog,metadata}=fixture();
+    for (const raw of ['{','null','[]',JSON.stringify({openingWidth:3000}),' '.repeat(100001),JSON.stringify({...config,doorIds:['duplicate','duplicate']}),JSON.stringify({...config,infillIdsByDoor:[[7]]})]) {
+        const result=readDraft({getItem:()=>raw},'draft',catalog,metadata);
+        assert.equal(result.status,'invalid');
+        assert.equal(result.configuration,null);
+    }
+    assert.equal(readDraft({getItem:()=>null},'draft',catalog,metadata).status,null);
+    assert.equal(readDraft({getItem:()=>{throw Error('denied');}},'draft',catalog,metadata).status,'unavailable');
+});

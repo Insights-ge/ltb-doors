@@ -91,6 +91,7 @@ return [
         'no' => 'No',
     ],
     'drafts' => [
+        'discard' => 'Remove saved draft',
         'restored' => 'Your last valid design was restored from this browser.',
         'outdated' => 'Your saved design needs changes because catalog options have changed. Your choices are kept for correction.',
         'invalid' => 'The saved design could not be read. Start a new design.',

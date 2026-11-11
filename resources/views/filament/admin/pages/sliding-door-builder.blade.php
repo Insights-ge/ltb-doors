@@ -18,6 +18,9 @@
             />
         @else
             <p x-show="draftStatus" x-cloak role="status" class="builder-draft-status text-sm text-gray-500 dark:text-gray-400" x-text="@js(__('sliding_door_builder.drafts'))[draftStatus] ?? ''"></p>
+            <div x-show="draftStatus === 'invalid' || draftStatus === 'outdated'" x-cloak class="builder-draft-recovery">
+                <x-filament::button color="gray" x-on:click="discardStoredDraft()">{{ __('sliding_door_builder.drafts.discard') }}</x-filament::button>
+            </div>
             <x-sliding-door-builder.step-navigation :steps="$steps" />
 
             <div x-show="validation.errors.length && (validationAttempted || previewConfiguration.modelId)" x-cloak role="alert" class="builder-validation rounded-lg border border-danger-300 p-4 text-sm text-danger-700 dark:border-danger-700 dark:text-danger-300">

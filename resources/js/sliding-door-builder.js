@@ -30,6 +30,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
 
+        discardStoredDraft() {
+            try { storage?.removeItem(storageKey); this.draftStatus = null; lastSaved = null; }
+            catch { this.draftStatus = 'unavailable'; }
+        },
+
         saveLocalDraft() {
             if (!storageKey || !storage || !this.canReview) return;
             const fingerprint = JSON.stringify(configurationSnapshot(this.previewConfiguration));
