@@ -140,6 +140,15 @@
         <x-filament::button color="gray" x-bind:disabled="activeStep === 1" x-on:click="goToStep(activeStep - 1)">{{ __('sliding_door_builder.navigation.previous') }}</x-filament::button>
         <x-filament::button x-show="activeStep < 4" x-on:click="goToStep(activeStep + 1)">{{ __('sliding_door_builder.navigation.next') }}</x-filament::button>
     </div>
+    <div class="mt-4">
+        <x-filament::button color="gray" x-on:click="requestReset()" data-reset-builder>{{ __('sliding_door_builder.navigation.reset') }}</x-filament::button>
+    </div>
+    <x-filament::modal id="builder-confirm-reset" teleport="body" :heading="__('sliding_door_builder.navigation.reset_heading')" :description="__('sliding_door_builder.navigation.reset_description')">
+        <x-slot name="footerActions">
+            <x-filament::button color="gray" x-on:click="$dispatch('close-modal', { id: 'builder-confirm-reset' })">{{ __('sliding_door_builder.finishes.cancel') }}</x-filament::button>
+            <x-filament::button color="danger" x-on:click="resetConfiguration()" data-confirm-reset>{{ __('sliding_door_builder.navigation.reset') }}</x-filament::button>
+        </x-slot>
+    </x-filament::modal>
     <x-filament::modal
         id="builder-confirm-replacement"
         teleport="body"

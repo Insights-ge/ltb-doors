@@ -45,6 +45,10 @@ return [
         'choose' => 'Choose an option',
     ],
     'navigation' => [
+        'reset' => 'Reset design',
+        'reset_heading' => 'Reset this design?',
+        'reset_description' => 'Your measurements and selections will be cleared.',
+
         'previous' => 'Previous',
         'next' => 'Next',
     ],

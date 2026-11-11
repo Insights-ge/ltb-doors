@@ -343,3 +343,20 @@ test('incomplete measurement entry retains committed geometry but blocks forward
     assert.equal(builder.previewConfiguration.openingWidth, 1200.5);
     assert.equal(builder.sizeErrors.openingWidth, false);
 });
+
+
+test('reset requests confirmation before discarding edits and restores a blank configuration', () => {
+    const builder = editingBuilder();
+    const events = [];
+    builder.$dispatch = (name, detail) => events.push([name, detail.id]);
+    const before = structuredClone(builder.previewConfiguration);
+    builder.requestReset();
+    assert.deepEqual(builder.previewConfiguration, before);
+    assert.deepEqual(events[0], ['open-modal','builder-confirm-reset']);
+    builder.resetConfiguration();
+    assert.equal(builder.previewConfiguration.openingWidth, null);
+    assert.equal(builder.previewConfiguration.variantId, null);
+    assert.deepEqual(builder.previewConfiguration.panelWeights, [1]);
+    assert.deepEqual(builder.previewSelection, {doorId:null, panelId:null});
+    assert.equal(builder.activeStep, 1);
+});

@@ -23,6 +23,22 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
 
+        requestReset() {
+            if (JSON.stringify(this.previewConfiguration) === JSON.stringify(createInitialConfiguration()) && !Object.values(this.sizeInputs).some(Boolean)) return;
+            this.$dispatch('open-modal', { id: 'builder-confirm-reset' });
+        },
+
+        resetConfiguration() {
+            previousConfiguration = null;
+            this.pendingChange = null;
+            this.previewConfiguration = createInitialConfiguration();
+            this.previewSelection = { doorId: null, panelId: null };
+            this.sizeInputs = { openingWidth: '', openingHeight: '' };
+            this.sizeErrors = { openingWidth: false, openingHeight: false };
+            this.goToStep(1);
+            this.$dispatch('close-modal', { id: 'builder-confirm-reset' });
+        },
+
         goToStep(step) {
             if (![1,2,3,4].includes(step)) return;
             if (step > 1 && (Object.values(this.sizeErrors).some(Boolean) || !parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
