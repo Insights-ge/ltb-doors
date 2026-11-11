@@ -1,3 +1,4 @@
+import { validateBuilder } from './sliding-door-rules.js';
 import { createInitialConfiguration, parseMeasurement } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
@@ -22,6 +23,20 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         hasPreview: false,
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
+
+        get validation() {
+            const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);
+            for (const [field, invalid] of Object.entries(this.sizeErrors)) {
+                if (invalid && !result.errors.some((issue) => issue.field === `builder-${field}`)) {
+                    result.errors.push({ code: 'size_invalid', step: 1, field: `builder-${field}` });
+                }
+            }
+            return result;
+        },
+
+        get canReview() {
+            return this.validation.errors.length === 0;
+        },
 
         requestReset() {
             if (JSON.stringify(this.previewConfiguration) === JSON.stringify(createInitialConfiguration()) && !Object.values(this.sizeInputs).some(Boolean)) return;
