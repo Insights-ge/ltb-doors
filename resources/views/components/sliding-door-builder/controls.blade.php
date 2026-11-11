@@ -3,6 +3,8 @@
 <div class="builder-controls">
     @foreach ($steps as $step)
         <div
+            role="region"
+            aria-label="{{ $step->getLabel() }}"
             tabindex="-1"
             class="builder-step-content"
             id="builder-step-{{ $step->value }}"
@@ -35,7 +37,7 @@
                         <div>
                             <label for="builder-model" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.model') }}</label>
                             <x-filament::input.wrapper>
-                                <x-filament::input.select id="builder-model" x-on:change="selectModel($event.target.value)" x-bind:value="previewConfiguration.modelId ?? ''">
+                                <x-filament::input.select id="builder-model" x-bind:aria-invalid="validationAttempted && !selectedModel" aria-describedby="builder-validation" x-on:change="selectModel($event.target.value)" x-bind:value="previewConfiguration.modelId ?? ''">
                                     <option value="" disabled>{{ __('sliding_door_builder.system.choose') }}</option>
                                     <template x-for="model in catalog.models" :key="model.id"><option x-bind:value="model.id" x-text="model.name"></option></template>
                                 </x-filament::input.select>
@@ -53,7 +55,7 @@
                         <div>
                             <label for="builder-variant" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.variant') }}</label>
                             <x-filament::input.wrapper>
-                                <x-filament::input.select id="builder-variant" x-bind:disabled="!availableVariants.length" x-on:change="selectVariant($event.target.value)" x-bind:value="previewConfiguration.variantId ?? ''">
+                                <x-filament::input.select id="builder-variant" x-bind:aria-invalid="validationAttempted && !selectedVariant" aria-describedby="builder-validation" x-bind:disabled="!availableVariants.length" x-on:change="selectVariant($event.target.value)" x-bind:value="previewConfiguration.variantId ?? ''">
                                     <option value="" disabled>{{ __('sliding_door_builder.system.choose') }}</option>
                                     <template x-for="variant in availableVariants" :key="variant.id"><option x-bind:value="variant.id" x-text="variantLabel(variant)"></option></template>
                                 </x-filament::input.select>

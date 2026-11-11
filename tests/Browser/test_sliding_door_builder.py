@@ -8,6 +8,14 @@ from playwright.sync_api import sync_playwright
 ROOT = "Alpine.$data(document.querySelector('.sliding-door-builder'))"
 
 
+def contrast(first, second):
+    def luminance(rgb):
+        values = [value / 255 / 12.92 if value / 255 <= 0.04045 else ((value / 255 + 0.055) / 1.055) ** 2.4 for value in rgb[:3]]
+        return sum(value * weight for value, weight in zip(values, [0.2126, 0.7152, 0.0722]))
+    low, high = sorted([luminance(first), luminance(second)])
+    return (high + 0.05) / (low + 0.05)
+
+
 class SlidingDoorBuilderBrowserTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -148,11 +156,55 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     self.assertGreaterEqual(box['y'], 0)
                     self.assertLessEqual(box['y'] + box['height'], 420)
                     self.assertEqual(field.input_value(), '3000')
+                    colors = page.evaluate("""() => {
+                        const rgb = value => { const canvas=document.createElement('canvas'); canvas.width=canvas.height=1; const ctx=canvas.getContext('2d'); ctx.fillStyle=value; ctx.fillRect(0,0,1,1); return Array.from(ctx.getImageData(0,0,1,1).data); };
+                        return {
+                            text:rgb(getComputedStyle(document.querySelector('.builder-preview-svg')).color),
+                            surface:rgb(getComputedStyle(document.querySelector('.builder-preview .fi-section-content')).backgroundColor),
+                            focus:rgb(getComputedStyle(document.activeElement).outlineColor)
+                        };
+                    }""")
+                    self.assertGreaterEqual(contrast(colors['text'], colors['surface']), 4.5)
+                    self.assertGreaterEqual(contrast(colors['focus'], colors['surface']), 3)
+
                     if os.environ.get('BUILDER_TEST_ARTIFACTS'):
                         directory = Path(os.environ['BUILDER_TEST_ARTIFACTS'])
                         directory.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(directory / f'keyboard-{width}-{mode}.png'))
                     page.set_viewport_size({'width': width, 'height': 900})
+
+    def test_keyboard_selection_focus_and_actionable_validation(self):
+        self.configure()
+        page = self.page
+        doors = page.locator('[data-preview-door-control]')
+        doors.first.focus()
+        page.keyboard.press('Tab')
+        self.assertEqual(page.evaluate('document.activeElement.dataset.previewDoorControl'), doors.nth(1).get_attribute('data-preview-door-control'))
+        page.keyboard.press('Space')
+        page.locator('[data-preview-panel-control]').first.wait_for(state='visible')
+        page.keyboard.press('Tab')
+        self.assertTrue(page.evaluate('document.activeElement.hasAttribute("data-preview-panel-control")'))
+        page.keyboard.press('Enter')
+        page.wait_for_function(f'{ROOT}.previewSelection.panelId !== null')
+        label = page.evaluate(f'{ROOT}.previewPanelAccessibleLabel(0)')
+        self.assertEqual(page.get_by_role('button', name=label, exact=True).get_attribute('aria-pressed'), 'true')
+        self.assertTrue(page.evaluate('document.activeElement.matches(":focus-visible")'))
+        self.assertNotEqual(page.evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'none')
+        self.assertEqual(page.locator('.builder-preview [role=status]').inner_text(), page.evaluate(f'{ROOT}.previewSelectionAnnouncement'))
+        page.keyboard.press('Escape')
+        self.assertEqual(page.evaluate('document.activeElement.dataset.previewDoorControl'), doors.nth(1).get_attribute('data-preview-door-control'))
+        self.step(1)
+        page.wait_for_function('document.activeElement.id === "builder-step-1"')
+        width = page.locator('#builder-openingWidth')
+        width.fill('invalid')
+        self.step(4)
+        page.wait_for_function(f'{ROOT}.sizeErrors.openingWidth')
+        self.assertEqual(width.get_attribute('aria-invalid'), 'true')
+        page.locator('#builder-openingWidth-error').wait_for(state='visible')
+        page.locator('#builder-validation').wait_for(state='visible')
+        page.locator('#builder-validation button').first.click()
+        page.wait_for_function('document.activeElement.id === "builder-openingWidth"')
+        self.assertNotEqual(page.evaluate(f'{ROOT}.activeStep'), 4)
 
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()

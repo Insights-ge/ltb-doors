@@ -23,7 +23,7 @@
             </div>
             <x-sliding-door-builder.step-navigation :steps="$steps" />
 
-            <div x-show="validation.errors.length && (validationAttempted || previewConfiguration.modelId)" x-cloak role="alert" class="builder-validation rounded-lg border border-danger-300 p-4 text-sm text-danger-700 dark:border-danger-700 dark:text-danger-300">
+            <div id="builder-validation" x-show="validation.errors.length && (validationAttempted || previewConfiguration.modelId)" x-cloak role="alert" class="builder-validation rounded-lg border border-danger-300 p-4 text-sm text-danger-700 dark:border-danger-700 dark:text-danger-300">
                 <p class="font-medium">{{ __('sliding_door_builder.validation.heading') }}</p>
                 <ul class="mt-2 list-inside list-disc">
                     <template x-for="(issue, index) in validation.errors" :key="index"><li><button type="button" class="underline focus-visible:outline-2 focus-visible:outline-offset-2" x-on:click="focusIssue(issue)" x-text="issueMessage(issue)"></button></li></template>
