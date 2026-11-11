@@ -29,6 +29,44 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
         },
 
+        get selectedModel() {
+            return this.catalog.models.find((model) => model.id === this.previewConfiguration?.modelId) ?? null;
+        },
+
+        get selectedVariant() {
+            return this.selectedModel?.variants.find((variant) => variant.id === this.previewConfiguration?.variantId) ?? null;
+        },
+
+        get frameDesigns() {
+            return [...new Set(this.selectedModel?.variants.map((variant) => variant.frameDesignCode) ?? [])];
+        },
+
+        get availableVariants() {
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode) ?? [];
+        },
+
+        selectModel(value) {
+            const id = Number(value);
+            if (!this.catalog.models.some((model) => model.id === id)) return;
+            this.previewConfiguration = { ...this.previewConfiguration, modelId: id, variantId: null, frameDesignCode: null, frameColor: null, softClose: false };
+        },
+
+        selectFrameDesign(code) {
+            if (!this.frameDesigns.includes(code)) return;
+            this.previewConfiguration = { ...this.previewConfiguration, frameDesignCode: code, variantId: null, frameColor: null, softClose: false };
+        },
+
+        selectVariant(value) {
+            const variant = this.availableVariants.find((candidate) => candidate.id === Number(value));
+            if (!variant) return;
+            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color, softClose: false };
+        },
+
+        variantLabel(variant) {
+            const color = this.metadata.frameColors.find((frame) => frame.color === variant.color)?.label ?? variant.color;
+            return `${color} — ${variant.name}`;
+        },
+
         get selectedPreviewPanel() {
             return this.selectedPreviewDoor?.panels.find((panel) => panel.id === this.previewSelection.panelId) ?? null;
         },

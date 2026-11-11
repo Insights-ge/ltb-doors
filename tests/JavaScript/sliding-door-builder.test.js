@@ -295,3 +295,22 @@ test('size and colour changes preserve independent panel choices and surviving s
         ['#AABBCC','#B8B8B8','#B8B8B8'], ['#B8B8B8','#B8B8B8','#AABBCC'],
     ]);
 });
+
+
+test('system controls resolve only real design and colour variants and preserve panel edits', () => {
+    const builder = editingBuilder();
+    builder.catalog.models = [{ id: 1, variants: [{id: 11, frameDesignCode: 'A', color:'black'}, {id:12, frameDesignCode:'B', color:'silver'}] }];
+    builder.previewConfiguration.infillIdsByDoor = [[7,null,null],[8,null,null]];
+    builder.selectModel('1');
+    assert.deepEqual(builder.frameDesigns, ['A','B']);
+    builder.selectFrameDesign('A');
+    builder.selectVariant('12');
+    assert.equal(builder.selectedVariant, null);
+    builder.selectVariant('11');
+    assert.equal(builder.previewConfiguration.frameColor, 'black');
+    builder.selectFrameDesign('B');
+    assert.equal(builder.selectedVariant, null);
+    builder.selectVariant('12');
+    assert.equal(builder.previewConfiguration.frameColor, 'silver');
+    assert.deepEqual(builder.previewConfiguration.infillIdsByDoor, [[7,null,null],[8,null,null]]);
+});

@@ -38,6 +38,12 @@ return [
         'height' => 'Height (mm)',
         'invalid' => 'Enter a positive measurement in millimetres.',
     ],
+    'system' => [
+        'model' => 'Door system',
+        'design' => 'Frame design',
+        'variant' => 'Colour and variant',
+        'choose' => 'Choose an option',
+    ],
     'steps' => [
         'opening' => [
             'label' => 'Size',

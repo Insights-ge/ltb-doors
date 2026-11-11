@@ -24,6 +24,37 @@
                         @endforeach
                     </div>
                 @endif
+                @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
+                    <div class="mt-4 grid gap-4">
+                        <div>
+                            <label for="builder-model" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.model') }}</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input.select id="builder-model" x-on:change="selectModel($event.target.value)" x-bind:value="previewConfiguration.modelId ?? ''">
+                                    <option value="" disabled>{{ __('sliding_door_builder.system.choose') }}</option>
+                                    <template x-for="model in catalog.models" :key="model.id"><option x-bind:value="model.id" x-text="model.name"></option></template>
+                                </x-filament::input.select>
+                            </x-filament::input.wrapper>
+                        </div>
+                        <div>
+                            <label for="builder-design" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.design') }}</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input.select id="builder-design" x-bind:disabled="!selectedModel" x-on:change="selectFrameDesign($event.target.value)" x-bind:value="previewConfiguration.frameDesignCode ?? ''">
+                                    <option value="" disabled>{{ __('sliding_door_builder.system.choose') }}</option>
+                                    <template x-for="code in frameDesigns" :key="code"><option x-bind:value="code" x-text="code"></option></template>
+                                </x-filament::input.select>
+                            </x-filament::input.wrapper>
+                        </div>
+                        <div>
+                            <label for="builder-variant" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.variant') }}</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input.select id="builder-variant" x-bind:disabled="!availableVariants.length" x-on:change="selectVariant($event.target.value)" x-bind:value="previewConfiguration.variantId ?? ''">
+                                    <option value="" disabled>{{ __('sliding_door_builder.system.choose') }}</option>
+                                    <template x-for="variant in availableVariants" :key="variant.id"><option x-bind:value="variant.id" x-text="variantLabel(variant)"></option></template>
+                                </x-filament::input.select>
+                            </x-filament::input.wrapper>
+                        </div>
+                    </div>
+                @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Panels)
                     <fieldset class="mt-4" x-bind:disabled="!hasPreview">
                         <legend class="text-sm font-medium text-gray-950 dark:text-white">

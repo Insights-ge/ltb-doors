@@ -5,6 +5,7 @@ export function createInitialConfiguration() {
         openingHeight: null,
         modelId: null,
         variantId: null,
+        frameDesignCode: null,
         frameColor: null,
         panelWeights: [1],
         softClose: false,
