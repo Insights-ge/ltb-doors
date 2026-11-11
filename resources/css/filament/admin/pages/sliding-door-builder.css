@@ -231,3 +231,36 @@
         }
     }
 }
+
+@media print {
+    body:has(.sliding-door-builder) .fi-sidebar,
+    body:has(.sliding-door-builder) .fi-topbar,
+    body:has(.sliding-door-builder) .fi-page-header,
+    .sliding-door-builder .builder-step-navigation,
+    .sliding-door-builder .builder-validation,
+    .sliding-door-builder .builder-summary,
+    .sliding-door-builder .builder-draft-status,
+    .sliding-door-builder .builder-draft-recovery,
+    .sliding-door-builder .builder-preview-selectors,
+    .sliding-door-builder .builder-review-edit,
+    .sliding-door-builder .builder-print-actions,
+    .sliding-door-builder .builder-control-actions,
+    .sliding-door-builder .builder-step-content:not(#builder-step-4) {
+        display: none !important;
+    }
+
+    .sliding-door-builder #builder-step-4 { display: block !important; }
+    .sliding-door-builder .builder-workspace { display: flex; flex-direction: column; }
+    .sliding-door-builder .builder-preview { order: -1; width: 100%; break-inside: avoid; }
+    .sliding-door-builder .builder-controls { width: 100%; }
+    .sliding-door-builder .builder-review > dl,
+    .sliding-door-builder .builder-review > template + div { break-inside: avoid; }
+    .sliding-door-builder .builder-preview .fi-section-content { background: white; }
+    .sliding-door-builder { --builder-annotation: #222; --builder-accent: #285e46; color: #111; }
+    .sliding-door-builder .fi-section { box-shadow: none; background: white; color: #111; }
+    .sliding-door-builder .fi-section-header-heading,
+    .sliding-door-builder dt,
+    .sliding-door-builder dd,
+    .sliding-door-builder p,
+    .sliding-door-builder li { color: #111; }
+}

@@ -24,7 +24,7 @@
                                 <p id="builder-{{ $field }}-error" x-show="sizeErrors.{{ $field }}" x-cloak class="mt-1 text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.size.invalid') }}</p>
                             </div>
                         @endforeach
-    <div class="mt-4 flex flex-wrap justify-between gap-2">
+    <div class="builder-control-actions mt-4 flex flex-wrap justify-between gap-2">
         <x-filament::button color="gray" x-bind:disabled="activeStep === 1" x-on:click="goToStep(activeStep - 1)">{{ __('sliding_door_builder.navigation.previous') }}</x-filament::button>
         <x-filament::button x-show="activeStep < 4" x-on:click="goToStep(activeStep + 1)">{{ __('sliding_door_builder.navigation.next') }}</x-filament::button>
     </div>
@@ -162,11 +162,11 @@
             </x-filament::section>
         </div>
     @endforeach
-    <div class="mt-4 flex flex-wrap justify-between gap-2">
+    <div class="builder-control-actions mt-4 flex flex-wrap justify-between gap-2">
         <x-filament::button color="gray" x-bind:disabled="activeStep === 1" x-on:click="goToStep(activeStep - 1)">{{ __('sliding_door_builder.navigation.previous') }}</x-filament::button>
         <x-filament::button x-show="activeStep < 4" x-on:click="goToStep(activeStep + 1)">{{ __('sliding_door_builder.navigation.next') }}</x-filament::button>
     </div>
-    <div class="mt-4">
+    <div class="builder-control-actions mt-4">
         <x-filament::button color="gray" x-on:click="requestReset()" data-reset-builder>{{ __('sliding_door_builder.navigation.reset') }}</x-filament::button>
     </div>
     <x-filament::modal id="builder-confirm-reset" teleport="body" :heading="__('sliding_door_builder.navigation.reset_heading')" :description="__('sliding_door_builder.navigation.reset_description')">

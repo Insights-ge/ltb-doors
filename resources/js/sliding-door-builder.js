@@ -30,6 +30,12 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         previewDoors: [],
         previewSelection: { doorId: null, panelId: null },
 
+        printDesign() {
+            if (!this.canReview) { this.goToStep(4); return; }
+            this.goToStep(4);
+            this.$nextTick(() => window.print());
+        },
+
         discardStoredDraft() {
             try { storage?.removeItem(storageKey); this.draftStatus = null; lastSaved = null; }
             catch { this.draftStatus = 'unavailable'; }
