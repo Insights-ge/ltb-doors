@@ -1,3 +1,4 @@
+import { createInitialConfiguration } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -14,13 +15,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         activeStep: initialStep,
         catalog: payload.catalog,
         metadata: payload.metadata,
-        // Temporary initial design until size and layout inputs are connected.
-        previewConfiguration: {
-            openingWidth: 3000,
-            openingHeight: 2400,
-            frameColor: 'black',
-            panelWeights: [1, 1, 1],
-        },
+        previewConfiguration: createInitialConfiguration(),
         pendingChange: null,
         hasPreview: false,
         previewDoors: [],

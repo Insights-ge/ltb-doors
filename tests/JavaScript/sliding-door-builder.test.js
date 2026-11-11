@@ -5,7 +5,7 @@ import { createPreviewScene } from '../../resources/js/sliding-door-preview.js';
 import slidingDoorBuilder from '../../resources/js/sliding-door-builder.js';
 
 function createBuilder() {
-    return slidingDoorBuilder({
+    const builder = slidingDoorBuilder({
         initialStep: 1,
         payload: {
             catalog: { models: [], infills: [] },
@@ -16,6 +16,8 @@ function createBuilder() {
             },
         },
     });
+    builder.previewConfiguration = { openingWidth: 3000, openingHeight: 2400, frameColor: 'black', panelWeights: [1,1,1] };
+    return builder;
 }
 
 test('frame visuals use the mapping or neutral fallback', () => {
