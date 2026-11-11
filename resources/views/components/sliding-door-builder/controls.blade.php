@@ -19,7 +19,7 @@
                             <div>
                                 <label for="builder-{{ $field }}" class="text-sm font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.size.' . $label) }}</label>
                                 <x-filament::input.wrapper>
-                                    <x-filament::input id="builder-{{ $field }}" type="number" min="0" step="any" inputmode="decimal" x-bind:value="previewConfiguration.{{ $field }}" x-on:change="setMeasurement('{{ $field }}', $event.target.value)" x-bind:aria-invalid="sizeErrors.{{ $field }}" aria-describedby="builder-{{ $field }}-error" />
+                                    <x-filament::input id="builder-{{ $field }}" type="text" inputmode="decimal" x-model="sizeInputs.{{ $field }}" x-on:blur="setMeasurement('{{ $field }}', $event.target.value)" x-bind:aria-invalid="sizeErrors.{{ $field }}" aria-describedby="builder-{{ $field }}-error" />
                                 </x-filament::input.wrapper>
                                 <p id="builder-{{ $field }}-error" x-show="sizeErrors.{{ $field }}" x-cloak class="mt-1 text-sm text-danger-600 dark:text-danger-400">{{ __('sliding_door_builder.size.invalid') }}</p>
                             </div>

@@ -17,6 +17,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         metadata: payload.metadata,
         previewConfiguration: createInitialConfiguration(),
         pendingChange: null,
+        sizeInputs: { openingWidth: '', openingHeight: '' },
         sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
@@ -24,8 +25,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         goToStep(step) {
             if (![1,2,3,4].includes(step)) return;
-            if (step > 1 && (!parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
-                this.sizeErrors = { openingWidth: !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: !parseMeasurement(this.previewConfiguration?.openingHeight) };
+            if (step > 1 && (Object.values(this.sizeErrors).some(Boolean) || !parseMeasurement(this.previewConfiguration?.openingWidth) || !parseMeasurement(this.previewConfiguration?.openingHeight))) {
+                this.sizeErrors = { openingWidth: this.sizeErrors.openingWidth || !parseMeasurement(this.previewConfiguration?.openingWidth), openingHeight: this.sizeErrors.openingHeight || !parseMeasurement(this.previewConfiguration?.openingHeight) };
                 step = 1;
             } else if (step > 2 && !this.selectedVariant) {
                 step = 2;
@@ -38,7 +39,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (!['openingWidth', 'openingHeight'].includes(field)) return;
             const number = parseMeasurement(value);
             this.sizeErrors[field] = number === null;
-            this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
+            this.sizeInputs[field] = String(value ?? '');
+            if (number !== null) this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
         },
 
         get selectedModel() {

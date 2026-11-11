@@ -329,3 +329,17 @@ test('navigation gates incomplete size and product choices without losing panel 
     builder.goToStep(99);
     assert.equal(builder.activeStep, 1);
 });
+
+
+test('incomplete measurement entry retains committed geometry but blocks forward navigation', () => {
+    const builder = editingBuilder();
+    builder.setMeasurement('openingWidth', '12.');
+    assert.equal(builder.previewConfiguration.openingWidth, 3000);
+    assert.equal(builder.sizeInputs.openingWidth, '12.');
+    assert.equal(builder.sizeErrors.openingWidth, true);
+    builder.goToStep(2);
+    assert.equal(builder.activeStep, 1);
+    builder.setMeasurement('openingWidth', '1200.5');
+    assert.equal(builder.previewConfiguration.openingWidth, 1200.5);
+    assert.equal(builder.sizeErrors.openingWidth, false);
+});
