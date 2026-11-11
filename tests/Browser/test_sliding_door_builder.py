@@ -1,6 +1,7 @@
 """Catalog-backed Chromium regressions. Requires a running local app and Vite."""
 import json
 import os
+from pathlib import Path
 import unittest
 from playwright.sync_api import sync_playwright
 
@@ -117,6 +118,41 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                 self.assertTrue(page.locator('.builder-review').is_visible())
                 self.assertFalse(page.locator('.builder-step-navigation').is_visible())
                 page.emulate_media(media='screen')
+
+    def test_responsive_layout_and_focused_measurement_with_reduced_viewport(self):
+        self.locale('ka')
+        self.configure()
+        page = self.page
+        for width in [320, 390, 768, 1440]:
+            for mode in ['light', 'dark']:
+                with self.subTest(width=width, theme=mode):
+                    page.set_viewport_size({'width': width, 'height': 900})
+                    page.evaluate("Alpine.store('sidebar').close()")
+                    page.evaluate('(mode)=>window.dispatchEvent(new CustomEvent("theme-changed",{detail:mode}))', mode)
+                    self.step(3)
+                    self.assertTrue(page.locator('[data-layout-preset=two_horizontal_panels]').is_visible())
+                    self.assertTrue(page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+                    svg = page.locator('.builder-preview-svg').bounding_box()
+                    self.assertGreater(svg['width'], 96)
+                    for button in page.locator('[data-preview-door-control]').all():
+                        self.assertGreaterEqual(button.bounding_box()['height'], 44)
+                    self.step(1)
+                    # Models the usable viewport shrinking when a mobile keyboard opens.
+                    page.set_viewport_size({'width': width, 'height': 420})
+                    field = page.locator('#builder-openingWidth')
+                    field.scroll_into_view_if_needed()
+                    field.focus()
+                    box = field.bounding_box()
+                    self.assertGreaterEqual(box['x'], 0)
+                    self.assertLessEqual(box['x'] + box['width'], width)
+                    self.assertGreaterEqual(box['y'], 0)
+                    self.assertLessEqual(box['y'] + box['height'], 420)
+                    self.assertEqual(field.input_value(), '3000')
+                    if os.environ.get('BUILDER_TEST_ARTIFACTS'):
+                        directory = Path(os.environ['BUILDER_TEST_ARTIFACTS'])
+                        directory.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(directory / f'keyboard-{width}-{mode}.png'))
+                    page.set_viewport_size({'width': width, 'height': 900})
 
     def test_upstream_invalidation_retains_finishes_and_blocks_review(self):
         choices = self.configure()

@@ -21,3 +21,4 @@ BUILDER_TEST_EMAIL=your-local-email BUILDER_TEST_PASSWORD=your-local-password /t
 ```
 
 Set `BUILDER_TEST_URL` if the app is not at `http://localhost:8000`. Tests cover both locales, JSON/print, draft restoration, catalog invalidation, malformed drafts and storage write failures. They operate only on their isolated session/browser storage. Use a local environment, not production.
+- Responsive checks pass at 320/390/768/1440px in light/dark themes, including Georgian labels, 44px preview controls and no horizontal page overflow. A focused size field stays within a reduced 420px-height viewport. This simulates the space available with a mobile keyboard; physical-device keyboard behaviour remains a manual follow-up.
