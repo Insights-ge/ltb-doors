@@ -2,7 +2,8 @@
     <div
         x-load
         x-load-src="{{ \Illuminate\Support\Facades\Vite::asset('resources/js/sliding-door-builder.js') }}"
-        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), previewLabels: @js(__('sliding_door_builder.preview')) })"
+        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), infillState: $wire.entangle('infillSelections'), pickerState: $wire.entangle('quickInfillId'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
+        x-on:modal-closed.window="if ($event.detail.id === 'builder-confirm-replacement' && pendingChange) cancelConfigurationChange(); if ($event.detail.id === 'builder-infill-picker') pickerIndex = null"
         class="sliding-door-builder grid grid-cols-1 gap-4 sm:gap-6"
     >
         @if ($builderPayload->catalog->models === [])
@@ -16,12 +17,15 @@
                 :description="__('sliding_door_builder.catalog.no_infills_description')"
             />
         @else
+            <p x-show="draftStatus && draftStatus !== 'restored'" x-cloak role="status" class="builder-draft-status text-sm text-gray-500 dark:text-gray-400" x-text="@js(__('sliding_door_builder.drafts'))[draftStatus] ?? ''"></p>
+            <div x-show="['invalid', 'outdated', 'outdated_layout', 'outdated_infills'].includes(draftStatus)" x-cloak class="builder-draft-recovery">
+                <x-filament::button color="gray" x-on:click="discardStoredDraft()">{{ __('sliding_door_builder.drafts.discard') }}</x-filament::button>
+            </div>
             <x-sliding-door-builder.step-navigation :steps="$steps" />
 
             <div class="builder-workspace grid items-start gap-4 sm:gap-6">
                 <x-sliding-door-builder.controls :steps="$steps" :initial-step="$initialStep" />
                 <x-sliding-door-builder.preview />
-                <x-sliding-door-builder.summary />
             </div>
         @endif
     </div>

@@ -1,6 +1,10 @@
 import { calculateDoorGeometry, fitDoorGeometry } from './sliding-door-geometry.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 
+import { createInfillPaints } from './sliding-door-textures.js';
+
+import { attachInfillDrag } from './sliding-door-infill-drag.js';
+
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /**
@@ -17,24 +21,32 @@ export function createPreviewScene(configuration, metadata, viewport) {
             ...door,
             id: configuration.doorIds?.[door.index] ?? null,
             frameWidth: Math.min(6, door.width / 12, door.height / 12),
-            panels: door.panels.map((panel) => ({
-                ...panel,
-                id: configuration.panelIdsByDoor?.[door.index]?.[panel.index] ?? null,
-                fill: infillVisual(metadata, configuration.infillIdsByDoor?.[door.index]?.[panel.index]).fill,
+            infills: door.infills.map((infill) => ({
+                ...infill,
+                materialId: configuration.infillIdsByDoor?.[door.index]?.[infill.index] ?? null,
+                id: configuration.infillInstanceIdsByDoor?.[door.index]?.[infill.index] ?? null,
+                fill: infillVisual(metadata, configuration.infillIdsByDoor?.[door.index]?.[infill.index]).fill,
+                texture: infillVisual(metadata, configuration.infillIdsByDoor?.[door.index]?.[infill.index]).texture ?? null,
             })),
         })),
     };
 }
 
-export function createDoorPreview(svg, { metadata, labels, locale, onRender, onSelect }) {
+export function createDoorPreview(svg, { metadata, labels, locale, onRender, onSelect, onAdd = () => {}, onDragStart = () => {}, onDrop = () => {} }) {
     let configuration = null;
-    let selection = { doorId: null, panelId: null };
+    let selection = { doorId: null, infillInstanceId: null };
+    let sceneKey = null;
+    let destroyed = false;
+    const drag = attachInfillDrag(svg, {onStart:onDragStart,onDrop});
 
     function render(nextConfiguration) {
+        if (destroyed) return;
         configuration = nextConfiguration;
-        svg.replaceChildren();
 
         if (configuration === null) {
+            sceneKey = null;
+            drag.cancel();
+            svg.replaceChildren();
             onRender(false);
             return;
         }
@@ -47,10 +59,23 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
             if (!(error instanceof RangeError)) {
                 throw error;
             }
+            sceneKey = null;
+            drag.cancel();
+            svg.replaceChildren();
             onRender(false);
             return;
         }
 
+        const nextSceneKey = JSON.stringify([scene, configuration.openingWidth, configuration.openingHeight]);
+        if (nextSceneKey === sceneKey) {
+            applySelection(svg, selection);
+            onRender(true);
+            return;
+        }
+        sceneKey = nextSceneKey;
+        drag.cancel();
+        svg.replaceChildren();
+        svg.style.setProperty('--builder-frame-fill', scene.frameFill);
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         drawScene(svg, scene, configuration, labels, locale);
@@ -59,9 +84,12 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
     }
 
     function select(event) {
+        if (drag.consumeClick(event)) return;
+        const add = event.target.closest?.('.builder-preview-add');
+        if (add) { onAdd(Number(add.dataset.infillIndex)); return; }
         const group = event.target.closest?.('.builder-preview-door');
-        const panel = event.target.closest?.('.builder-preview-panel');
-        onSelect({ doorId: group?.dataset.doorId ?? null, panelId: panel?.dataset.panelId ?? null });
+        const infill = event.target.closest?.('.builder-preview-infill');
+        onSelect({ doorId: group?.dataset.doorId ?? null, infillInstanceId: infill?.dataset.infillInstanceId ?? null });
     }
 
     const observer = new ResizeObserver(() => render(configuration));
@@ -71,11 +99,14 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
     return {
         render,
         setSelection(nextSelection) {
+            if (destroyed) return;
             selection = nextSelection;
             applySelection(svg, selection);
         },
         destroy() {
+            destroyed = true;
             observer.disconnect();
+            drag.destroy();
             svg.removeEventListener('click', select);
             svg.replaceChildren();
         },
@@ -86,19 +117,40 @@ function drawScene(svg, scene, configuration, labels, locale) {
     const title = element(svg, 'title');
     title.textContent = labels.drawing_label;
 
+    const paintInfill = createInfillPaints(svg);
     for (const door of scene.doors) {
         const group = element(svg, 'g', {
             'data-door-index': door.index, 'data-door-id': door.id,
             class: 'builder-preview-door',
         });
-        for (const panel of door.panels) {
+        // Keep labels readable without changing the geometry of very narrow doors.
+        if (door.width >= 64) {
+            text(group, door.x + door.width / 2, door.y - 12,
+                labels.door_label.replace(':number', String(door.index + 1)), {
+                    class: 'builder-preview-door-label',
+                    'aria-hidden': 'true',
+                    'pointer-events': 'none',
+                });
+        }
+        for (const infill of door.infills) {
             element(group, 'rect', {
-                ...rectangleAttributes(panel),
-                fill: panel.fill,
-                class: 'builder-preview-panel',
-                'data-panel-index': panel.index,
-                'data-panel-id': panel.id,
+                ...rectangleAttributes(infill),
+                fill: paintInfill(infill),
+                class: 'builder-preview-infill',
+                'data-infill-index': infill.index,
+                'data-filled': infill.materialId !== null,
+                'data-infill-instance-id': infill.id,
             });
+        }
+
+        for (const infill of door.infills.filter(item => item.materialId === null)) {
+            const radius = Math.min(17, infill.width / 4, infill.height / 4);
+            const x = infill.x + infill.width / 2;
+            const y = infill.y + infill.height / 2;
+            const add = element(group, 'g', {'class':'builder-preview-add', 'data-infill-index':infill.index, 'aria-hidden':'true'});
+            element(add, 'circle', {cx:x,cy:y,r:radius,fill:'#FFFFFF',stroke:'#64748B','stroke-width':1});
+            line(add,x-radius/2,y,x+radius/2,y,{stroke:'#334155','stroke-width':2,'pointer-events':'none'});
+            line(add,x,y-radius/2,x,y+radius/2,{stroke:'#334155','stroke-width':2,'pointer-events':'none'});
         }
 
         element(group, 'rect', {
@@ -108,20 +160,20 @@ function drawScene(svg, scene, configuration, labels, locale) {
             'stroke-width': door.frameWidth,
             class: 'builder-preview-frame',
         });
-        for (const panel of door.panels.slice(1)) {
-            line(group, door.x, panel.y, door.x + door.width, panel.y, {
+        for (const infill of door.infills.slice(1)) {
+            line(group, door.x, infill.y, door.x + door.width, infill.y, {
                 stroke: scene.frameFill,
-                'stroke-width': Math.min(door.frameWidth / 2, panel.height / 4),
+                'stroke-width': Math.min(door.frameWidth / 2, infill.height / 4),
                 class: 'builder-preview-divider',
             });
         }
-        for (const panel of door.panels) {
-            const inset = Math.min(door.frameWidth, panel.width / 8, panel.height / 8);
+        for (const infill of door.infills) {
+            const inset = Math.min(door.frameWidth, infill.width / 8, infill.height / 8);
             element(group, 'rect', {
-                x: panel.x + inset, y: panel.y + inset,
-                width: panel.width - inset * 2, height: panel.height - inset * 2,
-                class: 'builder-preview-panel-highlight',
-                'data-highlight-panel-id': panel.id,
+                x: infill.x + inset, y: infill.y + inset,
+                width: infill.width - inset * 2, height: infill.height - inset * 2,
+                class: 'builder-preview-infill-highlight',
+                'data-highlight-infill-instance-id': infill.id,
                 'aria-hidden': 'true',
             });
         }
@@ -131,15 +183,14 @@ function drawScene(svg, scene, configuration, labels, locale) {
 }
 
 function applySelection(svg, selection) {
+    const selected = Array.from(svg.querySelectorAll('.builder-preview-infill')).find(infill => infill.dataset.infillInstanceId === selection.infillInstanceId);
+    const index = selected?.dataset.infillIndex;
     for (const group of svg.querySelectorAll('.builder-preview-door')) {
-        const selected = group.dataset.doorId === selection.doorId;
-        group.classList.toggle('is-selected', selected);
-        for (const panel of group.querySelectorAll('.builder-preview-panel')) {
-            const active = selected && panel.dataset.panelId === selection.panelId;
-            panel.classList.toggle('is-selected', active);
-        }
-        for (const highlight of group.querySelectorAll('.builder-preview-panel-highlight')) {
-            highlight.classList.toggle('is-selected', selected && highlight.dataset.highlightPanelId === selection.panelId);
+        for (const infill of group.querySelectorAll('.builder-preview-infill')) {
+            const active = index !== undefined && infill.dataset.infillIndex === index;
+            infill.classList.toggle('is-selected', active);
+            const highlight = Array.from(group.querySelectorAll('.builder-preview-infill-highlight')).find(item => item.dataset.highlightInfillInstanceId === infill.dataset.infillInstanceId);
+            highlight?.classList.toggle('is-selected', active);
         }
     }
 }

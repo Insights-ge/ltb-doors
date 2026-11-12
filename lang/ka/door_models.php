@@ -7,6 +7,7 @@ return [
         'edit_door_model' => 'მოდელის რედაქტირება',
     ],
     'table' => [
+        'partition_count' => 'ტიხრების რაოდენობა',
         'status' => 'სტატუსი',
         'name' => 'სახელი',
         'height_range' => 'სიმაღლის დიაპაზონი',
@@ -18,6 +19,7 @@ return [
         'empty_description' => 'მოდელები იტვირთება პროდუქტის იმპორტიდან.',
     ],
     'form' => [
+        'partition_count' => 'ტიხრების რაოდენობა',
         'status' => 'სტატუსი',
         'name' => 'სახელი',
         'sizing_section' => 'ზომები',

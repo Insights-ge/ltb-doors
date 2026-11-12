@@ -3,6 +3,7 @@
 namespace App\Data;
 
 use App\Enums\ComponentType;
+use App\Enums\DoorColor;
 
 readonly class BuilderComponentCompatibilityData
 {
@@ -15,5 +16,8 @@ readonly class BuilderComponentCompatibilityData
         public int $id,
         public ComponentType $type,
         public array $incompatibleInfillIds,
+        public string $code,
+        public string $description,
+        public ?DoorColor $color,
     ) {}
 }

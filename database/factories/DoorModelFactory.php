@@ -23,6 +23,7 @@ class DoorModelFactory extends Factory
             'max_height' => 2600,
             'min_width' => 500,
             'max_width' => 1100,
+            'partition_count' => fake()->numberBetween(1, 4),
             'not_recommended_height_min' => 2601,
             'not_recommended_height_max' => 2700,
         ];

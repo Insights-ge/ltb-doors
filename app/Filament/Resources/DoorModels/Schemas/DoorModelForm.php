@@ -26,6 +26,13 @@ class DoorModelForm
                     ->options(DoorModelStatus::class)
                     ->default(DoorModelStatus::Active)
                     ->required(),
+                TextInput::make('partition_count')
+                    ->label(__('door_models.form.partition_count'))
+                    ->integer()
+                    ->minValue(1)
+                    ->maxValue(4)
+                    ->default(1)
+                    ->required(),
                 Section::make(__('door_models.form.sizing_section'))
                     ->schema([
                         Grid::make(2)

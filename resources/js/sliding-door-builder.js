@@ -1,55 +1,449 @@
+import { exportConfiguration } from './sliding-door-export.js';
+import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
+import { summarizeConfiguration } from './sliding-door-review.js';
+import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {} }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = [], pickerState = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
     let previousConfiguration = null;
     let stopSelectionWatching;
+    let stopFormWatching;
+    let stopInfillWatching;
+    let stopPickerWatching;
     let rootElement;
+    let storage;
+    let lastSaved = null;
 
     return {
         activeStep: initialStep,
+        formState,
+        infillState,
+        pickerState,
+        pickerIndex: null,
+        pickerInstanceId: null,
+        draggedInfillIndex: null,
+        dragSnapshot: null,
+        formBusy: false,
         catalog: payload.catalog,
         metadata: payload.metadata,
-        // Temporary initial design until size and layout inputs are connected.
-        previewConfiguration: {
-            openingWidth: 3000,
-            openingHeight: 2400,
-            frameColor: 'black',
-            panelWeights: [1, 1, 1],
-        },
+        previewConfiguration: createInitialConfiguration(),
+        exportFailed: false,
+        draftStatus: null,
+        attemptedSteps: [],
+        pendingChange: null,
+        sizeInputs: { openingWidth: '', openingHeight: '' },
+        sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
-        previewSelection: { doorId: null, panelId: null },
+        previewSelection: { doorId: null, infillInstanceId: null },
+
+        applyFormFields() {
+            if (!this.formState || destroyed) return;
+            const state = this.formState;
+            for (const field of ['openingWidth', 'openingHeight']) {
+                const text = String(state[field] ?? '');
+                if (this.sizeInputs[field] !== text) this.setMeasurement(field, text);
+            }
+            const id = (value) => value === null || value === undefined || value === '' ? null : Number(value);
+            const modelId = id(state.modelId);
+            const variantId = id(state.variantId);
+            const model = this.catalog.models.find((candidate) => candidate.id === modelId);
+            const variant = model?.variants.find((candidate) => candidate.id === variantId);
+            const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(variant?.hasSoftCloseMechanism) };
+            const next = applyModelLayout({ ...this.previewConfiguration, ...fields }, model);
+            const modelChange = fields.modelId !== this.previewConfiguration.modelId
+                || next.infillWeights !== this.previewConfiguration.infillWeights;
+            if (this.pendingChange?.kind === 'model') {
+                this.pendingChange.configuration = next;
+            } else if (modelChange) {
+                this.requestConfigurationChange(next, 'model');
+            } else if (Object.entries(fields).some(([field, value]) => this.previewConfiguration[field] !== value)) {
+                this.previewConfiguration = next;
+            }
+        },
+
+        async restoreFormFields() {
+            if (!this.formState || !this.$wire) return;
+            this.formBusy = true;
+            try {
+                const config = this.previewConfiguration;
+                const fields = {
+                    openingWidth: this.sizeInputs.openingWidth,
+                    openingHeight: this.sizeInputs.openingHeight,
+                    modelId: config.modelId ?? null,
+                    frameDesignCode: config.frameDesignCode ?? null,
+                    variantId: config.variantId ?? null,
+                };
+                this.formState = fields;
+                await this.$wire.restoreBuilderFields(fields);
+            } finally { this.formBusy = false; }
+        },
+
+        exportDesign() {
+            if (!this.canReview) { this.goToStep(4); return; }
+            this.exportFailed = false;
+            try {
+                const content = exportConfiguration(this.previewConfiguration, this.catalog, this.metadata);
+                const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'sliding-door-design.json';
+                try { document.body.appendChild(link); link.click(); }
+                finally { link.remove(); setTimeout(() => URL.revokeObjectURL(url), 0); }
+            } catch { this.exportFailed = true; }
+        },
+
+        printDesign() {
+            if (!this.canReview) { this.goToStep(4); return; }
+            this.goToStep(4);
+            this.$nextTick(() => window.print());
+        },
+
+        discardStoredDraft() {
+            try { storage?.removeItem(storageKey); this.draftStatus = null; lastSaved = null; }
+            catch { this.draftStatus = 'unavailable'; }
+        },
+
+        saveLocalDraft() {
+            if (!storageKey || !storage || !this.canReview) return;
+            const fingerprint = JSON.stringify(configurationSnapshot(this.previewConfiguration));
+            if (fingerprint === lastSaved) return;
+            this.draftStatus = saveDraft(storage, storageKey, this.previewConfiguration);
+            if (this.draftStatus === 'saved') lastSaved = fingerprint;
+        },
+
+        get layoutSummary() {
+            if (!this.selectedModel) return '';
+            return (previewLabels.layout_label ?? '')
+                .replace(':infills', String(this.selectedModel.partitionCount + 1))
+                .replace(':partitions', String(this.selectedModel.partitionCount));
+        },
+
+        get reviewDesign() {
+            return summarizeConfiguration(this.previewConfiguration, this.catalog, this.metadata);
+        },
+
+        reviewComponentLabel(type) {
+            const component = this.reviewDesign?.components.find(item => item.type === type);
+            return component ? [component.code, component.description, component.colorLabel].filter(Boolean).join(' — ') : '';
+        },
+
+        issueMessage(issue) {
+            return (fieldValidationMessages[issue.field]?.[issue.code] ?? validationLabels[issue.code] ?? '')
+                .replace(':door', String((issue.doorIndex ?? 0) + 1))
+                .replace(':infill', String((issue.infillIndex ?? 0) + 1))
+                .replace(':min', String(issue.limit ?? ''))
+                .replace(':max', String(issue.limit ?? ''));
+        },
+
+        infillIsIncompatible(infillId) {
+            return incompatibleInfillIds(this.previewConfiguration, this.selectedVariant).has(infillId);
+        },
+
+        get validation() {
+            const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);
+            for (const [field, invalid] of Object.entries(this.sizeErrors)) {
+                if (invalid && this.selectedModel) {
+                    const errorField = `builder-${field}`;
+                    const code = measurementError(this.sizeInputs[field]);
+                    result.errors = result.errors.filter((issue) => issue.field !== errorField);
+                    if (code) result.errors.unshift({ code, step: 1, field: errorField });
+                }
+            }
+            const sizeFields = ['builder-model', 'builder-openingWidth', 'builder-openingHeight'];
+            result.errors.sort((first, second) => first.step - second.step
+                || (first.step === 1 ? sizeFields.indexOf(first.field) - sizeFields.indexOf(second.field) : 0));
+            return result;
+        },
+
+        get canReview() {
+            return this.validation.errors.length === 0;
+        },
+
+        fieldError(field) {
+            if (field === 'builder-design' && !this.selectedModel) return '';
+            if (field === 'builder-variant' && (!this.selectedModel || !this.previewConfiguration.frameDesignCode)) return '';
+            const issue = this.validation.errors.find((candidate) => {
+                if (candidate.field !== field) return false;
+                const sizeField = field.replace('builder-', '');
+                if (!this.attemptedSteps.includes(candidate.step) && !this.sizeErrors[sizeField]) return false;
+                return true;
+            });
+            return issue ? this.issueMessage(issue) : '';
+        },
+
+        focusIssue(issue) {
+            issue = this.validation.errors.find((candidate) => candidate.step < issue.step) ?? issue;
+            this.attemptedSteps = [...new Set([...this.attemptedSteps, issue.step])];
+            if (issue.doorIndex !== undefined) {
+                const door = this.previewDoors[issue.doorIndex];
+                const infill = door?.infills[issue.infillIndex];
+                if (infill) this.selectPreviewInfill(door.id, infill.id);
+            }
+            this.activeStep = issue.step;
+            this.$nextTick?.(() => {
+                const field = rootElement?.querySelector(`#${issue.field}`);
+                (field?.querySelector('button:not(:disabled), input:not(:disabled), select:not(:disabled)') ?? field)?.focus();
+            });
+        },
+
+        requestReset() {
+            if (JSON.stringify(this.previewConfiguration) === JSON.stringify(createInitialConfiguration()) && !Object.values(this.sizeInputs).some(Boolean)) return;
+            this.$dispatch('open-modal', { id: 'builder-confirm-reset' });
+        },
+
+        resetConfiguration() {
+            previousConfiguration = null;
+            lastSaved = null;
+            try { storage?.removeItem(storageKey); this.draftStatus = null; } catch { this.draftStatus = 'unavailable'; }
+            this.pendingChange = null;
+            this.previewConfiguration = createInitialConfiguration();
+            this.previewSelection = { doorId: null, infillInstanceId: null };
+            this.sizeInputs = { openingWidth: '', openingHeight: '' };
+            this.sizeErrors = { openingWidth: false, openingHeight: false };
+            this.attemptedSteps = [];
+            this.activeStep = 1;
+            this.$nextTick?.(() => rootElement?.querySelector('#builder-step-1')?.focus());
+            this.$dispatch('close-modal', { id: 'builder-confirm-reset' });
+            this.restoreFormFields();
+        },
+
+        async goToStep(step) {
+            if (this.formBusy || ![1, 2, 3, 4].includes(step)) return;
+            this.applyFormFields();
+            const target = step > this.activeStep ? Math.min(step, this.activeStep + 1) : step;
+            if (target > this.activeStep && this.activeStep === 1) {
+                for (const field of ['openingWidth', 'openingHeight']) this.setMeasurement(field, this.sizeInputs[field]);
+            }
+            if (target > this.activeStep && this.activeStep <= 2 && this.formState) {
+                const currentStep = this.activeStep;
+                this.attemptedSteps = [...new Set([...this.attemptedSteps, currentStep])];
+                this.formBusy = true;
+                let valid;
+                try { valid = await this.$wire.validateBuilderSection(currentStep); }
+                finally { this.formBusy = false; }
+                this.applyFormFields();
+                if (!valid) {
+                    const issue = this.validation.errors.find((candidate) => candidate.step <= currentStep);
+                    if (issue) this.focusIssue(issue);
+                    return;
+                }
+            }
+            if (target > 1) {
+                const attempted = Array.from({ length: target - 1 }, (_, index) => index + 1);
+                this.attemptedSteps = [...new Set([...this.attemptedSteps, ...attempted])];
+                const issue = this.validation.errors.find((candidate) => candidate.step < target);
+                if (issue) { this.focusIssue(issue); return; }
+            }
+            this.activeStep = target;
+            this.$nextTick?.(() => rootElement?.querySelector(`#builder-step-${target}`)?.focus());
+        },
+
+        setMeasurement(field, value) {
+            if (!['openingWidth', 'openingHeight'].includes(field)) return;
+            const number = parseMeasurement(value);
+            this.sizeErrors[field] = number === null;
+            this.sizeInputs[field] = String(value ?? '');
+            if (number !== null) this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
+        },
+
+        get sizingReference() {
+            return catalogSizingReference(this.selectedModel, this.selectedVariant);
+        },
+
+        get selectedModel() {
+            return this.catalog.models.find((model) => model.id === this.previewConfiguration?.modelId) ?? null;
+        },
+
+        get selectedVariant() {
+            return this.selectedModel?.variants.find((variant) => variant.id === this.previewConfiguration?.variantId) ?? null;
+        },
+
+        get frameDesigns() {
+            return [...new Set(this.selectedModel?.variants.filter(variant => variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax).map((variant) => variant.frameDesignCode) ?? [])];
+        },
+
+        get availableVariants() {
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax) ?? [];
+        },
+
+        selectModel(value) {
+            const id = Number(value);
+            if (!this.catalog.models.some((model) => model.id === id)) return;
+            this.previewConfiguration = { ...this.previewConfiguration, modelId: id, variantId: null, frameDesignCode: null, frameColor: null };
+        },
+
+        selectFrameDesign(code) {
+            if (!this.frameDesigns.includes(code)) return;
+            this.previewConfiguration = { ...this.previewConfiguration, frameDesignCode: code, variantId: null, frameColor: null };
+        },
+
+        selectVariant(value) {
+            const variant = this.availableVariants.find((candidate) => candidate.id === Number(value));
+            if (!variant) return;
+            this.previewConfiguration = { ...this.previewConfiguration, variantId: variant.id, frameColor: variant.color, softClose: Boolean(variant.hasSoftCloseMechanism) };
+        },
+
+        variantLabel(variant) {
+            const color = this.metadata.frameColors.find((frame) => frame.color === variant.color)?.label ?? variant.color;
+            return `${color} — ${variant.name}`;
+        },
+
+        get selectedPreviewInfill() {
+            return this.selectedPreviewDoor?.infills.find((infill) => infill.id === this.previewSelection.infillInstanceId) ?? null;
+        },
+
+        get paletteInfillId() {
+            const door = this.selectedPreviewDoor;
+            const infill = this.selectedPreviewInfill;
+            return door && infill
+                ? this.previewConfiguration?.infillIdsByDoor?.[door.index]?.[infill.index] ?? null
+                : null;
+        },
+
+        chooseInfill(infillId) {
+            if (this.selectedPreviewInfill) this.setInfill(this.selectedPreviewInfill.index, infillId);
+        },
+
+        setInfill(index, infillId) {
+            const config = this.previewConfiguration;
+            if (!Number.isInteger(index) || index < 0 || index >= (config?.infillWeights.length ?? 0)) return;
+            if (infillId !== null && (!this.catalog.infills.some(infill => infill.id === infillId) || this.infillIsIncompatible(infillId))) return;
+            const finishes = config.infillWeights.map((_, position) => position === index ? infillId : config.infillIdsByDoor?.[0]?.[position] ?? null);
+            this.previewConfiguration = { ...config, infillIdsByDoor: [[...finishes], [...finishes]] };
+        },
+
+        isEmptyInfill(index) {
+            return (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null) === null;
+        },
+
+        openInfillPicker(index) {
+            if (!this.previewDoors[0]?.infills[index]) return;
+            if (!this.selectedVariant) { this.goToStep(2); return; }
+            this.selectInfillIndex(index);
+            this.pickerIndex = index;
+            this.pickerInstanceId = this.previewDoors[0].infills[index].id;
+            this.pickerState = this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null;
+            this.$dispatch('open-modal', {id:'builder-infill-picker'});
+        },
+
+        applyPickerChoice(value) {
+            const index = this.pickerIndex;
+            if (index === null || this.previewDoors[0]?.infills[index]?.id !== this.pickerInstanceId) return;
+            const id = value === null || value === '' ? null : Number(value);
+            if (id === null || id === this.previewConfiguration.infillIdsByDoor?.[0]?.[index]) return;
+            if (!this.catalog.infills.some(infill => infill.id === id) || this.infillIsIncompatible(id)) return;
+            this.setInfill(index, id);
+            this.pickerIndex = null;
+            this.$dispatch('close-modal', {id:'builder-infill-picker'});
+        },
+
+        swapInfills(from, to) {
+            const config = this.previewConfiguration;
+            if (![from,to].every(index => Number.isInteger(index) && index >= 0 && index < config.infillWeights.length) || from === to || this.isEmptyInfill(from)) return;
+            const values = config.infillWeights.map((_,index) => config.infillIdsByDoor?.[0]?.[index] ?? null);
+            [values[from],values[to]] = [values[to],values[from]];
+            this.previewConfiguration = {...config,infillIdsByDoor:[[...values],[...values]]};
+            this.selectInfillIndex(to);
+        },
+
+        beginInfillDrag(index) {
+            if (this.isEmptyInfill(index)) return;
+            this.selectInfillIndex(index);
+            this.draggedInfillIndex = index;
+            this.dragSnapshot = JSON.stringify([this.previewConfiguration.infillInstanceIdsByDoor,this.previewConfiguration.infillIdsByDoor]);
+        },
+
+        finishInfillDrag(target, remove = false) {
+            const source = this.draggedInfillIndex;
+            const current = JSON.stringify([this.previewConfiguration.infillInstanceIdsByDoor,this.previewConfiguration.infillIdsByDoor]);
+            this.draggedInfillIndex = null;
+            const snapshot = this.dragSnapshot;
+            this.dragSnapshot = null;
+            if (source === null || snapshot !== current) return;
+            if (remove) this.setInfill(source,null);
+            else if (target !== null) this.swapInfills(source,target);
+        },
+
+        syncInfillField() {
+            const values = this.previewConfiguration?.infillWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
+            if (JSON.stringify(this.infillState) !== JSON.stringify(values)) this.infillState = values;
+        },
+
+        applyInfillField(values) {
+            if (!Array.isArray(values)) return;
+            values.forEach((value, index) => {
+                const id = value === null || value === '' || value === undefined ? null : Number(value);
+                if (id !== (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null)) this.setInfill(index, id);
+            });
+            this.syncInfillField();
+        },
+
+        requestConfigurationChange(configuration, kind = null) {
+            const current = this.previewConfiguration;
+            const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, infillIndex) => (
+                infillId !== null && infillId !== undefined
+                && infillId !== configuration.infillIdsByDoor?.[doorIndex]?.[infillIndex]
+            )));
+            if (replacesFinish) {
+                this.pendingChange = { before: JSON.stringify(current), configuration, kind };
+                this.$dispatch('open-modal', { id: 'builder-confirm-replacement' });
+            } else {
+                this.previewConfiguration = configuration;
+            }
+        },
+
+        confirmConfigurationChange() {
+            const pending = this.pendingChange;
+            const applied = pending && pending.before === JSON.stringify(this.previewConfiguration);
+            if (applied) this.previewConfiguration = pending.configuration;
+            this.pendingChange = null;
+            this.$dispatch('close-modal', { id: 'builder-confirm-replacement' });
+            if (pending?.kind === 'model') {
+                if (applied) this.applyFormFields();
+                else this.restoreFormFields();
+            }
+        },
+
+        cancelConfigurationChange() {
+            const restore = this.pendingChange?.kind === 'model';
+            this.pendingChange = null;
+            this.$dispatch('close-modal', { id: 'builder-confirm-replacement' });
+            if (restore) this.restoreFormFields();
+        },
 
         get selectedPreviewDoor() {
             return this.previewDoors.find((door) => door.id === this.previewSelection.doorId) ?? null;
         },
 
-        get previewPanelGroupLabel() {
-            const door = this.selectedPreviewDoor;
-            return door
-                ? (previewLabels.panels_for_door ?? '').replace(':number', String(door.index + 1))
-                : (previewLabels.panels_label ?? '');
-        },
-
         get previewSelectionAnnouncement() {
-            const door = this.selectedPreviewDoor;
-            if (!door) {
-                return previewLabels.no_selection ?? '';
-            }
-            const panel = door.panels.find((candidate) => candidate.id === this.previewSelection.panelId);
-            return panel
-                ? (previewLabels.panel_selected ?? '').replace(':door', String(door.index + 1)).replace(':panel', String(panel.index + 1))
-                : (previewLabels.door_selected ?? '').replace(':number', String(door.index + 1));
+            const infill = this.selectedPreviewInfill;
+            return infill ? (previewLabels.infill_selected ?? '').replace(':infill', String(infill.index + 1)) : (previewLabels.no_selection ?? '');
         },
 
         init() {
-            this.$nextTick(() => {
+            this.$nextTick(async () => {
                 rootElement = this.$el;
+                if (storageKey) {
+                    try { storage = window.localStorage; } catch { this.draftStatus = 'unavailable'; }
+                    if (storage) {
+                        const draft = readDraft(storage, storageKey, this.catalog, this.metadata);
+                        if (draft.configuration) {
+                            this.previewConfiguration = draft.configuration;
+                            this.sizeInputs = { openingWidth: String(draft.configuration.openingWidth), openingHeight: String(draft.configuration.openingHeight) };
+                            this.attemptedSteps = draft.status === 'outdated' ? [1, 2, 3] : [];
+                            if (draft.status === 'restored') lastSaved = JSON.stringify(configurationSnapshot(draft.configuration));
+                            await this.restoreFormFields();
+                        }
+                        this.draftStatus = draft.status;
+                    }
+                }
                 const svg = this.$el.querySelector('.builder-preview-svg');
                 if (destroyed || !svg) {
                     return;
@@ -59,19 +453,30 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     metadata: this.metadata,
                     labels: previewLabels,
                     locale: document.documentElement.lang,
+                    onAdd: index => this.openInfillPicker(index),
+                    onDragStart: index => this.beginInfillDrag(index),
+                    onDrop: (index, remove) => this.finishInfillDrag(index, remove),
                     onRender: (available) => { this.hasPreview = available; },
-                    onSelect: ({ doorId, panelId }) => {
-                        if (panelId !== null) {
-                            this.selectPreviewPanel(doorId, panelId);
-                        } else if (doorId !== null) {
-                            this.selectPreviewDoor(doorId);
+                    onSelect: ({ doorId, infillInstanceId }) => {
+                        if (infillInstanceId !== null) {
+                            this.selectPreviewInfill(doorId, infillInstanceId);
+
                         } else {
                             this.clearPreviewSelection();
                         }
                     },
                 });
+                if (this.formState) {
+                    this.applyFormFields();
+                    stopFormWatching = this.$watch('formState', () => this.applyFormFields());
+                }
                 stopWatching = this.$watch('previewConfiguration', () => this.updatePreview());
-                stopSelectionWatching = this.$watch('previewSelection', (selection) => preview.setSelection(selection));
+                stopSelectionWatching = this.$watch('previewSelection', (selection) => {
+                    this.syncInfillField();
+                    preview.setSelection(selection);
+                });
+                stopInfillWatching = this.$watch('infillState', value => this.applyInfillField(value));
+                stopPickerWatching = this.$watch('pickerState', value => this.applyPickerChoice(value));
                 this.updatePreview();
             });
         },
@@ -80,12 +485,15 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             destroyed = true;
             stopWatching?.();
             stopSelectionWatching?.();
+            stopFormWatching?.();
+            stopInfillWatching?.();
+            stopPickerWatching?.();
             preview?.destroy();
         },
 
         updatePreview() {
             const focused = rootElement?.ownerDocument.activeElement;
-            const focusedPanelId = focused?.dataset.previewPanelControl;
+            const focusedInfillInstanceId = focused?.dataset.previewInfillControl;
             const focusedDoorId = focused?.dataset.previewDoorControl;
             let configuration;
             try {
@@ -97,8 +505,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 this.previewDoors = [];
                 this.clearPreviewSelection();
                 preview?.render(null);
-                if (focusedPanelId || focusedDoorId) {
-                    this.$nextTick(() => this.focusPreviewDoor(null));
+                if (focusedInfillInstanceId || focusedDoorId) {
+                    this.$nextTick(() => this.focusInfillControls(null));
                 }
                 return;
             }
@@ -109,43 +517,43 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             previousConfiguration = configuration;
             this.previewDoors = previewSelectionTargets(configuration);
             this.previewSelection = reconcilePreviewSelection(this.previewSelection, this.previewDoors);
-            if ((focusedPanelId && !this.previewDoors.some((door) => door.panels.some((panel) => panel.id === focusedPanelId)))
+            if ((focusedInfillInstanceId && !this.previewDoors.some((door) => door.infills.some((infill) => infill.id === focusedInfillInstanceId)))
                 || (focusedDoorId && !this.previewDoors.some((door) => door.id === focusedDoorId))) {
-                this.$nextTick(() => this.focusPreviewDoor(this.previewSelection.doorId));
+                this.$nextTick(() => this.focusInfillControls(this.previewSelection.infillInstanceId));
             }
+            this.syncInfillField();
             preview?.setSelection(this.previewSelection);
             preview?.render(configuration);
+            this.saveLocalDraft();
         },
 
-        selectPreviewDoor(doorId) {
-            if (this.previewDoors.some((door) => door.id === doorId)) {
-                this.previewSelection = { doorId, panelId: null };
-            }
+        selectInfillIndex(index) {
+            const door = this.previewDoors[0];
+            const infill = door?.infills[index];
+            if (infill) this.previewSelection = { doorId: door.id, infillInstanceId: infill.id };
         },
 
-        selectPreviewPanel(doorId, panelId) {
-            const door = this.previewDoors.find((candidate) => candidate.id === doorId);
-            if (door?.panels.some((panel) => panel.id === panelId)) {
-                this.previewSelection = { doorId, panelId };
-            }
+        selectPreviewInfill(doorId, infillInstanceId) {
+            const infill = this.previewDoors.find(door => door.id === doorId)?.infills.find(infill => infill.id === infillInstanceId);
+            if (infill) this.selectInfillIndex(infill.index);
         },
 
         clearPreviewSelection() {
-            if (rootElement?.ownerDocument.activeElement?.hasAttribute('data-preview-panel-control')) {
-                this.focusPreviewDoor(this.previewSelection.doorId);
+            if (rootElement?.ownerDocument.activeElement?.hasAttribute('data-preview-infill-control')) {
+                this.focusInfillControls(this.previewSelection.infillInstanceId);
             }
-            this.previewSelection = { doorId: null, panelId: null };
+            this.previewSelection = { doorId: null, infillInstanceId: null };
         },
 
-        focusPreviewDoor(doorId) {
+        focusInfillControls(infillInstanceId) {
             if (destroyed) {
                 return;
             }
-            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-door-control]') ?? [])
+            const controls = Array.from(rootElement?.querySelectorAll('[data-preview-infill-control]') ?? [])
                 .filter((button) => button.getClientRects().length > 0);
-            const control = controls.find((button) => button.dataset.previewDoorControl === doorId)
+            const control = controls.find((button) => button.dataset.previewInfillControl === infillInstanceId)
                 ?? controls[0]
-                ?? rootElement?.querySelector('.builder-step-navigation button');
+                ?? rootElement?.querySelector(`#builder-step-${this.activeStep}`);
             control?.focus({ preventScroll: true });
         },
 
@@ -153,17 +561,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             return previewLabels.door_label.replace(':number', String(index + 1));
         },
 
-        previewPanelLabel(index) {
-            return previewLabels.panel_short_label.replace(':number', String(index + 1));
+        previewInfillLabel(index) {
+            return previewLabels.infill_short_label.replace(':number', String(index + 1));
         },
 
-        previewPanelAccessibleLabel(index) {
-            if (!this.selectedPreviewDoor) {
-                return '';
-            }
-            return (previewLabels.panel_label ?? '')
-                .replace(':door', String(this.selectedPreviewDoor.index + 1))
-                .replace(':panel', String(index + 1));
+        previewInfillAccessibleLabel(index) {
+            return (previewLabels.infill_label ?? '')
+                .replace(':infill', String(index + 1));
         },
 
         frameVisual(color) {

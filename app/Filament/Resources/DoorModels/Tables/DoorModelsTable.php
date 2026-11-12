@@ -21,6 +21,10 @@ class DoorModelsTable
                 TextColumn::make('status')
                     ->label(__('door_models.table.status'))
                     ->badge(),
+                TextColumn::make('partition_count')
+                    ->label(__('door_models.table.partition_count'))
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('height_range')
                     ->label(__('door_models.table.height_range'))
                     ->state(fn (DoorModel $record): string => "{$record->min_height}–{$record->max_height}"),

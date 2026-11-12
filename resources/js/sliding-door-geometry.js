@@ -1,20 +1,20 @@
 /**
  * @typedef {{ x: number, y: number, width: number, height: number }} Rectangle
- * @typedef {Rectangle & { index: number }} PanelGeometry
- * @typedef {Rectangle & { index: number, panels: PanelGeometry[] }} DoorGeometry
+ * @typedef {Rectangle & { index: number }} InfillGeometry
+ * @typedef {Rectangle & { index: number, infills: InfillGeometry[] }} DoorGeometry
  */
 
 /**
  * Calculate a front elevation in normalized coordinates (opening height = 1).
- * Panel weights describe relative heights from top to bottom for each door.
+ * Infill weights describe relative heights from top to bottom for each door.
  * All rectangles use the opening's coordinate system. No track overlaps,
  * profile deductions, viewport scaling or manufacturing sizes are inferred.
  *
- * @param {{ openingWidth: number, openingHeight: number, doorCount: number, panelWeightsByDoor: number[][] }} configuration
+ * @param {{ openingWidth: number, openingHeight: number, doorCount: number, infillWeightsByDoor: number[][] }} configuration
  * @returns {{ opening: Rectangle, doors: DoorGeometry[] }}
  * @throws {RangeError} When dimensions, counts or weights cannot form nonzero finite rectangles.
  */
-export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, panelWeightsByDoor }) {
+export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, infillWeightsByDoor }) {
     requirePositiveFinite(openingWidth);
     requirePositiveFinite(openingHeight);
 
@@ -22,8 +22,8 @@ export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, 
         throw new RangeError('Door count must be a positive safe integer.');
     }
 
-    if (!Array.isArray(panelWeightsByDoor) || panelWeightsByDoor.length !== doorCount) {
-        throw new RangeError('Panel weights must be supplied for every door.');
+    if (!Array.isArray(infillWeightsByDoor) || infillWeightsByDoor.length !== doorCount) {
+        throw new RangeError('Infill weights must be supplied for every door.');
     }
 
     const width = openingWidth / openingHeight;
@@ -31,7 +31,7 @@ export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, 
 
     return {
         opening: { x: 0, y: 0, width, height: 1 },
-        doors: Array.from(panelWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, weights)),
+        doors: Array.from(infillWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, weights)),
     };
 }
 
@@ -74,7 +74,7 @@ export function fitDoorGeometry(geometry, { width, height, padding = 0 }) {
         doors: geometry.doors.map((door) => ({
             ...door,
             ...project(door),
-            panels: door.panels.map((panel) => ({ ...panel, ...project(panel) })),
+            infills: door.infills.map((infill) => ({ ...infill, ...project(infill) })),
         })),
     };
 }
@@ -105,13 +105,13 @@ function calculateDoor(index, count, openingWidth, weights) {
         y: 0,
         width,
         height: 1,
-        panels: calculatePanels(x, width, weights),
+        infills: calculateInfills(x, width, weights),
     };
 }
 
-function calculatePanels(x, width, weights) {
+function calculateInfills(x, width, weights) {
     if (!Array.isArray(weights) || weights.length === 0) {
-        throw new RangeError('Each door must contain at least one panel weight.');
+        throw new RangeError('Each door must contain at least one infill weight.');
     }
 
     const values = Array.from(weights);
@@ -130,10 +130,10 @@ function calculatePanels(x, width, weights) {
         const height = bottom - y;
         requirePositiveFinite(height);
 
-        const panel = { index, x, y, width, height };
+        const infill = { index, x, y, width, height };
         y = bottom;
 
-        return panel;
+        return infill;
     });
 }
 

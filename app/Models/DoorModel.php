@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'max_height',
     'min_width',
     'max_width',
+    'partition_count',
     'not_recommended_height_min',
     'not_recommended_height_max',
 ])]
@@ -42,6 +43,7 @@ class DoorModel extends Model
             'max_height' => 'integer',
             'min_width' => 'integer',
             'max_width' => 'integer',
+            'partition_count' => 'integer',
             'not_recommended_height_min' => 'integer',
             'not_recommended_height_max' => 'integer',
         ];

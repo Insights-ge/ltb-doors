@@ -41,7 +41,7 @@ test('authorized roles receive only the builder field allowlist', function (Role
     $catalog = json_decode($json, true, flags: JSON_THROW_ON_ERROR)['catalog'];
 
     expect(array_keys($catalog['models'][0]))->toEqualCanonicalizing([
-        'id', 'name', 'minHeight', 'maxHeight', 'minWidth', 'maxWidth',
+        'id', 'name', 'minHeight', 'maxHeight', 'minWidth', 'maxWidth', 'partitionCount',
         'notRecommendedHeightMin', 'notRecommendedHeightMax', 'variants',
     ]);
     expect(array_keys($catalog['models'][0]['variants'][0]))->toEqualCanonicalizing([
@@ -49,7 +49,7 @@ test('authorized roles receive only the builder field allowlist', function (Role
         'hasPartition', 'hasSoftCloseMechanism', 'components',
     ]);
     foreach ($catalog['models'][0]['variants'][0]['components'] as $compatibility) {
-        expect(array_keys($compatibility))->toEqualCanonicalizing(['id', 'type', 'incompatibleInfillIds']);
+        expect(array_keys($compatibility))->toEqualCanonicalizing(['id', 'type', 'incompatibleInfillIds', 'code', 'description', 'color']);
     }
     expect(array_keys($catalog['infills'][0]))->toEqualCanonicalizing(['id', 'code', 'description']);
     expect($json)->not->toContain('INTERNAL-PRODUCT', 'PRIVATE-VARIANT', 'PRIVATE-INFILL', 'PRIVATE-COMPONENT-DESCRIPTION');

@@ -15,12 +15,11 @@
             }
         },
         "metadata": {
-            "description": "Presentation presets, kept separate from catalog facts.",
+            "description": "Visual mappings and neutral fallbacks, kept separate from catalog facts.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["layoutPresets", "frameColors", "infillVisuals", "neutralVisual"],
+            "required": ["frameColors", "infillVisuals", "neutralVisual"],
             "properties": {
-                "layoutPresets": { "type": "array", "items": { "$ref": "#/$defs/layoutPreset" } },
                 "frameColors": { "type": "array", "items": { "$ref": "#/$defs/frameColor" } },
                 "infillVisuals": { "type": "array", "items": { "$ref": "#/$defs/infillVisual" } },
                 "neutralVisual": { "$ref": "#/$defs/visual" }
@@ -33,7 +32,8 @@
             "additionalProperties": false,
             "required": ["fill"],
             "properties": {
-                "fill": { "type": "string", "pattern": "^#[0-9A-F]{6}$" }
+                "fill": { "type": "string", "pattern": "^#[0-9A-F]{6}$" },
+                "texture": { "enum": [null, "solid", "wood_straight", "wood_cathedral", "glass", "mirror"] }
             }
         },
         "frameColor": {
@@ -55,31 +55,11 @@
                 "visual": { "$ref": "#/$defs/visual" }
             }
         },
-        "layoutPreset": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["id", "label", "panelWeights", "requiresPartition"],
-            "properties": {
-                "id": { "enum": ["full_panel", "two_horizontal_panels", "three_horizontal_panels"] },
-                "label": { "type": "string" },
-                "panelWeights": {
-                    "description": "Relative heights from top to bottom. Equal weights produce equal horizontal panels.",
-                    "type": "array",
-                    "items": { "type": "integer", "minimum": 1 }
-                },
-                "requiresPartition": { "type": "boolean" }
-            },
-            "oneOf": [
-                { "properties": { "id": { "const": "full_panel" }, "panelWeights": { "const": [1] }, "requiresPartition": { "const": false } } },
-                { "properties": { "id": { "const": "two_horizontal_panels" }, "panelWeights": { "const": [1, 1] }, "requiresPartition": { "const": true } } },
-                { "properties": { "id": { "const": "three_horizontal_panels" }, "panelWeights": { "const": [1, 1, 1] }, "requiresPartition": { "const": true } } }
-            ]
-        },
         "id": { "type": "integer", "minimum": 1 },
         "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
+            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "partitionCount", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "name": { "type": "string" },
@@ -87,6 +67,7 @@
                 "maxHeight": { "type": "integer" },
                 "minWidth": { "type": "integer" },
                 "maxWidth": { "type": "integer" },
+                "partitionCount": { "type": "integer", "minimum": 1, "maximum": 4 },
                 "notRecommendedHeightMin": { "type": ["integer", "null"] },
                 "notRecommendedHeightMax": { "type": ["integer", "null"] },
                 "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } }
@@ -111,10 +92,13 @@
         "component": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "type", "incompatibleInfillIds"],
+            "required": ["id", "type", "incompatibleInfillIds", "code", "description", "color"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "type": { "enum": ["side_profile", "top_rail", "bottom_rail", "partition", "soft_close_mechanism"] },
+                "code": { "type": "string" },
+                "description": { "type": "string" },
+                "color": { "enum": [null, "black", "inox", "graphite", "silver"] },
                 "incompatibleInfillIds": {
                     "type": "array",
                     "uniqueItems": true,
