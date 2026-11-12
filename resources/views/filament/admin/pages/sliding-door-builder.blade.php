@@ -2,8 +2,8 @@
     <div
         x-load
         x-load-src="{{ \Illuminate\Support\Facades\Vite::asset('resources/js/sliding-door-builder.js') }}"
-        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), infillState: $wire.entangle('infillSelections'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
-        x-on:modal-closed.window="if ($event.detail.id === 'builder-confirm-replacement' && pendingChange) cancelConfigurationChange()"
+        x-data="slidingDoorBuilder({ initialStep: {{ $initialStep->value }}, payload: @js($builderPayload), formState: $wire.entangle('builderFields'), infillState: $wire.entangle('infillSelections'), pickerState: $wire.entangle('quickInfillId'), previewLabels: @js(__('sliding_door_builder.preview')), validationLabels: @js(__('sliding_door_builder.validation')), fieldValidationMessages: @js($fieldValidationMessages), storageKey: @js('sliding-door-builder:' . auth()->id()) })"
+        x-on:modal-closed.window="if ($event.detail.id === 'builder-confirm-replacement' && pendingChange) cancelConfigurationChange(); if ($event.detail.id === 'builder-infill-picker') pickerIndex = null"
         class="sliding-door-builder grid grid-cols-1 gap-4 sm:gap-6"
     >
         @if ($builderPayload->catalog->models === [])

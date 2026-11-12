@@ -136,13 +136,10 @@ class SlidingDoorBuilderForms
             }
             for ($index = 0; $index <= $model->partitionCount; $index++) {
                 $field = 'builder-infill-' . $index;
-                $fields[] = Select::make((string) $index)
+                $fields[] = self::infillSelect((string) $index, $page)
                     ->id($field)
                     ->label(__('sliding_door_builder.preview.infill_short_label', ['number' => $index + 1]))
                     ->placeholder(__('sliding_door_builder.finishes.unselected'))
-                    ->searchable()->allowHtml()
-                    ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => self::infillOptionLabel($page, $infill)])->all())
-                    ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true))
                     ->belowContent(view('components.sliding-door-builder.field-error', ['field' => $field]))
                     ->extraInputAttributes([
                         'x-on:focusin' => 'selectInfillIndex(' . $index . ')',
@@ -153,6 +150,23 @@ class SlidingDoorBuilderForms
         }
 
         return $schema->statePath('infillSelections')->columns(1)->components($fields);
+    }
+
+    public static function quickInfill(Schema $schema, SlidingDoorBuilder $page): Schema
+    {
+        return $schema->columns(1)->components([
+            self::infillSelect('quickInfillId', $page)
+                ->id('builder-quick-infill')
+                ->label(__('infills.singular'))
+                ->placeholder(__('sliding_door_builder.system.choose')),
+        ]);
+    }
+
+    private static function infillSelect(string $name, SlidingDoorBuilder $page): Select
+    {
+        return Select::make($name)->searchable()->allowHtml()
+            ->options(fn (): array => collect($page->builderCatalog->infills)->mapWithKeys(fn (BuilderInfillData $infill): array => [$infill->id => self::infillOptionLabel($page, $infill)])->all())
+            ->disableOptionWhen(fn (int|string $value): bool => in_array(self::id($value), self::incompatibleInfills($page), true));
     }
 
     private static function infillOptionLabel(SlidingDoorBuilder $page, BuilderInfillData $infill): string

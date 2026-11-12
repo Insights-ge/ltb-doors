@@ -113,6 +113,11 @@ return [
         ],
     ],
     'preview' => [
+        'drag_hint' => 'Drag a filled infill onto another to swap them, or drop it in the remove area.',
+        'choose_infill' => 'Choose infill',
+        'remove_infill' => 'Remove infill',
+        'drop_remove' => 'Drop here to remove',
+
         'layout_label' => ':infills infills (:partitions partitions)',
 
         'title' => 'Door preview',

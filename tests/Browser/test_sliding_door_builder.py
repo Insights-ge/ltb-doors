@@ -223,6 +223,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.keyboard.press('Space')
         page.wait_for_function(f'{ROOT}.selectedPreviewInfill?.index===0')
         self.assertEqual(page.locator('.builder-preview-infill-highlight.is-selected').count(), 2)
+        self.assertEqual(page.locator('.builder-preview-door.is-selected').count(), 0)
         page.keyboard.press('Tab')
         page.keyboard.press('Enter')
         page.wait_for_function(f'{ROOT}.selectedPreviewInfill?.index===1')
@@ -457,7 +458,8 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.locator('#builder-infill-0').locator('..').locator('.fi-select-input-value-remove-btn').click()
         page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]===null')
         page.locator('[data-preview-infill-control]').first.click()
-        page.locator('[data-preview-infill-control]').first.click()
+        page.locator('#builder-quick-infill').wait_for(state='visible')
+        page.keyboard.press('Escape')
         page.wait_for_function(f'{ROOT}.infillState[0]===null')
         self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1][0]'))
         self.assertEqual(page.locator('[data-infill-id]').count(), 0)
@@ -536,6 +538,136 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         page.wait_for_function(f'{ROOT}.activeStep===1')
         self.assertEqual(page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)'), before)
         self.assertTrue(page.locator('[data-builder-step="2"]').is_disabled())
+
+    def test_drag_swap_remove_and_empty_infill_picker(self):
+        choices = self.configure()
+        page = self.page
+        original = page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0]')
+        ids = page.evaluate(f'{ROOT}.previewConfiguration.infillInstanceIdsByDoor')
+        def rectangle(index):
+            return page.locator(f'.builder-preview-door[data-door-index="0"] .builder-preview-infill[data-infill-index="{index}"]')
+        def drag(source, target):
+            page.mouse.move(source['x']+source['width']/2,source['y']+source['height']/2)
+            page.mouse.down()
+            page.mouse.move(target['x']+target['width']/2,target['y']+target['height']/2,steps=12)
+            page.mouse.up()
+        drag(rectangle(0).bounding_box(),rectangle(1).bounding_box())
+        expected = list(original)
+        expected[0],expected[1] = expected[1],expected[0]
+        page.wait_for_function(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor[0])==={json.dumps(json.dumps(expected,separators=(",",":")))}')
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1]'),expected)
+        trash=page.locator('[data-remove-infill-drop]')
+        trash.scroll_into_view_if_needed()
+        drag(rectangle(0).bounding_box(),trash.bounding_box())
+        page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]===null')
+        self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1][0]'))
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillInstanceIdsByDoor'),ids)
+        plus=page.locator('.builder-preview-door[data-door-index="0"] .builder-preview-add[data-infill-index="0"]')
+        plus.click()
+        page.locator('#builder-quick-infill').wait_for(state='visible')
+        page.locator('#builder-quick-infill').click()
+        page.locator(f'[role=option][data-value="{choices["infillIds"][0]}"]:visible').click()
+        page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][0]==={choices["infillIds"][0]}')
+        self.assertEqual(page.locator('.builder-preview-add').count(),0)
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1][0]'), choices['infillIds'][0])
+        self.assertEqual(page.locator('.builder-preview-door.is-selected').count(),0)
+
+    def test_touch_drag_and_keyboard_move_clear_alternatives(self):
+        self.configure()
+        page = self.page
+        page.set_viewport_size({'width':390,'height':900})
+        page.evaluate("Alpine.store('sidebar').close()")
+        page.locator('.builder-preview-svg').scroll_into_view_if_needed()
+        original=page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0]')
+        def centre(index):
+            box=page.locator(f'.builder-preview-door[data-door-index="0"] .builder-preview-infill[data-infill-index="{index}"]').bounding_box()
+            return {'x':box['x']+box['width']/2,'y':box['y']+box['height']/2,'id':1}
+        session=self.context.new_cdp_session(page)
+        session.send('Emulation.setTouchEmulationEnabled',{'enabled':True})
+        start,end=centre(0),centre(1)
+        session.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[start]})
+        for fraction in [0.2,0.4,0.6,0.8,1]:
+            point={'x':start['x']+(end['x']-start['x'])*fraction,'y':start['y']+(end['y']-start['y'])*fraction,'id':1}
+            session.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[point]})
+        session.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+        expected=list(original)
+        expected[0],expected[1]=expected[1],expected[0]
+        page.wait_for_function(f'JSON.stringify({ROOT}.previewConfiguration.infillIdsByDoor[0])==={json.dumps(json.dumps(expected,separators=(",",":")))}')
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1]'),expected)
+        start=centre(0)
+        session.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[start]})
+        session.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{**start,'y':start['y']+10}]})
+        session.send('Input.dispatchTouchEvent',{'type':'touchCancel','touchPoints':[]})
+        page.wait_for_function(f'{ROOT}.draggedInfillIndex===null')
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0]'),expected)
+        session.send('Emulation.setTouchEmulationEnabled',{'enabled':False})
+        page.locator('[data-preview-infill-control]').first.click()
+        page.locator('[data-preview-infill-control]').first.focus()
+        page.keyboard.press('Alt+ArrowDown')
+        page.wait_for_function(f'{ROOT}.selectedPreviewInfill.index===1')
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[0]'),original)
+        page.locator('[data-clear-infill]').focus()
+        page.keyboard.press('Enter')
+        page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][1]===null')
+        self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor[1][1]'))
+
+    def test_drag_lifts_material_preview_and_cleans_up_after_drop_and_navigation(self):
+        self.configure()
+        page = self.page
+        before=page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor')
+        source=page.locator('.builder-preview-door[data-door-index="0"] .builder-preview-infill[data-infill-index="0"]')
+        def lift():
+            source.scroll_into_view_if_needed()
+            box=source.bounding_box()
+            x,y=box['x']+box['width']/2,box['y']+box['height']/2
+            page.mouse.move(x,y)
+            page.mouse.down()
+            page.mouse.move(x+20,y+15,steps=4)
+            ghost=page.locator('.builder-infill-drag-ghost').first
+            ghost.wait_for(state='visible')
+            self.assertEqual(page.locator('.builder-infill-drag-ghost').count(),2)
+            return ghost,x+20,y+15
+        ghost,x,y=lift()
+        self.assertEqual(page.locator('.builder-preview-infill.is-drag-source').count(),2)
+        self.assertEqual(ghost.evaluate('el=>getComputedStyle(el).pointerEvents'),'none')
+        self.assertNotEqual(ghost.evaluate('el=>getComputedStyle(el).boxShadow'),'none')
+        fill=ghost.locator('rect').get_attribute('fill')
+        if fill.startswith('url('):
+            self.assertTrue(fill.startswith('url(#infill-ghost-'))
+            self.assertEqual(ghost.locator(f'[id="{fill[5:-1]}"]').count(),1)
+        page.wait_for_timeout(160)
+        tiles=page.locator('.builder-infill-drag-ghost')
+        first=[tile.bounding_box() for tile in tiles.all()]
+        originals=page.locator('.builder-preview-infill.is-drag-source')
+        original_boxes=[tile.bounding_box() for tile in originals.all()]
+        spacing=lambda boxes: boxes[1]['x']+boxes[1]['width']/2-boxes[0]['x']-boxes[0]['width']/2
+        self.assertAlmostEqual(spacing(first),spacing(original_boxes),delta=2)
+        page.mouse.move(x+25,y+20,steps=4)
+        second=[tile.bounding_box() for tile in tiles.all()]
+        for start,end in zip(first,second):
+            self.assertAlmostEqual(end['x']+end['width']/2-start['x']-start['width']/2,25,delta=2)
+            self.assertAlmostEqual(end['y']+end['height']/2-start['y']-start['height']/2,20,delta=2)
+        self.assertAlmostEqual(spacing(first),spacing(second),delta=2)
+        if os.environ.get('BUILDER_TEST_ARTIFACTS'):
+            directory=Path(os.environ['BUILDER_TEST_ARTIFACTS']); directory.mkdir(parents=True,exist_ok=True)
+            page.screenshot(path=str(directory / 'drag-held-infill.png'))
+        page.mouse.move(10,90,steps=8)
+        page.mouse.up()
+        page.wait_for_function("document.querySelectorAll('.builder-infill-drag-ghost').length === 0")
+        self.assertEqual(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor'),before)
+        self.assertEqual(page.locator('.is-drag-source').count(),0)
+        page.emulate_media(reduced_motion='reduce')
+        page.wait_for_function("matchMedia('(prefers-reduced-motion: reduce)').matches")
+        ghost,_,_=lift()
+        self.assertEqual(ghost.evaluate('el=>el.getAnimations().length'),0)
+        page.mouse.up()
+        page.wait_for_function("document.querySelectorAll('.builder-infill-drag-ghost').length === 0")
+        page.emulate_media(reduced_motion='no-preference')
+        lift()
+        page.evaluate("Livewire.navigate('/admin/my-profile')")
+        page.wait_for_function("!document.querySelector('.sliding-door-builder')")
+        self.assertEqual(page.locator('.builder-infill-drag-ghost').count(),0)
+        page.mouse.up()
 
     def test_invalid_draft_can_be_discarded_and_storage_failure_does_not_block_editing(self):
         page = self.page

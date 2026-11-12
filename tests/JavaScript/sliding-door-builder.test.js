@@ -78,3 +78,46 @@ test('reset clears all shared fields and configuration',()=>{
     assert.equal(b.previewConfiguration.modelId,null);
     assert.equal(b.activeStep,1);
 });
+
+test('drag swaps material positions on both doors, preserves identities and clears without removing divisions',()=>{
+    const b=builder();
+    b.applyInfillField([7,8,null]);
+    const ids=structuredClone(b.previewConfiguration.infillInstanceIdsByDoor);
+    b.beginInfillDrag(0);
+    b.finishInfillDrag(1);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[8,7,null],[8,7,null]]);
+    b.beginInfillDrag(1);
+    b.finishInfillDrag(2);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[8,null,7],[8,null,7]]);
+    b.beginInfillDrag(2);
+    b.finishInfillDrag(null,true);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[8,null,null],[8,null,null]]);
+    assert.deepEqual(b.previewConfiguration.infillInstanceIdsByDoor,ids);
+    assert.deepEqual(b.previewConfiguration.infillWeights,[1,1,1]);
+});
+
+test('cancelled and stale drags cannot change a newer design',()=>{
+    const b=builder();
+    b.applyInfillField([7,8,null]);
+    b.beginInfillDrag(0);
+    b.finishInfillDrag(null);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[7,8,null],[7,8,null]]);
+    b.beginInfillDrag(0);
+    b.setInfill(1,7);
+    b.finishInfillDrag(2);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[7,7,null],[7,7,null]]);
+    assert.equal(b.draggedInfillIndex,null);
+});
+
+test('the alternative picker updates both doors and refuses incompatible materials',()=>{
+    const b=builder();
+    b.openInfillPicker(1);
+    assert.equal(b.pickerIndex,1);
+    b.applyPickerChoice('8');
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,[[null,8,null],[null,8,null]]);
+    assert.equal(b.pickerIndex,null);
+    b.catalog.models[0].variants[0].components=[{type:'top_rail',incompatibleInfillIds:[7]}];
+    b.openInfillPicker(0);
+    b.applyPickerChoice(7);
+    assert.equal(b.isEmptyInfill(0),true);
+});

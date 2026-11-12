@@ -7,7 +7,7 @@ import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
 
-export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = [] }) {
+export default function slidingDoorBuilder({ initialStep, payload, previewLabels = {}, validationLabels = {}, fieldValidationMessages = {}, storageKey = null, formState = null, infillState = [], pickerState = null }) {
     let preview;
     let stopWatching;
     let destroyed = false;
@@ -15,6 +15,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
     let stopSelectionWatching;
     let stopFormWatching;
     let stopInfillWatching;
+    let stopPickerWatching;
     let rootElement;
     let storage;
     let lastSaved = null;
@@ -23,6 +24,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         activeStep: initialStep,
         formState,
         infillState,
+        pickerState,
+        pickerIndex: null,
+        pickerInstanceId: null,
+        draggedInfillIndex: null,
+        dragSnapshot: null,
         formBusy: false,
         catalog: payload.catalog,
         metadata: payload.metadata,
@@ -313,6 +319,58 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             this.previewConfiguration = { ...config, infillIdsByDoor: [[...finishes], [...finishes]] };
         },
 
+        isEmptyInfill(index) {
+            return (this.previewConfiguration?.infillIdsByDoor?.[0]?.[index] ?? null) === null;
+        },
+
+        openInfillPicker(index) {
+            if (!this.previewDoors[0]?.infills[index]) return;
+            if (!this.selectedVariant) { this.goToStep(2); return; }
+            this.selectInfillIndex(index);
+            this.pickerIndex = index;
+            this.pickerInstanceId = this.previewDoors[0].infills[index].id;
+            this.pickerState = this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null;
+            this.$dispatch('open-modal', {id:'builder-infill-picker'});
+        },
+
+        applyPickerChoice(value) {
+            const index = this.pickerIndex;
+            if (index === null || this.previewDoors[0]?.infills[index]?.id !== this.pickerInstanceId) return;
+            const id = value === null || value === '' ? null : Number(value);
+            if (id === null || id === this.previewConfiguration.infillIdsByDoor?.[0]?.[index]) return;
+            if (!this.catalog.infills.some(infill => infill.id === id) || this.infillIsIncompatible(id)) return;
+            this.setInfill(index, id);
+            this.pickerIndex = null;
+            this.$dispatch('close-modal', {id:'builder-infill-picker'});
+        },
+
+        swapInfills(from, to) {
+            const config = this.previewConfiguration;
+            if (![from,to].every(index => Number.isInteger(index) && index >= 0 && index < config.infillWeights.length) || from === to || this.isEmptyInfill(from)) return;
+            const values = config.infillWeights.map((_,index) => config.infillIdsByDoor?.[0]?.[index] ?? null);
+            [values[from],values[to]] = [values[to],values[from]];
+            this.previewConfiguration = {...config,infillIdsByDoor:[[...values],[...values]]};
+            this.selectInfillIndex(to);
+        },
+
+        beginInfillDrag(index) {
+            if (this.isEmptyInfill(index)) return;
+            this.selectInfillIndex(index);
+            this.draggedInfillIndex = index;
+            this.dragSnapshot = JSON.stringify([this.previewConfiguration.infillInstanceIdsByDoor,this.previewConfiguration.infillIdsByDoor]);
+        },
+
+        finishInfillDrag(target, remove = false) {
+            const source = this.draggedInfillIndex;
+            const current = JSON.stringify([this.previewConfiguration.infillInstanceIdsByDoor,this.previewConfiguration.infillIdsByDoor]);
+            this.draggedInfillIndex = null;
+            const snapshot = this.dragSnapshot;
+            this.dragSnapshot = null;
+            if (source === null || snapshot !== current) return;
+            if (remove) this.setInfill(source,null);
+            else if (target !== null) this.swapInfills(source,target);
+        },
+
         syncInfillField() {
             const values = this.previewConfiguration?.infillWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
             if (JSON.stringify(this.infillState) !== JSON.stringify(values)) this.infillState = values;
@@ -395,6 +453,9 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     metadata: this.metadata,
                     labels: previewLabels,
                     locale: document.documentElement.lang,
+                    onAdd: index => this.openInfillPicker(index),
+                    onDragStart: index => this.beginInfillDrag(index),
+                    onDrop: (index, remove) => this.finishInfillDrag(index, remove),
                     onRender: (available) => { this.hasPreview = available; },
                     onSelect: ({ doorId, infillInstanceId }) => {
                         if (infillInstanceId !== null) {
@@ -415,6 +476,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     preview.setSelection(selection);
                 });
                 stopInfillWatching = this.$watch('infillState', value => this.applyInfillField(value));
+                stopPickerWatching = this.$watch('pickerState', value => this.applyPickerChoice(value));
                 this.updatePreview();
             });
         },
@@ -425,6 +487,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             stopSelectionWatching?.();
             stopFormWatching?.();
             stopInfillWatching?.();
+            stopPickerWatching?.();
             preview?.destroy();
         },
 
