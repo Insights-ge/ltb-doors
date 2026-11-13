@@ -237,6 +237,7 @@ test('Filament validates builder measurements with the expected inline messages'
     app()->setLocale($locale);
 
     $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.doorCount', 2)
         ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.openingWidth', $value)
         ->set('builderFields.openingHeight', '2400')
@@ -259,7 +260,7 @@ test('restoring and clearing Filament field state preserves raw measurements and
 
     Livewire::test(SlidingDoorBuilder::class)
         ->call('restoreBuilderFields', [
-            'openingWidth' => '1600,5', 'openingHeight' => '2400',
+            'doorCount' => 2, 'openingWidth' => '1600,5', 'openingHeight' => '2400',
             'modelId' => $variant->door_model_id, 'frameDesignCode' => $variant->frame_design_code,
             'variantId' => $variant->id, 'softClose' => false,
         ])
@@ -271,14 +272,14 @@ test('restoring and clearing Filament field state preserves raw measurements and
         ->call('validateBuilderSection', 2)->assertReturned(false)
         ->assertHasErrors('builderFields.variantId')
         ->call('restoreBuilderFields', [
-            'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
+            'doorCount' => null, 'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
             'frameDesignCode' => null, 'variantId' => null, 'softClose' => false,
         ])
         ->assertHasNoErrors()
         ->assertSet('builderFields.variantId', null);
 });
 
-test('model selection enables sizes and enforces both inclusive model ranges', function () {
+test('dimensions are entered first and selected door count scales inclusive model width ranges', function () {
     $variant = DoorVariant::factory()->create(['height_range_max' => 2600]);
     $variant->doorModel->update(['min_width' => 600, 'max_width' => 1000, 'min_height' => 1600, 'max_height' => 2500, 'partition_count' => 4]);
     $user = User::factory()->create();
@@ -286,23 +287,30 @@ test('model selection enables sizes and enforces both inclusive model ranges', f
     $this->actingAs($user);
 
     $component = Livewire::test(SlidingDoorBuilder::class)
-        ->assertFormFieldIsDisabled('openingWidth', 'sizeForm')
-        ->assertFormFieldIsDisabled('openingHeight', 'sizeForm')
-        ->call('validateBuilderSection', 1)->assertReturned(false)
-        ->assertHasErrors('builderFields.modelId')
-        ->set('builderFields.modelId', $variant->door_model_id)
         ->assertFormFieldIsEnabled('openingWidth', 'sizeForm')
-        ->assertFormFieldIsEnabled('openingHeight', 'sizeForm');
+        ->assertFormFieldIsEnabled('openingHeight', 'sizeForm')
+        ->assertFormFieldIsDisabled('doorCount', 'sizeForm')
+        ->assertFormFieldIsDisabled('modelId', 'sizeForm')
+        ->call('validateBuilderSection', 1)->assertReturned(false)
+        ->assertHasErrors('builderFields.openingWidth');
 
-    foreach ([[1200, 1600], [2000, 2500]] as [$width,$height]) {
-        $component->set('builderFields.openingWidth', (string) $width)->set('builderFields.openingHeight', (string) $height)
-            ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
+    foreach ([2, 3, 4, 5] as $count) {
+        foreach ([600, 1000] as $doorWidth) {
+            $component->set('builderFields.openingWidth', (string) ($doorWidth * $count))
+                ->set('builderFields.openingHeight', '2400')
+                ->assertFormFieldExists('doorCount', 'sizeForm', fn (Select $field): bool => array_key_exists($count, $field->getOptions()))
+                ->set('builderFields.doorCount', $count)
+                ->set('builderFields.modelId', $variant->door_model_id)
+                ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
+        }
     }
-    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1599], ['openingHeight', 2501]] as [$field,$value]) {
-        $component->set('builderFields.openingWidth', '1600')->set('builderFields.openingHeight', '2400')
-            ->set('builderFields.' . $field, (string) $value)
-            ->call('validateBuilderSection', 1)->assertReturned(false)->assertHasErrors('builderFields.' . $field);
+    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1599], ['openingHeight', 2501]] as [$field, $value]) {
+        $component->call('restoreBuilderFields', [
+            'openingWidth' => '1600', 'openingHeight' => '2400', 'doorCount' => 2,
+            'modelId' => $variant->door_model_id, $field => (string) $value,
+        ])->call('validateBuilderSection', 1)->assertReturned(false)->assertHasErrors('builderFields.' . $field);
     }
+
 });
 
 test('design and variant choices resolve only existing variants for the selected model and height', function () {
@@ -314,6 +322,7 @@ test('design and variant choices resolve only existing variants for the selected
     $this->actingAs($user);
 
     $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.doorCount', 2)
         ->set('builderFields.modelId', $short->door_model_id)
         ->set('builderFields.openingWidth', '1600')
         ->set('builderFields.openingHeight', '2400')
@@ -345,6 +354,7 @@ test('the infill control is a searchable Filament select with variant incompatib
     $this->actingAs($user);
 
     Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.doorCount', 2)
         ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.variantId', $variant->id)
         ->assertFormFieldExists('0', 'infillForm', function (Select $field) use ($allowed, $excluded): bool {
@@ -365,6 +375,7 @@ test('all model infills have visible numbered searchable selects with escaped ma
     $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
     $this->actingAs($user);
     $component = Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.doorCount', 2)
         ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.variantId', $variant->id);
     for ($index = 0; $index < 5; $index++) {
@@ -377,4 +388,28 @@ test('all model infills have visible numbered searchable selects with escaped ma
                 && str_contains($label, '&lt;img') && ! str_contains($label, '<img');
         });
     }
+});
+
+test('door counts and models are filtered by opening sizes and usable variant heights', function () {
+    $variant = DoorVariant::factory()->create(['height_range_min' => 1800, 'height_range_max' => 2400]);
+    $variant->doorModel->update(['min_width' => 600, 'max_width' => 1000, 'min_height' => 1600, 'max_height' => 2600]);
+    $unavailable = DoorVariant::factory()->withoutPartition()->create();
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.openingWidth', '3000')
+        ->set('builderFields.openingHeight', '2400')
+        ->assertFormFieldExists('doorCount', 'sizeForm', fn (Select $field): bool => array_keys($field->getOptions()) === [3, 4, 5])
+        ->set('builderFields.doorCount', 3)
+        ->assertFormFieldExists('modelId', 'sizeForm', fn (Select $field): bool => array_keys($field->getOptions()) === [$variant->door_model_id])
+        ->set('builderFields.modelId', $variant->door_model_id)
+        ->call('validateBuilderSection', 1)->assertReturned(true)
+        ->set('builderFields.openingHeight', '1700')
+        ->assertSet('builderFields.doorCount', null)
+        ->assertSet('builderFields.modelId', null)
+        ->assertFormFieldExists('doorCount', 'sizeForm', fn (Select $field): bool => $field->getOptions() === [])
+        ->call('validateBuilderSection', 1)->assertReturned(false)
+        ->assertHasErrors('builderFields.doorCount');
 });

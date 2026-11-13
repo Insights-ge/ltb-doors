@@ -6,7 +6,7 @@ import { saveDraft, readDraft, configurationSnapshot } from '../../resources/js/
 
 function fixture() {
     return {
-        config:{openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b'],['c','d']],infillIdsByDoor:[[7,8],[7,8]]},
+        config:{doorCount:2,openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b'],['c','d']],infillIdsByDoor:[[7,8],[7,8]]},
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'Current system',variants:[{id:2,name:'Current variant',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Glass'},{id:8,code:'B',description:'Mirror'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
