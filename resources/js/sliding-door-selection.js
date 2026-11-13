@@ -1,8 +1,7 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
 
-const DOOR_COUNT = 2;
 
-/** Two doors share one infill layout; instance identities remain independent. */
+/** All doors share one infill layout; instance identities remain independent. */
 export function reconcilePreviewConfiguration(configuration, previous, createId = () => globalThis.crypto.randomUUID()) {
     if (configuration === null) {
         return null;
@@ -11,10 +10,12 @@ export function reconcilePreviewConfiguration(configuration, previous, createId 
     if (!Array.isArray(configuration.infillWeights)) {
         throw new RangeError('The builder requires one shared infill layout.');
     }
+    const doorCount = configuration.doorCount;
+    if (![2,3,4,5].includes(doorCount)) throw new RangeError('Choose between two and five doors.');
     const geometryConfiguration = {
         ...configuration,
-        doorCount: DOOR_COUNT,
-        infillWeightsByDoor: Array.from({ length: DOOR_COUNT }, () => [...configuration.infillWeights]),
+        doorCount,
+        infillWeightsByDoor: Array.from({ length: doorCount }, () => [...configuration.infillWeights]),
     };
     calculateDoorGeometry(geometryConfiguration);
     if ((configuration.doorIds !== undefined && !Array.isArray(configuration.doorIds))
@@ -26,7 +27,7 @@ export function reconcilePreviewConfiguration(configuration, previous, createId 
     const seenDoors = new Set();
     const seenInfills = new Set();
 
-    for (let index = 0; index < DOOR_COUNT; index++) {
+    for (let index = 0; index < doorCount; index++) {
         const id = configuration.doorIds?.[index] ?? previous?.doorIds?.[index] ?? createId();
         requireIdentity(id, seenDoors);
         doorIds.push(id);
@@ -45,17 +46,20 @@ export function reconcilePreviewConfiguration(configuration, previous, createId 
         infillInstanceIdsByDoor.push(infillInstanceIds);
     }
 
-    if (sameIdentities(configuration, doorIds, infillInstanceIdsByDoor) && sameGeometry(configuration, geometryConfiguration)) {
+    const infillIdsByDoor = Array.from({length:doorCount}, () => configuration.infillWeights.map((_,index) => configuration.infillIdsByDoor?.[0]?.[index] ?? null));
+    const sameFinishes = configuration.infillIdsByDoor?.length === doorCount
+        && infillIdsByDoor.every((row,index) => JSON.stringify(row) === JSON.stringify(configuration.infillIdsByDoor[index]));
+    if (sameFinishes && sameIdentities(configuration, doorIds, infillInstanceIdsByDoor) && sameGeometry(configuration, geometryConfiguration)) {
         return configuration;
     }
 
-    return { ...geometryConfiguration, doorIds, infillInstanceIdsByDoor };
+    return { ...geometryConfiguration, doorIds, infillInstanceIdsByDoor, infillIdsByDoor };
 }
 
 function sameGeometry(configuration, derived) {
-    return configuration.doorCount === DOOR_COUNT
+    return configuration.doorCount === derived.doorCount
         && Array.isArray(configuration.infillWeightsByDoor)
-        && configuration.infillWeightsByDoor.length === DOOR_COUNT
+        && configuration.infillWeightsByDoor.length === derived.doorCount
         && derived.infillWeightsByDoor.every((weights, index) => Array.isArray(configuration.infillWeightsByDoor[index])
             && weights.length === configuration.infillWeightsByDoor[index].length
             && weights.every((weight, infillIndex) => weight === configuration.infillWeightsByDoor[index][infillIndex]));

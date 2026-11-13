@@ -55,7 +55,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             const variantId = id(state.variantId);
             const model = this.catalog.models.find((candidate) => candidate.id === modelId);
             const variant = model?.variants.find((candidate) => candidate.id === variantId);
-            const fields = { modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(variant?.hasSoftCloseMechanism) };
+            const fields = { doorCount: id(state.doorCount), modelId, variantId, frameDesignCode: state.frameDesignCode || null, frameColor: variant?.color ?? null, softClose: Boolean(variant?.hasSoftCloseMechanism) };
             const next = applyModelLayout({ ...this.previewConfiguration, ...fields }, model);
             const modelChange = fields.modelId !== this.previewConfiguration.modelId
                 || next.infillWeights !== this.previewConfiguration.infillWeights;
@@ -76,13 +76,14 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                 const fields = {
                     openingWidth: this.sizeInputs.openingWidth,
                     openingHeight: this.sizeInputs.openingHeight,
+                    doorCount: config.doorCount ?? null,
                     modelId: config.modelId ?? null,
                     frameDesignCode: config.frameDesignCode ?? null,
                     variantId: config.variantId ?? null,
                 };
-                this.formState = fields;
                 await this.$wire.restoreBuilderFields(fields);
-            } finally { this.formBusy = false; }
+                await this.$nextTick?.();
+            } finally { this.formBusy = false; this.syncInfillField(); }
         },
 
         exportDesign() {
@@ -149,14 +150,14 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         get validation() {
             const result = validateBuilder(this.previewConfiguration, this.catalog, this.metadata);
             for (const [field, invalid] of Object.entries(this.sizeErrors)) {
-                if (invalid && this.selectedModel) {
+                if (invalid) {
                     const errorField = `builder-${field}`;
                     const code = measurementError(this.sizeInputs[field]);
                     result.errors = result.errors.filter((issue) => issue.field !== errorField);
                     if (code) result.errors.unshift({ code, step: 1, field: errorField });
                 }
             }
-            const sizeFields = ['builder-model', 'builder-openingWidth', 'builder-openingHeight'];
+            const sizeFields = ['builder-openingWidth', 'builder-openingHeight', 'builder-doorCount', 'builder-model'];
             result.errors.sort((first, second) => first.step - second.step
                 || (first.step === 1 ? sizeFields.indexOf(first.field) - sizeFields.indexOf(second.field) : 0));
             return result;
@@ -250,7 +251,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             const number = parseMeasurement(value);
             this.sizeErrors[field] = number === null;
             this.sizeInputs[field] = String(value ?? '');
-            if (number !== null) this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
+            this.previewConfiguration = { ...this.previewConfiguration, [field]: number };
         },
 
         get sizingReference() {
@@ -316,7 +317,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (!Number.isInteger(index) || index < 0 || index >= (config?.infillWeights.length ?? 0)) return;
             if (infillId !== null && (!this.catalog.infills.some(infill => infill.id === infillId) || this.infillIsIncompatible(infillId))) return;
             const finishes = config.infillWeights.map((_, position) => position === index ? infillId : config.infillIdsByDoor?.[0]?.[position] ?? null);
-            this.previewConfiguration = { ...config, infillIdsByDoor: [[...finishes], [...finishes]] };
+            this.previewConfiguration = { ...config, infillIdsByDoor: Array.from({length:config.doorCount ?? 0}, () => [...finishes]) };
         },
 
         isEmptyInfill(index) {
@@ -349,7 +350,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             if (![from,to].every(index => Number.isInteger(index) && index >= 0 && index < config.infillWeights.length) || from === to || this.isEmptyInfill(from)) return;
             const values = config.infillWeights.map((_,index) => config.infillIdsByDoor?.[0]?.[index] ?? null);
             [values[from],values[to]] = [values[to],values[from]];
-            this.previewConfiguration = {...config,infillIdsByDoor:[[...values],[...values]]};
+            this.previewConfiguration = {...config,infillIdsByDoor:Array.from({length:config.doorCount ?? 0}, () => [...values])};
             this.selectInfillIndex(to);
         },
 
@@ -372,6 +373,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         syncInfillField() {
+            if (this.formBusy) return;
             const values = this.previewConfiguration?.infillWeights.map((_, index) => this.previewConfiguration.infillIdsByDoor?.[0]?.[index] ?? null) ?? [];
             if (JSON.stringify(this.infillState) !== JSON.stringify(values)) this.infillState = values;
         },
@@ -387,7 +389,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
 
         requestConfigurationChange(configuration, kind = null) {
             const current = this.previewConfiguration;
-            const replacesFinish = current?.infillIdsByDoor?.some((finishes, doorIndex) => finishes.some((infillId, infillIndex) => (
+            const replacesFinish = current?.infillIdsByDoor?.slice(0, 1).some((finishes, doorIndex) => finishes.some((infillId, infillIndex) => (
                 infillId !== null && infillId !== undefined
                 && infillId !== configuration.infillIdsByDoor?.[doorIndex]?.[infillIndex]
             )));

@@ -1,5 +1,5 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
-import { measurementError, parseMeasurement, modelInfillWeights } from './sliding-door-state.js';
+import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts } from './sliding-door-state.js';
 
 export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
@@ -37,15 +37,21 @@ export function validateBuilder(configuration, catalog, metadata) {
     const model = catalog.models.find((item) => item.id === config.modelId);
     const missing = (value) => value === null || value === undefined || value === '';
     if (!model) add(missing(config.modelId) ? 'required' : 'exists', 1, 'builder-model');
+    for (const field of ['openingWidth', 'openingHeight']) {
+        const error = measurementError(config[field]);
+        if (error) add(error, 1, `builder-${field}`);
+    }
+    const counts = availableDoorCounts(catalog.models, config.openingWidth, config.openingHeight);
+    if (!counts.includes(config.doorCount)) add(missing(config.doorCount) ? 'required' : 'in', 1, 'builder-doorCount');
     if (model) {
         if (!model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
         for (const [field, min, max] of [
-            ['openingWidth', model.minWidth * 2, model.maxWidth * 2],
+            ['openingWidth', model.minWidth * config.doorCount, model.maxWidth * config.doorCount],
             ['openingHeight', model.minHeight, model.maxHeight],
         ]) {
             const error = measurementError(config[field]);
-            if (error) add(error, 1, `builder-${field}`);
-            else if (parseMeasurement(config[field]) < min) add('min', 1, `builder-${field}`, {limit:min});
+            if (error) continue;
+            if (parseMeasurement(config[field]) < min) add('min', 1, `builder-${field}`, {limit:min});
             else if (parseMeasurement(config[field]) > max) add('max', 1, `builder-${field}`, {limit:max});
         }
         const height = parseMeasurement(config.openingHeight);
@@ -56,7 +62,7 @@ export function validateBuilder(configuration, catalog, metadata) {
         }
     }
     try {
-        calculateDoorGeometry({ ...config, doorCount: 2, infillWeightsByDoor: [config.infillWeights, config.infillWeights] });
+        calculateDoorGeometry({ ...config, infillWeightsByDoor: Array.from({length:config.doorCount ?? 0}, () => config.infillWeights) });
     } catch {
         if (!errors.length) add('geometry_invalid', 1, 'builder-openingWidth');
     }
@@ -77,7 +83,7 @@ export function validateBuilder(configuration, catalog, metadata) {
     for (let infillIndex = 0; infillIndex < (config.infillWeights?.length ?? 0); infillIndex++) {
         const infillId = config.infillIdsByDoor?.[0]?.[infillIndex];
         const field = `builder-infill-${infillIndex}`;
-        if (infillId !== (config.infillIdsByDoor?.[1]?.[infillIndex] ?? null)) add('shared_infills_mismatch', 3, field, { infillIndex, doorIndex: 0 });
+        if (config.infillIdsByDoor?.length !== config.doorCount || config.infillIdsByDoor.some(row => row[infillIndex] !== infillId)) add('shared_infills_mismatch', 3, field, { infillIndex, doorIndex: 0 });
         if (!catalog.infills.some(infill => infill.id === infillId)) add(missing(infillId) ? 'required' : 'exists', 3, field, { infillIndex, doorIndex: 0 });
         else if (excluded.has(infillId)) add('finish_incompatible', 3, field, { infillIndex, doorIndex: 0 });
     }

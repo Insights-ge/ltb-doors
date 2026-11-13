@@ -22,6 +22,8 @@ return [
         'unselected' => 'No finish selected',
     ],
     'size' => [
+        'door_count' => 'Number of doors',
+        'no_door_counts' => 'No door count from 2 to 5 fits these dimensions with the available models.',
         'partition_summary' => 'Partitions: :count; infills per door: :infills.',
 
         'unit' => 'mm',
@@ -50,7 +52,7 @@ return [
         'next' => 'Next',
     ],
     'validation' => [
-        'shared_infills_mismatch' => 'Use the same infill for this infill on both doors.',
+        'shared_infills_mismatch' => 'Use the same infill for this infill on all doors.',
         'no_variant_for_height' => 'No available variant supports this height.',
         'variant_components_mismatch' => 'The components must match the selected variant. Choose an available variant.',
         'variant_height_mismatch' => 'Choose a variant available for this height.',
@@ -96,8 +98,8 @@ return [
     ],
     'steps' => [
         'opening' => [
-            'label' => 'Model and size',
-            'description' => 'Choose a door model, then enter width and height.',
+            'label' => 'Size and doors',
+            'description' => 'Enter width and height, then choose an available door count and model.',
         ],
         'system' => [
             'label' => 'Frame and colour',
@@ -125,9 +127,9 @@ return [
         'infills_label' => 'Select an infill',
         'door_label' => 'Door :number',
         'infill_short_label' => 'Infill :number',
-        'infill_label' => 'Infill :infill on both doors',
+        'infill_label' => 'Infill :infill on all doors',
         'no_selection' => 'No infill selected.',
-        'infill_selected' => 'Infill :infill selected on both doors.',
+        'infill_selected' => 'Infill :infill selected on all doors.',
         'width_annotation' => 'Opening width: :value mm',
         'height_annotation' => 'Opening height: :value mm',
         'empty_heading' => 'No preview yet',

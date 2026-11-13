@@ -84,11 +84,11 @@ for (const [name, width, height, weights] of [
     ['extremely tall', 1, 1000000, [1, 1]],
 ]) {
     for (const viewport of [{ width: 300, height: 360 }, { width: 1000, height: 500 }]) {
-        test(`${name} builder layout retains two doors, proportions and bounds at ${viewport.width}px`, () => {
+        test(`${name} builder layout retains five doors, proportions and bounds at ${viewport.width}px`, () => {
             let id = 0;
             const input = reconcilePreviewConfiguration({
                 openingWidth: width, openingHeight: height, infillWeights: weights,
-                // Conflicting generic inputs must not override the builder's two-door rule.
+                // Every door must inherit the same infill layout.
                 doorCount: 5, infillWeightsByDoor: [[1]],
             }, null, () => `geometry-${++id}`);
             const scene = createPreviewScene(input, metadata(), viewport);
@@ -104,15 +104,15 @@ for (const [name, width, height, weights] of [
                 assert.ok(inner.x + inner.width <= outer.x + outer.width + tolerance);
                 assert.ok(inner.y + inner.height <= outer.y + outer.height + tolerance);
             };
-            assert.equal(scene.doors.length, 2);
-            assert.deepEqual(scene.doors.map(door => door.infills.length), [weights.length, weights.length]);
+            assert.equal(scene.doors.length, 5);
+            assert.deepEqual(scene.doors.map(door => door.infills.length), Array(5).fill(weights.length));
             close(scene.opening.width / scene.opening.height, width / height);
             contains({ x: 48, y: 48, width: viewport.width - 96, height: viewport.height - 96 }, scene.opening);
             close(scene.doors[0].x + scene.doors[0].width, scene.doors[1].x);
-            close(scene.doors[1].x + scene.doors[1].width, scene.opening.x + scene.opening.width);
+            close(scene.doors[4].x + scene.doors[4].width, scene.opening.x + scene.opening.width);
             for (const door of scene.doors) {
                 contains(scene.opening, door);
-                close(door.width / scene.opening.width, 0.5);
+                close(door.width / scene.opening.width, 0.2);
                 close(door.infills.reduce((sum, infill) => sum + infill.height, 0), door.height);
                 for (const [index, infill] of door.infills.entries()) {
                     contains(door, infill);
