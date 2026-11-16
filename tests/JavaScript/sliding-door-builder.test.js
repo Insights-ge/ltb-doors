@@ -7,7 +7,7 @@ function builder() {
     const model={id:1,partitionCount:2,minWidth:500,maxWidth:1100,minHeight:1600,maxHeight:2600,variants:[{id:11,frameDesignCode:'A',color:'black',heightRangeMin:1600,heightRangeMax:2600,hasPartition:true,hasSoftCloseMechanism:false,components:[]}]};
     const b=slidingDoorBuilder({initialStep:1,payload:{catalog:{models:[model],infills:[{id:7},{id:8}]},metadata:{frameColors:[],infillVisuals:[],neutralVisual:{fill:'#B8B8B8'}}},fieldValidationMessages:{'builder-infill-0':{required:'Infill 1 is required.'}}});
     let id=0;
-    b.previewConfiguration=reconcilePreviewConfiguration({modelId:1,variantId:11,frameDesignCode:'A',frameColor:'black',openingWidth:1600,openingHeight:2400,infillWeights:[1,1,1],infillIdsByDoor:[[null,null,null],[null,null,null]],softClose:false},null,()=>`id-${++id}`);
+    b.previewConfiguration=reconcilePreviewConfiguration({doorCount:2,modelId:1,variantId:11,frameDesignCode:'A',frameColor:'black',openingWidth:1600,openingHeight:2400,infillWeights:[1,1,1],infillIdsByDoor:[[null,null,null],[null,null,null]],softClose:false},null,()=>`id-${++id}`);
     b.previewDoors=previewSelectionTargets(b.previewConfiguration);
     b.sizeInputs={openingWidth:'1600',openingHeight:'2400'};
     b.$dispatch=()=>{};
@@ -57,7 +57,7 @@ test('model reduction confirms removal and expansion does not resurrect shared f
     const b=builder();
     b.applyInfillField([7,8,7]);
     b.catalog.models.push({...b.catalog.models[0],id:2,partitionCount:1});
-    b.formState={modelId:2,variantId:null,frameDesignCode:null,openingWidth:'1600',openingHeight:'2400'};
+    b.formState={doorCount:2,modelId:2,variantId:null,frameDesignCode:null,openingWidth:'1600',openingHeight:'2400'};
     const before=b.previewConfiguration;
     b.applyFormFields();
     assert.equal(b.pendingChange.kind,'model');
@@ -120,4 +120,23 @@ test('the alternative picker updates both doors and refuses incompatible materia
     b.openInfillPicker(0);
     b.applyPickerChoice(7);
     assert.equal(b.isEmptyInfill(0),true);
+});
+
+test('changing door count preserves shared finishes and identities, and swaps affect all five doors', () => {
+    const b=builder();
+    b.applyInfillField([7,8,7]);
+    const original=b.previewConfiguration;
+    let serial=0;
+    const expanded=reconcilePreviewConfiguration({...original,doorCount:5,openingWidth:4000},original,()=>`added-${++serial}`);
+    assert.deepEqual(expanded.doorIds.slice(0,2),original.doorIds);
+    assert.deepEqual(expanded.infillIdsByDoor,Array.from({length:5},()=>[7,8,7]));
+    b.previewConfiguration=expanded;
+    b.previewDoors=previewSelectionTargets(expanded);
+    b.swapInfills(0,1);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,Array.from({length:5},()=>[8,7,7]));
+    b.setInfill(0,null);
+    assert.deepEqual(b.previewConfiguration.infillIdsByDoor,Array.from({length:5},()=>[null,7,7]));
+    const smaller=reconcilePreviewConfiguration({...b.previewConfiguration,doorCount:3},expanded);
+    assert.deepEqual(smaller.doorIds,expanded.doorIds.slice(0,3));
+    assert.equal(smaller.infillInstanceIdsByDoor.length,3);
 });

@@ -4,7 +4,7 @@ import { validateBuilder } from './sliding-door-rules.js';
 
 /** Persist only configuration facts, never catalog records or translated labels. */
 export function configurationSnapshot(configuration) {
-    const fields = ['openingWidth','openingHeight','modelId','variantId','frameDesignCode','frameColor','infillWeights','softClose','doorIds','infillInstanceIdsByDoor','infillIdsByDoor'];
+    const fields = ['doorCount','openingWidth','openingHeight','modelId','variantId','frameDesignCode','frameColor','infillWeights','softClose','doorIds','infillInstanceIdsByDoor','infillIdsByDoor'];
     return Object.fromEntries(fields.filter((field) => configuration[field] !== undefined).map((field) => [field, JSON.parse(JSON.stringify(configuration[field]))]));
 }
 
@@ -23,10 +23,11 @@ function validStructure(config) {
     if (!['modelId','variantId'].every(key => Number.isSafeInteger(config[key]) && config[key] > 0)) return false;
     if (typeof config.softClose !== 'boolean' || typeof config.frameColor !== 'string' || typeof config.frameDesignCode !== 'string' || config.frameDesignCode.length > 255) return false;
     if (!Array.isArray(config.infillWeights) || config.infillWeights.length < 1 || config.infillWeights.length > 5 || !config.infillWeights.every(weight => Number.isFinite(weight) && weight > 0)) return false;
+    if (![2,3,4,5].includes(config.doorCount)) return false;
     const identity = id => typeof id === 'string' && id.length > 0 && id.length <= 128;
-    if (!Array.isArray(config.doorIds) || config.doorIds.length !== 2 || !config.doorIds.every(identity) || new Set(config.doorIds).size !== 2) return false;
+    if (!Array.isArray(config.doorIds) || config.doorIds.length !== config.doorCount || !config.doorIds.every(identity) || new Set(config.doorIds).size !== config.doorCount) return false;
     for (const field of ['infillInstanceIdsByDoor','infillIdsByDoor']) {
-        if (!Array.isArray(config[field]) || config[field].length !== 2 || !config[field].every(row => Array.isArray(row) && row.length === config.infillWeights.length)) return false;
+        if (!Array.isArray(config[field]) || config[field].length !== config.doorCount || !config[field].every(row => Array.isArray(row) && row.length === config.infillWeights.length)) return false;
     }
     const infillInstanceIds=config.infillInstanceIdsByDoor.flat();
     return infillInstanceIds.every(identity) && new Set(infillInstanceIds).size === infillInstanceIds.length
@@ -45,13 +46,14 @@ export function readDraft(storage, key, catalog, metadata) {
             parsed.infillWeights = parsed.panelWeights;
             parsed.infillInstanceIdsByDoor = parsed.panelIdsByDoor;
         }
+        if (parsed && typeof parsed === 'object' && parsed.doorCount === undefined) parsed.doorCount = 2;
         if (!validStructure(parsed)) throw new Error('Invalid draft structure');
         const configuration=configurationSnapshot(parsed);
         const model=catalog.models.find(item=>item.id===configuration.modelId);
         if (model && (configuration.infillWeights.length!==modelInfillWeights(model).length || configuration.infillWeights.some(weight=>weight!==1))) {
             return {status:'outdated_layout',configuration:null};
         }
-        if (configuration.infillIdsByDoor[0].some((id, index) => id !== configuration.infillIdsByDoor[1][index])) {
+        if (configuration.infillIdsByDoor.some(row => row.some((id, index) => id !== configuration.infillIdsByDoor[0][index]))) {
             return {status:'outdated_infills',configuration:null};
         }
         // This also checks representability and the supplied instance identities.

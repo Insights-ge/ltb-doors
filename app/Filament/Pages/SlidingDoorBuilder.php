@@ -40,7 +40,7 @@ class SlidingDoorBuilder extends Page
     /** @var array<string, mixed> */
     public array $builderFields = [
         'openingWidth' => '', 'openingHeight' => '', 'modelId' => null,
-        'frameDesignCode' => null, 'variantId' => null,
+        'frameDesignCode' => null, 'variantId' => null, 'doorCount' => null,
     ];
 
     /** @var array<int, int|string|null> */
@@ -95,6 +95,15 @@ class SlidingDoorBuilder extends Page
 
         try {
             ($step === 1 ? $this->sizeForm : $this->systemForm)->getState();
+            if ($step === 1) {
+                Validator::make(['builderFields' => $this->builderFields], [
+                    'builderFields.doorCount' => ['required', 'integer', 'between:2,5'],
+                    'builderFields.modelId' => ['required', 'integer'],
+                ], attributes: [
+                    'builderFields.doorCount' => Str::lcfirst(__('sliding_door_builder.size.door_count')),
+                    'builderFields.modelId' => Str::lcfirst(__('sliding_door_builder.system.model')),
+                ])->validate();
+            }
         } catch (ValidationException $exception) {
             $this->setErrorBag($exception->validator->errors());
 
@@ -114,8 +123,9 @@ class SlidingDoorBuilder extends Page
             $width = (float) $width;
             $height = (float) $height;
             $ratio = $width / $height;
+            $count = $this->builderFields['doorCount'];
 
-            if (! is_finite($ratio) || $ratio / 2 <= 0) {
+            if (! is_numeric($count) || ! is_finite($ratio) || $ratio / max(1, (float) $count) <= 0) {
                 $this->addError('builderFields.openingWidth', __('sliding_door_builder.validation.geometry_invalid'));
 
                 return false;
@@ -132,10 +142,11 @@ class SlidingDoorBuilder extends Page
             'openingWidth' => ['nullable', 'string', 'max:100'],
             'openingHeight' => ['nullable', 'string', 'max:100'],
             'modelId' => ['nullable', 'integer'],
+            'doorCount' => ['nullable', 'integer', 'between:2,5'],
             'frameDesignCode' => ['nullable', 'string', 'max:255'],
             'variantId' => ['nullable', 'integer'],
         ])->validate();
-        foreach (['openingWidth', 'openingHeight', 'modelId', 'frameDesignCode', 'variantId'] as $field) {
+        foreach (['openingWidth', 'openingHeight', 'modelId', 'doorCount', 'frameDesignCode', 'variantId'] as $field) {
             if (array_key_exists($field, $validated)) {
                 $this->builderFields[$field] = $validated[$field];
             }
@@ -175,6 +186,7 @@ class SlidingDoorBuilder extends Page
             'builder-openingWidth' => __('sliding_door_builder.size.width'),
             'builder-openingHeight' => __('sliding_door_builder.size.height'),
             'builder-model' => __('sliding_door_builder.system.model'),
+            'builder-doorCount' => __('sliding_door_builder.size.door_count'),
             'builder-design' => __('sliding_door_builder.system.design'),
             'builder-variant' => __('sliding_door_builder.system.variant'),
         ];

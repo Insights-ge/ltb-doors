@@ -5,7 +5,7 @@ import slidingDoorBuilder from '../../resources/js/sliding-door-builder.js';
 
 function configuration() {
     return {
-        openingWidth: 3000, openingHeight: 2400,
+        openingWidth: 3000, openingHeight: 2400, doorCount: 2,
         infillWeights: [1, 1],
     };
 }
@@ -23,7 +23,7 @@ test('instance IDs are unique and input configuration remains unchanged', () => 
 
     assert.equal(new Set(ids).size, 6);
     assert.deepEqual(input, before);
-    assert.deepEqual(normalized.infillWeightsByDoor, [[1, 1], [1, 1]]);
+    assert.deepEqual(normalized.infillWeightsByDoor, [[1,1],[1,1]]);
     assert.equal(reconcilePreviewConfiguration(normalized, normalized), normalized);
 });
 
@@ -78,11 +78,11 @@ test('door count and per-door partition overrides cannot diverge the shared layo
         infillWeightsByDoor: [[1], [1, 1, 1], [1], [1]],
     }, null, nextId);
 
-    assert.equal(normalized.doorCount, 2);
-    assert.deepEqual(normalized.infillWeightsByDoor, [[1, 1], [1, 1]]);
-    assert.equal(normalized.doorIds.length, 2);
+    assert.equal(normalized.doorCount, 4);
+    assert.deepEqual(normalized.infillWeightsByDoor, Array.from({length:4}, () => [1,1]));
+    assert.equal(normalized.doorIds.length, 4);
     const updated = reconcilePreviewConfiguration({ ...normalized, infillWeights: [1, 1, 1] }, normalized, nextId);
-    assert.deepEqual(updated.infillWeightsByDoor, [[1, 1, 1], [1, 1, 1]]);
+    assert.deepEqual(updated.infillWeightsByDoor, Array.from({length:4}, () => [1,1,1]));
     assert.deepEqual(updated.doorIds, normalized.doorIds);
 });
 

@@ -3,6 +3,7 @@ export function createInitialConfiguration() {
     return {
         openingWidth: null,
         openingHeight: null,
+        doorCount: null,
         modelId: null,
         variantId: null,
         frameDesignCode: null,
@@ -47,7 +48,21 @@ export function applyModelLayout(configuration, model) {
         ...configuration,
         infillWeights,
         infillInstanceIdsByDoor: configuration.infillInstanceIdsByDoor?.map(ids => ids.slice(0, infillWeights.length)),
-        infillIdsByDoor: Array.from({length:2}, (_,doorIndex) => infillWeights.map((_,infillIndex) =>
+        infillIdsByDoor: Array.from({length:configuration.doorCount ?? 0}, (_,doorIndex) => infillWeights.map((_,infillIndex) =>
             infillIndex < (configuration.infillWeights?.length ?? 0) ? configuration.infillIdsByDoor?.[doorIndex]?.[infillIndex] ?? null : null)),
     };
+}
+
+/** Opening dimensions imply equal illustrative door widths; catalog width limits are per door. */
+export function modelSupportsOpening(model, width, height, doorCount) {
+    width = parseMeasurement(width);
+    height = parseMeasurement(height);
+    return width !== null && height !== null && [2,3,4,5].includes(doorCount)
+        && width >= model.minWidth * doorCount && width <= model.maxWidth * doorCount
+        && height >= model.minHeight && height <= model.maxHeight
+        && model.variants.some(variant => variant.hasPartition && height >= variant.heightRangeMin && height <= variant.heightRangeMax);
+}
+
+export function availableDoorCounts(models, width, height) {
+    return [2,3,4,5].filter(count => models.some(model => modelSupportsOpening(model, width, height, count)));
 }

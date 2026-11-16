@@ -4,7 +4,7 @@ import { validateBuilder } from '../../resources/js/sliding-door-rules.js';
 
 function fixture() {
     return {
-        config:{openingWidth:1600,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',infillWeights:[1,1],infillIdsByDoor:[[7,7],[7,7]],softClose:false},
+        config:{doorCount:2,openingWidth:1600,openingHeight:2400,modelId:1,variantId:2,frameDesignCode:'A',frameColor:'black',infillWeights:[1,1],infillIdsByDoor:[[7,7],[7,7]],softClose:false},
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:1100,minHeight:1600,maxHeight:2600,variants:[{id:2,heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',color:'black',hasPartition:true,hasSoftCloseMechanism:false,components:[]}]}],infills:[{id:7}]},
         metadata:{},
     };

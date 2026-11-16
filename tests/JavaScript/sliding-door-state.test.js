@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInitialConfiguration, parseMeasurement, measurementError, modelInfillWeights, applyModelLayout } from '../../resources/js/sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, modelInfillWeights, applyModelLayout, availableDoorCounts } from '../../resources/js/sliding-door-state.js';
 
 test('new configurations contain no fabricated product or dimension choices and do not share mutable state', () => {
     const first = createInitialConfiguration();
@@ -35,7 +35,7 @@ test('measurement errors distinguish required, numeric and greater-than-zero rul
 for (const partitionCount of [1,2,3,4]) {
     test(`${partitionCount} model partitions produce ${partitionCount+1} equal infills on each door`, () => {
         assert.deepEqual(modelInfillWeights({partitionCount}), Array(partitionCount+1).fill(1));
-        const result=applyModelLayout({infillWeights:[],openingWidth:800}, {partitionCount});
+        const result=applyModelLayout({doorCount:2,infillWeights:[],openingWidth:800}, {partitionCount});
         assert.equal(result.infillWeights.length, partitionCount+1);
         assert.deepEqual(result.infillIdsByDoor, [Array(partitionCount+1).fill(null), Array(partitionCount+1).fill(null)]);
         assert.equal(result.openingWidth,800);
@@ -43,7 +43,7 @@ for (const partitionCount of [1,2,3,4]) {
 }
 
 test('model layout remapping preserves matching infills and does not resurrect removed finishes', () => {
-    const source={infillWeights:[1,1,1,1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b','c','d','e'],['f','g','h','i','j']],infillIdsByDoor:[[7,8,7,8,7],[8,7,8,7,8]]};
+    const source={doorCount:2,infillWeights:[1,1,1,1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['a','b','c','d','e'],['f','g','h','i','j']],infillIdsByDoor:[[7,8,7,8,7],[8,7,8,7,8]]};
     const before=structuredClone(source);
     const smaller=applyModelLayout(source,{partitionCount:1});
     assert.deepEqual(smaller.infillIdsByDoor,[[7,8],[8,7]]);
@@ -52,4 +52,16 @@ test('model layout remapping preserves matching infills and does not resurrect r
     const larger=applyModelLayout(smaller,{partitionCount:4});
     assert.deepEqual(larger.infillIdsByDoor,[[7,8,null,null,null],[8,7,null,null,null]]);
     assert.deepEqual(source,before);
+});
+
+test('door suggestions use inclusive per-door widths, model heights and usable variants', () => {
+    const model={minWidth:600,maxWidth:1000,minHeight:1600,maxHeight:2600,variants:[{hasPartition:true,heightRangeMin:1800,heightRangeMax:2400}]};
+    assert.deepEqual(availableDoorCounts([model],3000,2400),[3,4,5]);
+    assert.deepEqual(availableDoorCounts([model],1200,1800),[2]);
+    assert.deepEqual(availableDoorCounts([model],5000,2400),[5]);
+    for (const [width,height] of [[1199,2000],[5001,2000],[3000,1799],[3000,2401],['',2000],['abc',2000],[Infinity,2000]]) {
+        assert.deepEqual(availableDoorCounts([model],width,height),[]);
+    }
+    assert.deepEqual(availableDoorCounts([{...model,variants:[{...model.variants[0],hasPartition:false}]}],3000,2000),[]);
+    assert.deepEqual(availableDoorCounts([],3000,2000),[]);
 });

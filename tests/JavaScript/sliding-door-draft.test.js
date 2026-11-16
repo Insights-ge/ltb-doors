@@ -18,7 +18,7 @@ test('draft saving whitelists configuration facts and reports unavailable storag
 
 function fixture() {
     return {
-        config:{ openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
+        config:{ doorCount:2,openingWidth:3000,openingHeight:2400,modelId:1,variantId:2,frameColor:'black',frameDesignCode:'A',softClose:false,infillWeights:[1,1],doorIds:['d1','d2'],infillInstanceIdsByDoor:[['p1','p3'],['p2','p4']],infillIdsByDoor:[[7,7],[7,7]] },
         catalog:{models:[{id:1,partitionCount:1,minWidth:500,maxWidth:4000,minHeight:1600,maxHeight:2600,name:'System',variants:[{id:2,name:'Variant',color:'black',heightRangeMin:1600,heightRangeMax:2600,frameDesignCode:'A',hasPartition:true,components:[]}]}],infills:[{id:7,code:'A',description:'Finish'}]},
         metadata:{frameColors:[{color:'black',label:'Black'}]},
     };
@@ -80,4 +80,22 @@ test('previous saved field names restore into the infill contract without changi
     assert.equal(result.status,'restored');
     assert.deepEqual(configurationSnapshot(result.configuration),config);
     assert.ok(!Object.hasOwn(configurationSnapshot(result.configuration),'panelWeights'));
+});
+
+test('two-to-five-door drafts round trip and old drafts without a count keep two doors', () => {
+    const {config,catalog,metadata}=fixture();
+    const old={...config};
+    delete old.doorCount;
+    assert.equal(readDraft({getItem:()=>JSON.stringify(old)},'draft',catalog,metadata).configuration.doorCount,2);
+    for (const count of [2,3,4,5]) {
+        const next={...config,doorCount:count,doorIds:Array.from({length:count},(_,i)=>`door-${i}`),
+            infillInstanceIdsByDoor:Array.from({length:count},(_,i)=>[`a-${i}`,`b-${i}`]),
+            infillIdsByDoor:Array.from({length:count},()=>[7,7])};
+        const restored=readDraft({getItem:()=>JSON.stringify(next)},'draft',catalog,metadata);
+        assert.equal(restored.status,'restored');
+        assert.deepEqual(configurationSnapshot(restored.configuration),next);
+    }
+    for (const doorCount of [0,1,6,2.5,'3']) {
+        assert.equal(readDraft({getItem:()=>JSON.stringify({...config,doorCount})},'draft',catalog,metadata).status,'invalid');
+    }
 });

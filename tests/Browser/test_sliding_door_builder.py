@@ -98,35 +98,78 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         if field.startswith('builder-infill-'):
             self.page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor[0][{int(field.rsplit("-",1)[1])}] === {int(value)}')
             return
-        key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
+        key = {'builder-doorCount':'doorCount', 'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
         self.page.wait_for_function(f'String({ROOT}.formState.{key}) === {json.dumps(str(value))}')
 
     def selected_value(self, field):
-        key = {'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
+        key = {'builder-doorCount':'doorCount', 'builder-model':'modelId', 'builder-design':'frameDesignCode', 'builder-variant':'variantId'}[field]
         return self.page.evaluate(f'String({ROOT}.formState.{key} ?? "")')
 
-    def choose_model_and_size(self):
+    def choose_model_and_size(self, door_count=2):
         choices = self.catalog_choices()
+        choices['width'] *= door_count / 2
+        if choices['width'].is_integer():
+            choices['width'] = int(choices['width'])
+        for field, value in [('openingWidth', choices['width']), ('openingHeight', choices['height'])]:
+            control = self.page.locator('#builder-' + field)
+            if control.input_value() != str(value):
+                with self.page.expect_response(lambda response: '/update' in response.url and response.request.method == 'POST'):
+                    control.fill(str(value))
+                    control.blur()
+        self.select('builder-doorCount', str(door_count))
         self.select('builder-model', str(choices['model']))
-        self.page.wait_for_function("!document.querySelector('#builder-openingWidth').disabled")
-        self.page.locator('#builder-openingWidth').fill(str(choices['width']))
-        self.page.locator('#builder-openingHeight').fill(str(choices['height']))
         return choices
 
-    def configure(self):
+    def configure(self, door_count=2):
         page = self.page
-        choices = self.choose_model_and_size()
+        choices = self.choose_model_and_size(door_count)
         self.step(2)
         self.select('builder-design', choices['design'])
         self.select('builder-variant', str(choices['variant']))
         self.step(3)
-        page.wait_for_function(f'document.querySelectorAll(".builder-preview-infill").length==={2*choices["infills"]}')
+        page.wait_for_function(f'document.querySelectorAll(".builder-preview-infill").length==={door_count*choices["infills"]}')
         self.assertEqual(page.locator('[data-preview-door-control]').count(), 0)
         self.assertEqual(page.locator('[id^=builder-infill-][role=combobox]:visible').count(), choices['infills'])
         for infill in range(choices['infills']):
             self.select(f'builder-infill-{infill}', choices['infillIds'][infill%2])
         page.wait_for_function(f'{ROOT}.canReview')
         return choices
+
+    def test_opening_sizes_offer_and_restore_two_to_five_doors(self):
+        page=self.page
+        for count in [2,3,4,5]:
+            with self.subTest(door_count=count):
+                page.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('sliding-door-builder:')).forEach(k=>localStorage.removeItem(k))")
+                page.reload()
+                self.ready()
+                choices=self.configure(count)
+                self.assertEqual(page.locator('.builder-preview-door').count(),count)
+                self.step(4)
+                self.assertEqual(page.evaluate(f'{ROOT}.reviewDesign.doorCount'),count)
+                self.assertEqual(len(page.evaluate(f'{ROOT}.reviewDesign.doors')),count)
+                page.reload()
+                self.ready()
+                page.wait_for_function(f"{ROOT}.draftStatus==='restored'")
+                self.assertEqual(self.selected_value('builder-doorCount'),str(count))
+                self.assertEqual(page.locator('.builder-preview-door').count(),count)
+                self.assertEqual(len(page.evaluate(f'{ROOT}.previewConfiguration.infillIdsByDoor')),count)
+                if count == 5:
+                    self.step(2)
+                    self.step(3)
+                    source=page.locator('.builder-preview-door[data-door-index="0"] .builder-preview-infill[data-infill-index="0"]')
+                    target=page.locator('.builder-preview-door[data-door-index="0"] .builder-preview-infill[data-infill-index="1"]')
+                    source.scroll_into_view_if_needed()
+                    first,last=source.bounding_box(),target.bounding_box()
+                    page.mouse.move(first['x']+first['width']/2,first['y']+first['height']/2)
+                    page.mouse.down()
+                    page.mouse.move(last['x']+last['width']/2,last['y']+last['height']/2,steps=8)
+                    self.assertEqual(page.locator('.builder-infill-drag-ghost').count(),5)
+                    page.mouse.up()
+                    page.wait_for_function(f'{ROOT}.previewConfiguration.infillIdsByDoor.every(row=>row[0]==={choices["infillIds"][1]} && row[1]==={choices["infillIds"][0]})')
+                    if os.environ.get('BUILDER_TEST_ARTIFACTS'):
+                        self.step(1)
+                        directory=Path(os.environ['BUILDER_TEST_ARTIFACTS']); directory.mkdir(parents=True,exist_ok=True)
+                        page.screenshot(path=str(directory / 'five-door-sizing.png'))
 
     def test_configuration_review_and_restoration_in_both_locales(self):
         page = self.page
@@ -308,10 +351,9 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertTrue(page.locator('[data-builder-next]:visible').evaluate("el=>Boolean(el.closest('.fi-section'))"))
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
-        self.field_error('builder-model').wait_for(state='visible')
-        self.assertTrue(page.locator('#builder-openingWidth').is_disabled())
-        self.assertTrue(page.locator('#builder-openingHeight').is_disabled())
-        self.assertFalse(self.field_error('builder-openingWidth').is_visible())
+        self.field_error('builder-openingWidth').wait_for(state='visible')
+        self.assertTrue(page.locator('#builder-openingWidth').is_enabled())
+        self.assertTrue(page.locator('#builder-openingHeight').is_enabled())
         choices = self.choose_model_and_size()
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
@@ -356,8 +398,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
                     self.assertEqual(error.inner_text(), expected)
                     self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
                     self.assertEqual(page.locator('#builder-openingWidth').get_attribute('aria-invalid'), 'true')
-            page.locator('#builder-openingWidth').fill(str(choices['width']))
-            page.locator('#builder-openingHeight').fill(str(choices['height']))
+            self.choose_model_and_size()
             self.step(2)
             self.field_error('builder-openingWidth').wait_for(state='hidden')
             self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
@@ -384,7 +425,7 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         self.assertIsNone(page.evaluate(f'{ROOT}.previewConfiguration.variantId'))
         self.assertEqual(page.locator('.builder-preview-infill').count(), 0)
         self.assertTrue(page.locator('.builder-preview-placeholder').is_visible())
-        self.assertTrue(page.locator('#builder-openingWidth').is_disabled())
+        self.assertTrue(page.locator('#builder-openingWidth').is_enabled())
         self.choose_model_and_size()
         self.step(2)
         self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 2)
@@ -413,18 +454,19 @@ class SlidingDoorBuilderBrowserTest(unittest.TestCase):
         choices = self.configure()
         page = self.page
         self.step(1)
-        bounds = page.evaluate(f'({{min:{ROOT}.selectedModel.minWidth*2,max:{ROOT}.selectedModel.maxWidth*2}})')
-        for value, rule, limit in [(bounds['min']-1, 'min', bounds['min']), (bounds['max']+1, 'max', bounds['max'])]:
-            page.locator('#builder-openingWidth').fill(str(value))
-            self.step(2)
-            error = self.field_error('builder-openingWidth')
-            error.wait_for(state='visible')
-            self.assertEqual(error.inner_text(), page.evaluate(f"{ROOT}.issueMessage({{code:'{rule}',field:'builder-openingWidth',limit:{limit}}})"))
-            self.assertEqual(page.evaluate(f'{ROOT}.activeStep'), 1)
-        page.locator('#builder-openingWidth').fill(str(choices['width']))
+        page.locator('#builder-openingWidth').fill('1000000')
         page.locator('#builder-openingHeight').focus()
-        page.wait_for_function(f'{ROOT}.previewConfiguration.openingWidth==={choices["width"]}')
-        smaller = page.evaluate(f'{ROOT}.catalog.models.find(m=>m.partitionCount+1 < {choices["infills"]} && m.variants.some(v=>v.hasPartition))?.id')
+        page.wait_for_function(f'{ROOT}.formState.doorCount === null && {ROOT}.formState.modelId === null')
+        self.assertTrue(page.locator('#builder-doorCount').is_disabled())
+        self.step(2)
+        self.field_error('builder-doorCount').wait_for(state='visible')
+        self.assertEqual(page.evaluate(f'{ROOT}.activeStep'),1)
+        self.choose_model_and_size()
+        smaller = page.evaluate(f'''{ROOT}.catalog.models.find(m=>
+            m.partitionCount+1 < {choices["infills"]}
+            && {choices["width"]}>=m.minWidth*2 && {choices["width"]}<=m.maxWidth*2
+            && {choices["height"]}>=m.minHeight && {choices["height"]}<=m.maxHeight
+            && m.variants.some(v=>v.hasPartition && {choices["height"]}>=v.heightRangeMin && {choices["height"]}<=v.heightRangeMax))?.id''')
         if smaller is not None:
             before = page.evaluate(f'JSON.stringify({ROOT}.previewConfiguration)')
             self.select('builder-model', str(smaller))
