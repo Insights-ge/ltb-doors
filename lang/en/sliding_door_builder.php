@@ -39,8 +39,8 @@ return [
         'soft_close' => 'Soft close',
 
         'model' => 'Door model',
-        'design' => 'Frame design',
-        'variant' => 'Colour and variant',
+        'design' => 'Aluminium',
+        'variant' => 'Colour',
         'choose' => 'Choose an option',
     ],
     'navigation' => [
@@ -103,7 +103,7 @@ return [
         ],
         'system' => [
             'label' => 'Frame and colour',
-            'description' => 'Choose the frame design, colour and options.',
+            'description' => 'Choose the aluminium, colour and options.',
         ],
         'infills' => [
             'label' => 'Infills',
