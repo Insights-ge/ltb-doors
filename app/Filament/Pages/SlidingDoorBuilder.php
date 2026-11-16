@@ -55,6 +55,11 @@ class SlidingDoorBuilder extends Page
         return __('sliding_door_builder.navigation_label');
     }
 
+    public function getHeading(): string
+    {
+        return '';
+    }
+
     #[Computed]
     public function builderCatalog(): BuilderCatalogData
     {

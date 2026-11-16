@@ -41,6 +41,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
+        previewInfillPositions: [],
+        previewLabelOffset: 0,
         previewSelection: { doorId: null, infillInstanceId: null },
 
         applyFormFields() {
@@ -458,7 +460,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     onAdd: index => this.openInfillPicker(index),
                     onDragStart: index => this.beginInfillDrag(index),
                     onDrop: (index, remove) => this.finishInfillDrag(index, remove),
-                    onRender: (available) => { this.hasPreview = available; },
+                    onRender: (available, scene) => {
+                        this.hasPreview = available;
+                        this.previewLabelOffset = scene
+                            ? Math.max(0, scene.viewport.width - scene.opening.x - scene.opening.width - 4) : 0;
+                        this.previewInfillPositions = scene?.doors[0]?.infills.map(infill =>
+                            (infill.y + infill.height / 2) / scene.viewport.height * 100) ?? [];
+                    },
                     onSelect: ({ doorId, infillInstanceId }) => {
                         if (infillInstanceId !== null) {
                             this.selectPreviewInfill(doorId, infillInstanceId);
