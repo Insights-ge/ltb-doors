@@ -304,7 +304,12 @@ test('dimensions are entered first and selected door count scales inclusive mode
                 ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
         }
     }
-    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1599], ['openingHeight', 2501]] as [$field, $value]) {
+    $component->call('restoreBuilderFields', [
+        'openingWidth' => '1600', 'openingHeight' => '2650', 'doorCount' => 2,
+        'modelId' => $variant->door_model_id,
+    ])->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
+
+    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1599], ['openingHeight', 2701]] as [$field, $value]) {
         $component->call('restoreBuilderFields', [
             'openingWidth' => '1600', 'openingHeight' => '2400', 'doorCount' => 2,
             'modelId' => $variant->door_model_id, $field => (string) $value,

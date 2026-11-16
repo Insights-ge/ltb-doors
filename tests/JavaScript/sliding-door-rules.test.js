@@ -93,6 +93,45 @@ test('unsupported soft close remains a blocker while discouraged variant sizing 
     assert.ok(result.advisories.some(issue=>issue.code==='discouraged_height_reference'));
 });
 
+test('2650 remains selectable with a warning above the recommended catalog maximum', () => {
+    const {config,catalog,metadata}=fixture();
+    Object.assign(catalog.models[0],{notRecommendedHeightMin:2601,notRecommendedHeightMax:2700});
+    for (const height of [2601,2650,2700]) {
+        config.openingHeight=height;
+        const result=validateBuilder(config,catalog,metadata);
+        assert.deepEqual(result.errors,[]);
+        assert.ok(result.advisories.some(issue=>issue.code==='discouraged_height_reference'));
+    }
+    config.openingHeight=2701;
+    assert.ok(validateBuilder(config,catalog,metadata).errors.length > 0);
+});
+
+test('model height warning appears on the first step before a variant is selected', () => {
+    const {config,catalog,metadata}=fixture();
+    Object.assign(catalog.models[0],{notRecommendedHeightMin:2601,notRecommendedHeightMax:2700});
+    config.openingHeight=2650;
+    config.variantId=null;
+    config.frameDesignCode=null;
+    assert.deepEqual(validateBuilder(config,catalog,metadata).advisories, [
+        {code:'discouraged_height_reference',step:1,field:'builder-openingHeight'},
+    ]);
+    config.modelId=null;
+    assert.deepEqual(validateBuilder(config,catalog,metadata).advisories,[]);
+});
+
+test('height warning appears only within the inclusive discouraged range', () => {
+    const {config,catalog,metadata}=fixture();
+    Object.assign(catalog.models[0],{notRecommendedHeightMin:2300,notRecommendedHeightMax:2500});
+    for (const height of [2300,2400,2500]) {
+        config.openingHeight=height;
+        assert.ok(validateBuilder(config,catalog,metadata).advisories.some(issue=>issue.code==='discouraged_height_reference'));
+    }
+    for (const height of [2299,2501,null,'']) {
+        config.openingHeight=height;
+        assert.deepEqual(validateBuilder(config,catalog,metadata).advisories,[]);
+    }
+});
+
 test('height and components cannot be combined into a variant absent from the catalog', () => {
     const {config,catalog,metadata}=fixture();
     const variant=catalog.models[0].variants[0];
