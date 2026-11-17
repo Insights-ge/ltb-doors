@@ -69,7 +69,7 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
         const nextSceneKey = JSON.stringify([scene, configuration.openingWidth, configuration.openingHeight]);
         if (nextSceneKey === sceneKey) {
             applySelection(svg, selection);
-            onRender(true);
+            onRender(true, scene);
             return;
         }
         sceneKey = nextSceneKey;
@@ -80,7 +80,7 @@ export function createDoorPreview(svg, { metadata, labels, locale, onRender, onS
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         drawScene(svg, scene, configuration, labels, locale);
         applySelection(svg, selection);
-        onRender(true);
+        onRender(true, scene);
     }
 
     function select(event) {

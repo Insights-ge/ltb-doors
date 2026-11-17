@@ -53,14 +53,24 @@ export function applyModelLayout(configuration, model) {
     };
 }
 
+export function modelMaximumHeight(model) {
+    return Math.max(model.maxHeight, model.notRecommendedHeightMax ?? model.maxHeight);
+}
+
+export function variantSupportsHeight(model, variant, height) {
+    const maximum = variant.heightRangeMax >= model.maxHeight
+        ? Math.max(variant.heightRangeMax, modelMaximumHeight(model)) : variant.heightRangeMax;
+    return height >= variant.heightRangeMin && height <= maximum;
+}
+
 /** Opening dimensions imply equal illustrative door widths; catalog width limits are per door. */
 export function modelSupportsOpening(model, width, height, doorCount) {
     width = parseMeasurement(width);
     height = parseMeasurement(height);
     return width !== null && height !== null && [2,3,4,5].includes(doorCount)
         && width >= model.minWidth * doorCount && width <= model.maxWidth * doorCount
-        && height >= model.minHeight && height <= model.maxHeight
-        && model.variants.some(variant => variant.hasPartition && height >= variant.heightRangeMin && height <= variant.heightRangeMax);
+        && height >= model.minHeight && height <= modelMaximumHeight(model)
+        && model.variants.some(variant => variant.hasPartition && variantSupportsHeight(model, variant, height));
 }
 
 export function availableDoorCounts(models, width, height) {

@@ -298,7 +298,24 @@ class SlidingDoorBuilderForms
             return [];
         }
 
-        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => $height >= $variant->heightRangeMin && $height <= $variant->heightRangeMax));
+        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight(self::model($page, $get), $variant, (float) $height)));
+    }
+
+    private static function maximumHeight(BuilderDoorModelData $model): int
+    {
+        return max($model->maxHeight, $model->notRecommendedHeightMax ?? $model->maxHeight);
+    }
+
+    private static function variantSupportsHeight(?BuilderDoorModelData $model, BuilderDoorVariantData $variant, float $height): bool
+    {
+        if ($model === null) {
+            return false;
+        }
+
+        $maximum = $variant->heightRangeMax >= $model->maxHeight
+            ? max($variant->heightRangeMax, self::maximumHeight($model)) : $variant->heightRangeMax;
+
+        return $height >= $variant->heightRangeMin && $height <= $maximum;
     }
 
     private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): ?int
@@ -310,7 +327,7 @@ class SlidingDoorBuilderForms
             'width.min' => $model === null || $count === null ? null : $model->minWidth * $count,
             'width.max' => $model === null || $count === null ? null : $model->maxWidth * $count,
             'height.min' => $model?->minHeight,
-            'height.max' => $model?->maxHeight,
+            'height.max' => $model === null ? null : self::maximumHeight($model),
             default => null,
         };
     }
@@ -329,8 +346,8 @@ class SlidingDoorBuilderForms
 
         return $width !== null && $height !== null && in_array($count, [2, 3, 4, 5], true)
             && $width >= $model->minWidth * $count && $width <= $model->maxWidth * $count
-            && $height >= $model->minHeight && $height <= $model->maxHeight
-            && array_any(self::supportedVariants($model), fn (BuilderDoorVariantData $variant): bool => $height >= $variant->heightRangeMin && $height <= $variant->heightRangeMax);
+            && $height >= $model->minHeight && $height <= self::maximumHeight($model)
+            && array_any(self::supportedVariants($model), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight($model, $variant, $height));
     }
 
     /** @return list<int> */

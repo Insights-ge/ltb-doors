@@ -2,7 +2,7 @@ import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
-import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout, variantSupportsHeight } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -41,6 +41,8 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         sizeErrors: { openingWidth: false, openingHeight: false },
         hasPreview: false,
         previewDoors: [],
+        previewInfillPositions: [],
+        previewLabelOffset: 0,
         previewSelection: { doorId: null, infillInstanceId: null },
 
         applyFormFields() {
@@ -267,11 +269,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         get frameDesigns() {
-            return [...new Set(this.selectedModel?.variants.filter(variant => variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax).map((variant) => variant.frameDesignCode) ?? [])];
+            return [...new Set(this.selectedModel?.variants.filter(variant => variant.hasPartition && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)).map((variant) => variant.frameDesignCode) ?? [])];
         },
 
         get availableVariants() {
-            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variant.hasPartition && this.previewConfiguration.openingHeight >= variant.heightRangeMin && this.previewConfiguration.openingHeight <= variant.heightRangeMax) ?? [];
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variant.hasPartition && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)) ?? [];
         },
 
         selectModel(value) {
@@ -458,7 +460,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
                     onAdd: index => this.openInfillPicker(index),
                     onDragStart: index => this.beginInfillDrag(index),
                     onDrop: (index, remove) => this.finishInfillDrag(index, remove),
-                    onRender: (available) => { this.hasPreview = available; },
+                    onRender: (available, scene) => {
+                        this.hasPreview = available;
+                        this.previewLabelOffset = scene
+                            ? Math.max(0, scene.viewport.width - scene.opening.x - scene.opening.width - 4) : 0;
+                        this.previewInfillPositions = scene?.doors[0]?.infills.map(infill =>
+                            (infill.y + infill.height / 2) / scene.viewport.height * 100) ?? [];
+                    },
                     onSelect: ({ doorId, infillInstanceId }) => {
                         if (infillInstanceId !== null) {
                             this.selectPreviewInfill(doorId, infillInstanceId);

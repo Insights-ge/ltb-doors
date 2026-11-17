@@ -1,5 +1,5 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
-import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts } from './sliding-door-state.js';
+import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight } from './sliding-door-state.js';
 
 export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
@@ -47,7 +47,7 @@ export function validateBuilder(configuration, catalog, metadata) {
         if (!model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
         for (const [field, min, max] of [
             ['openingWidth', model.minWidth * config.doorCount, model.maxWidth * config.doorCount],
-            ['openingHeight', model.minHeight, model.maxHeight],
+            ['openingHeight', model.minHeight, modelMaximumHeight(model)],
         ]) {
             const error = measurementError(config[field]);
             if (error) continue;
@@ -55,7 +55,7 @@ export function validateBuilder(configuration, catalog, metadata) {
             else if (parseMeasurement(config[field]) > max) add('max', 1, `builder-${field}`, {limit:max});
         }
         const height = parseMeasurement(config.openingHeight);
-        if (height !== null && !model.variants.some(variant => variant.hasPartition && height >= variant.heightRangeMin && height <= variant.heightRangeMax)) add('no_variant_for_height', 1, 'builder-openingHeight');
+        if (height !== null && !model.variants.some(variant => variant.hasPartition && variantSupportsHeight(model, variant, height))) add('no_variant_for_height', 1, 'builder-openingHeight');
         const expected = modelInfillWeights(model);
         if (!expected.length || config.infillWeights?.length !== expected.length || !config.infillWeights.every(weight => weight === 1)) {
             add('model_structure_changed', 1, 'builder-model');
@@ -67,15 +67,18 @@ export function validateBuilder(configuration, catalog, metadata) {
         if (!errors.length) add('geometry_invalid', 1, 'builder-openingWidth');
     }
     const variant = model?.variants.find((item) => item.id === config.variantId);
-    if (catalogSizingReference(model, variant)?.discouragedHeight) {
-        advisories.push({ code: 'discouraged_height_reference', step: 2, field: 'builder-variant' });
+    const discouragedHeight = model?.notRecommendedHeightMin != null && model?.notRecommendedHeightMax != null
+        ? [model.notRecommendedHeightMin, model.notRecommendedHeightMax] : null;
+    const chosenHeight = parseMeasurement(config.openingHeight);
+    if (discouragedHeight && chosenHeight !== null && chosenHeight >= discouragedHeight[0] && chosenHeight <= discouragedHeight[1]) {
+        advisories.push({ code: 'discouraged_height_reference', step: 1, field: 'builder-openingHeight' });
     }
     if (model && !model.variants.some((item) => item.frameDesignCode === config.frameDesignCode)) add(missing(config.frameDesignCode) ? 'required' : 'in', 2, 'builder-design');
     if (!variant) add(missing(config.variantId) ? 'required' : 'exists', 2, 'builder-variant');
     else if (variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('in', 2, 'builder-variant');
     if (variant && config.infillWeights?.length > 1 && !variant.hasPartition) add('partition_missing', 2, 'builder-variant');
     if (variant && Boolean(config.softClose) !== Boolean(variant.hasSoftCloseMechanism)) add('variant_components_mismatch', 2, 'builder-variant');
-    if (variant && (config.openingHeight < variant.heightRangeMin || config.openingHeight > variant.heightRangeMax)) add('variant_height_mismatch', 2, 'builder-variant');
+    if (variant && !variantSupportsHeight(model, variant, config.openingHeight)) add('variant_height_mismatch', 2, 'builder-variant');
     if (variant?.hasSoftCloseMechanism) {
         assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-variant' });
     }

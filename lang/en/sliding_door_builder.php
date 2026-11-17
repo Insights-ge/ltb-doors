@@ -31,7 +31,7 @@ return [
         'height' => 'Height (mm)',
     ],
     'system' => [
-        'discouraged_height' => 'Discouraged catalog height (scope unconfirmed)',
+        'discouraged_height' => 'The chosen height is not recommended.',
         'range_width' => 'Catalog width',
         'range_height' => 'Catalog height',
         'range_variantHeight' => 'Variant height',
@@ -39,8 +39,8 @@ return [
         'soft_close' => 'Soft close',
 
         'model' => 'Door model',
-        'design' => 'Frame design',
-        'variant' => 'Colour and variant',
+        'design' => 'Aluminium',
+        'variant' => 'Colour',
         'choose' => 'Choose an option',
     ],
     'navigation' => [
@@ -64,7 +64,7 @@ return [
         'finish_incompatible' => 'Door :door, infill :infill: finish is incompatible with the selected system/options.',
         'partition_missing' => 'This variant has no partition component. Choose another variant.',
         'soft_close_provisional' => 'Soft-close hardware quantity and installation eligibility require confirmation.',
-        'discouraged_height_reference' => 'The catalog includes a discouraged height range; its measurement scope requires confirmation.',
+        'discouraged_height_reference' => 'The chosen height is not recommended.',
     ],
     'review' => [
         'not_included' => 'Not included',
@@ -103,7 +103,7 @@ return [
         ],
         'system' => [
             'label' => 'Frame and colour',
-            'description' => 'Choose the frame design, colour and options.',
+            'description' => 'Choose the aluminium, colour and options.',
         ],
         'infills' => [
             'label' => 'Infills',

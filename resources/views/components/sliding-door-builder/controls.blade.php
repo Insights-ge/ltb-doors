@@ -17,6 +17,10 @@
                 </p>
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::Size)
                     <div class="mt-4">{{ $this->sizeForm }}</div>
+                    <p x-cloak x-show="validation.advisories.some(issue => issue.code === 'discouraged_height_reference')" role="status" class="mt-4 flex items-start gap-2 rounded-lg bg-warning-50 p-3 text-sm text-warning-700 dark:bg-warning-400/10 dark:text-warning-400">
+                        <x-heroicon-o-exclamation-triangle class="size-5 shrink-0" aria-hidden="true" />
+                        <span>{{ __('sliding_door_builder.validation.discouraged_height_reference') }}</span>
+                    </p>
                 @endif
                 @if ($step === \App\Enums\SlidingDoorBuilderStep::System)
                     <div class="mt-4">{{ $this->systemForm }}</div>

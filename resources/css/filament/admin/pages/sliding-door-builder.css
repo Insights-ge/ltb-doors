@@ -119,8 +119,35 @@
         min-height: 12rem;
     }
 
+    .sliding-door-builder .builder-preview-layout {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .sliding-door-builder .builder-preview-selectors {
+        position: relative;
+        order: 1;
+        flex: 0 0 7.5rem;
+    }
+
+    .sliding-door-builder .builder-preview-selector-list {
+        position: absolute;
+        inset: 0;
+    }
+
+    .sliding-door-builder .builder-preview-selector-list .builder-preview-infill-label {
+        position: absolute;
+        inset-inline-start: 0;
+        width: 100%;
+        transform: translateY(-50%);
+        text-align: start;
+        font-size: 0.875rem;
+        color: var(--builder-annotation);
+    }
+
     .sliding-door-builder .builder-preview-canvas {
         position: relative;
+        flex: 1;
         width: 100%;
         height: 18rem;
         min-width: 0;
@@ -232,21 +259,15 @@
 
     .sliding-door-builder .builder-step-content:focus-visible,
     .sliding-door-builder .builder-step-trigger:focus-visible,
-    .sliding-door-builder .builder-review-edit:focus-visible,
-    .sliding-door-builder .builder-preview-selector:focus-visible {
+    .sliding-door-builder .builder-review-edit:focus-visible {
         outline: 2px solid var(--builder-accent);
         outline-offset: 2px;
     }
 
-    .sliding-door-builder .builder-control-actions > .fi-btn,
-    .sliding-door-builder .builder-preview-selector {
+    .sliding-door-builder .builder-control-actions > .fi-btn {
         min-height: 2.75rem;
         min-width: 2.75rem;
         touch-action: manipulation;
-    }
-
-    .sliding-door-builder .builder-preview-selector[aria-pressed='true'] {
-        box-shadow: 0 0 0 2px var(--builder-accent);
     }
 
     .sliding-door-builder .builder-preview-frame {
