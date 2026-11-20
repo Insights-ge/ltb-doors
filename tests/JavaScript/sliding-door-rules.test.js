@@ -36,6 +36,29 @@ test('model size boundaries are inclusive and invalid sizes link to the first st
     }
 });
 
+test('opening limits are inclusive and constrain broader catalog ranges', () => {
+    const {config, catalog, metadata} = fixture();
+    const [model] = catalog.models;
+    Object.assign(model, {minWidth: 400, maxWidth: 3000, minHeight: 200, maxHeight: 2800});
+    Object.assign(model.variants[0], {heightRangeMin: 200, heightRangeMax: 2800});
+
+    for (const [openingWidth, openingHeight] of [[985, 238], [5460, 2738]]) {
+        Object.assign(config, {openingWidth, openingHeight});
+        assert.deepEqual(validateBuilder(config, catalog, metadata).errors, []);
+    }
+    for (const [field, value, code, limit] of [
+        ['openingWidth', '984,9', 'min', 985],
+        ['openingWidth', '5460,1', 'max', 5460],
+        ['openingHeight', '237,9', 'min', 238],
+        ['openingHeight', '2738,1', 'max', 2738],
+    ]) {
+        Object.assign(config, {openingWidth: 1600, openingHeight: 2400, [field]: value});
+        const {errors} = validateBuilder(config, catalog, metadata);
+        assert.deepEqual(errors.find(issue => issue.field === `builder-${field}`), {code, step: 1, field: `builder-${field}`, limit});
+        assert.ok(errors.some(issue => issue.field === 'builder-doorCount' && issue.code === 'in'));
+    }
+});
+
 for (const partitions of [1,2,3,4]) {
     test(`model with ${partitions} partitions accepts only its fixed infill divisions`, () => {
         const {config,catalog,metadata}=fixture();

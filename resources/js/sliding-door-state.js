@@ -1,3 +1,8 @@
+export const openingBounds = {
+    openingWidth: { min: 985, max: 5460 },
+    openingHeight: { min: 238, max: 2738 },
+};
+
 /** A new configuration starts without measurements, products or finishes. */
 export function createInitialConfiguration() {
     return {
@@ -68,6 +73,8 @@ export function modelSupportsOpening(model, width, height, doorCount) {
     width = parseMeasurement(width);
     height = parseMeasurement(height);
     return width !== null && height !== null && [2,3,4,5].includes(doorCount)
+        && width >= openingBounds.openingWidth.min && width <= openingBounds.openingWidth.max
+        && height >= openingBounds.openingHeight.min && height <= openingBounds.openingHeight.max
         && width >= model.minWidth * doorCount && width <= model.maxWidth * doorCount
         && height >= model.minHeight && height <= modelMaximumHeight(model)
         && model.variants.some(variant => variant.hasPartition && variantSupportsHeight(model, variant, height));

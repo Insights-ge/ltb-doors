@@ -252,6 +252,33 @@ test('Filament validates builder measurements with the expected inline messages'
     expect($component->errors()->first('builderFields.openingWidth'))->toBe($message);
 })->with([['', 'required'], ['abc', 'numeric'], ['0', 'gt'], ['-12', 'gt'], ['1e309', 'numeric']])->with(['en', 'ka']);
 
+test('opening limits are validated before a model is selected', function (string $dimension, string $value, string $rule, int $limit) {
+    DoorVariant::factory()->create();
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    $field = 'builderFields.opening' . ucfirst($dimension);
+    $message = __("validation.$rule.numeric", [
+        'attribute' => Str::lcfirst(__("sliding_door_builder.size.$dimension")),
+        $rule => $limit,
+    ]);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->set('builderFields.openingWidth', '1600')
+        ->set('builderFields.openingHeight', '2400')
+        ->set($field, $value)
+        ->call('validateBuilderSection', 1)
+        ->assertReturned(false)
+        ->assertHasErrors([$field => $message])
+        ->assertFormFieldIsDisabled('doorCount', 'sizeForm');
+})->with([
+    ['width', '984,9', 'min', 985],
+    ['width', '5460,1', 'max', 5460],
+    ['height', '237,9', 'min', 238],
+    ['height', '2738,1', 'max', 2738],
+]);
+
 test('restoring and clearing Filament field state preserves raw measurements and validates product choices', function () {
     $variant = DoorVariant::factory()->create(['height_range_max' => 2600]);
     $user = User::factory()->create();

@@ -1,5 +1,5 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
-import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight } from './sliding-door-state.js';
+import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight, openingBounds } from './sliding-door-state.js';
 
 export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
@@ -37,23 +37,28 @@ export function validateBuilder(configuration, catalog, metadata) {
     const model = catalog.models.find((item) => item.id === config.modelId);
     const missing = (value) => value === null || value === undefined || value === '';
     if (!model) add(missing(config.modelId) ? 'required' : 'exists', 1, 'builder-model');
-    for (const field of ['openingWidth', 'openingHeight']) {
+    const modelWidthApplies = model && [2, 3, 4, 5].includes(config.doorCount);
+    const openingRanges = [
+        ['openingWidth', modelWidthApplies ? model.minWidth * config.doorCount : null, modelWidthApplies ? model.maxWidth * config.doorCount : null],
+        ['openingHeight', model?.minHeight, model ? modelMaximumHeight(model) : null],
+    ];
+    for (const [field, modelMin, modelMax] of openingRanges) {
         const error = measurementError(config[field]);
-        if (error) add(error, 1, `builder-${field}`);
+        if (error) {
+            add(error, 1, `builder-${field}`);
+            continue;
+        }
+        const value = parseMeasurement(config[field]);
+        const bounds = openingBounds[field];
+        const min = Math.max(bounds.min, modelMin ?? bounds.min);
+        const max = Math.min(bounds.max, modelMax ?? bounds.max);
+        if (value < min) add('min', 1, `builder-${field}`, { limit: min });
+        else if (value > max) add('max', 1, `builder-${field}`, { limit: max });
     }
     const counts = availableDoorCounts(catalog.models, config.openingWidth, config.openingHeight);
     if (!counts.includes(config.doorCount)) add(missing(config.doorCount) ? 'required' : 'in', 1, 'builder-doorCount');
     if (model) {
         if (!model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
-        for (const [field, min, max] of [
-            ['openingWidth', model.minWidth * config.doorCount, model.maxWidth * config.doorCount],
-            ['openingHeight', model.minHeight, modelMaximumHeight(model)],
-        ]) {
-            const error = measurementError(config[field]);
-            if (error) continue;
-            if (parseMeasurement(config[field]) < min) add('min', 1, `builder-${field}`, {limit:min});
-            else if (parseMeasurement(config[field]) > max) add('max', 1, `builder-${field}`, {limit:max});
-        }
         const height = parseMeasurement(config.openingHeight);
         if (height !== null && !model.variants.some(variant => variant.hasPartition && variantSupportsHeight(model, variant, height))) add('no_variant_for_height', 1, 'builder-openingHeight');
         const expected = modelInfillWeights(model);
