@@ -1,5 +1,5 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
-import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight, openingBounds } from './sliding-door-state.js';
+import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight, openingBounds, openingHeightDeductionMm, doorHeight, modelMinimumHeight, resolvePanelHeights } from './sliding-door-state.js';
 
 export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
@@ -40,7 +40,7 @@ export function validateBuilder(configuration, catalog, metadata) {
     const modelWidthApplies = model && [2, 3, 4, 5].includes(config.doorCount);
     const openingRanges = [
         ['openingWidth', modelWidthApplies ? model.minWidth * config.doorCount : null, modelWidthApplies ? model.maxWidth * config.doorCount : null],
-        ['openingHeight', model?.minHeight, model ? modelMaximumHeight(model) : null],
+        ['openingHeight', model ? modelMinimumHeight(model) + openingHeightDeductionMm : null, model ? modelMaximumHeight(model) + openingHeightDeductionMm : null],
     ];
     for (const [field, modelMin, modelMax] of openingRanges) {
         const error = measurementError(config[field]);
@@ -58,32 +58,35 @@ export function validateBuilder(configuration, catalog, metadata) {
     const counts = availableDoorCounts(catalog.models, config.openingWidth, config.openingHeight);
     if (!counts.includes(config.doorCount)) add(missing(config.doorCount) ? 'required' : 'in', 1, 'builder-doorCount');
     if (model) {
-        if (!model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
+        if (model.partitionCount > 0 && !model.variants.some(variant => variant.hasPartition)) add('model_unavailable', 1, 'builder-model');
         const height = parseMeasurement(config.openingHeight);
-        if (height !== null && !model.variants.some(variant => variant.hasPartition && variantSupportsHeight(model, variant, height))) add('no_variant_for_height', 1, 'builder-openingHeight');
+        if (height !== null && !model.variants.some(variant => variantSupportsHeight(model, variant, height))) add('no_variant_for_height', 1, 'builder-openingHeight');
         const expected = modelInfillWeights(model);
         if (!expected.length || config.infillWeights?.length !== expected.length || !config.infillWeights.every(weight => weight === 1)) {
             add('model_structure_changed', 1, 'builder-model');
         }
     }
     try {
-        calculateDoorGeometry({ ...config, infillWeightsByDoor: Array.from({length:config.doorCount ?? 0}, () => config.infillWeights) });
+        const height = doorHeight(config.openingHeight);
+        const panels = model ? resolvePanelHeights(model, height) : config.infillWeights;
+        calculateDoorGeometry({ ...config, doorHeight: height, infillWeightsByDoor: Array.from({length:config.doorCount ?? 0}, () => panels) });
     } catch {
         if (!errors.length) add('geometry_invalid', 1, 'builder-openingWidth');
     }
     const variant = model?.variants.find((item) => item.id === config.variantId);
     const discouragedHeight = model?.notRecommendedHeightMin != null && model?.notRecommendedHeightMax != null
         ? [model.notRecommendedHeightMin, model.notRecommendedHeightMax] : null;
-    const chosenHeight = parseMeasurement(config.openingHeight);
+    const chosenHeight = doorHeight(config.openingHeight);
     if (discouragedHeight && chosenHeight !== null && chosenHeight >= discouragedHeight[0] && chosenHeight <= discouragedHeight[1]) {
         advisories.push({ code: 'discouraged_height_reference', step: 1, field: 'builder-openingHeight' });
     }
     if (model && !model.variants.some((item) => item.frameDesignCode === config.frameDesignCode)) add(missing(config.frameDesignCode) ? 'required' : 'in', 2, 'builder-design');
     if (!variant) add(missing(config.variantId) ? 'required' : 'exists', 2, 'builder-variant');
     else if (variant.color !== config.frameColor || variant.frameDesignCode !== config.frameDesignCode) add('in', 2, 'builder-variant');
-    if (variant && config.infillWeights?.length > 1 && !variant.hasPartition) add('partition_missing', 2, 'builder-variant');
+    const partitionMissing = variant && model.partitionCount > 0 && !variant.hasPartition;
+    if (partitionMissing) add('partition_missing', 2, 'builder-variant');
     if (variant && Boolean(config.softClose) !== Boolean(variant.hasSoftCloseMechanism)) add('variant_components_mismatch', 2, 'builder-variant');
-    if (variant && !variantSupportsHeight(model, variant, config.openingHeight)) add('variant_height_mismatch', 2, 'builder-variant');
+    if (variant && !partitionMissing && !variantSupportsHeight(model, variant, config.openingHeight)) add('variant_height_mismatch', 2, 'builder-variant');
     if (variant?.hasSoftCloseMechanism) {
         assumptions.push({ code: 'soft_close_provisional', step: 2, field: 'builder-variant' });
     }

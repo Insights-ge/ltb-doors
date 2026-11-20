@@ -18,6 +18,8 @@ test('review and JSON describe the exact shared infills using current catalog la
     assert.equal(review.modelName,'Current system');
     assert.equal(review.variantName,'Current variant');
     assert.equal(review.openingWidth,3000);
+    assert.equal(review.doorWidth,1500);
+    assert.equal(review.doorHeight,2362);
     assert.equal(review.colorLabel,'Black');
     assert.equal(review.partitionCount,1);
     assert.equal(review.infillsPerDoor,2);

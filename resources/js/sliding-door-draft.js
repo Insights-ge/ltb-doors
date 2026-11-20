@@ -1,10 +1,10 @@
 import { reconcilePreviewConfiguration } from './sliding-door-selection.js';
-import { modelInfillWeights } from './sliding-door-state.js';
+import { modelInfillWeights, panelLayoutSignature } from './sliding-door-state.js';
 import { validateBuilder } from './sliding-door-rules.js';
 
 /** Persist only configuration facts, never catalog records or translated labels. */
 export function configurationSnapshot(configuration) {
-    const fields = ['doorCount','openingWidth','openingHeight','modelId','variantId','frameDesignCode','frameColor','infillWeights','softClose','doorIds','infillInstanceIdsByDoor','infillIdsByDoor'];
+    const fields = ['doorCount','openingWidth','openingHeight','modelId','variantId','frameDesignCode','frameColor','infillWeights','panelLayoutSignature','softClose','doorIds','infillInstanceIdsByDoor','infillIdsByDoor'];
     return Object.fromEntries(fields.filter((field) => configuration[field] !== undefined).map((field) => [field, JSON.parse(JSON.stringify(configuration[field]))]));
 }
 
@@ -50,7 +50,7 @@ export function readDraft(storage, key, catalog, metadata) {
         if (!validStructure(parsed)) throw new Error('Invalid draft structure');
         const configuration=configurationSnapshot(parsed);
         const model=catalog.models.find(item=>item.id===configuration.modelId);
-        if (model && (configuration.infillWeights.length!==modelInfillWeights(model).length || configuration.infillWeights.some(weight=>weight!==1))) {
+        if (model && ((configuration.panelLayoutSignature ?? null) !== panelLayoutSignature(model) || configuration.infillWeights.length!==modelInfillWeights(model).length || configuration.infillWeights.some(weight=>weight!==1))) {
             return {status:'outdated_layout',configuration:null};
         }
         if (configuration.infillIdsByDoor.some(row => row.some((id, index) => id !== configuration.infillIdsByDoor[0][index]))) {

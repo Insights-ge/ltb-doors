@@ -73,6 +73,7 @@ class BuilderCatalogReadService
             minWidth: $model->min_width,
             maxWidth: $model->max_width,
             partitionCount: $model->partition_count,
+            panelLayout: $model->panel_layout,
             notRecommendedHeightMin: $this->validator->hasUsableAdvisoryRange($model) ? $model->not_recommended_height_min : null,
             notRecommendedHeightMax: $this->validator->hasUsableAdvisoryRange($model) ? $model->not_recommended_height_max : null,
             variants: array_values($model->variants

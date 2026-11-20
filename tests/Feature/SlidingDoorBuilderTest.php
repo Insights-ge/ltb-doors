@@ -336,7 +336,7 @@ test('dimensions are entered first and selected door count scales inclusive mode
         'modelId' => $variant->door_model_id,
     ])->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
 
-    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1599], ['openingHeight', 2701]] as [$field, $value]) {
+    foreach ([['openingWidth', 1199], ['openingWidth', 2001], ['openingHeight', 1637], ['openingHeight', 2739]] as [$field, $value]) {
         $component->call('restoreBuilderFields', [
             'openingWidth' => '1600', 'openingHeight' => '2400', 'doorCount' => 2,
             'modelId' => $variant->door_model_id, $field => (string) $value,
@@ -370,7 +370,7 @@ test('design and variant choices resolve only existing variants for the selected
 
     $component->set('builderFields.openingHeight', '2100')
         ->call('validateBuilderSection', 1)->assertReturned(false)->assertHasErrors('builderFields.openingHeight');
-    foreach ([2200, 2600] as $height) {
+    foreach ([2238, 2638] as $height) {
         $component->set('builderFields.openingHeight', (string) $height)
             ->call('validateBuilderSection', 1)->assertReturned(true)->assertHasNoErrors();
     }
@@ -397,6 +397,32 @@ test('the infill control is a searchable Filament select with variant incompatib
                 && ! $field->isOptionDisabled($allowed->id, $options[$allowed->id])
                 && $field->isOptionDisabled($excluded->id, $options[$excluded->id]);
         });
+});
+
+test('a single panel needs no divider and its minimum is checked against door height', function () {
+    $variant = DoorVariant::factory()->withoutPartition()->create(['height_range_min' => 800, 'height_range_max' => 2600]);
+    $variant->doorModel->update(['panel_layout' => [['type' => 'flexible', 'min_mm' => 1000, 'weight' => 1]]]);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    $component = Livewire::test(SlidingDoorBuilder::class)
+        ->call('restoreBuilderFields', [
+            'openingWidth' => '1600', 'openingHeight' => '1037', 'doorCount' => 2,
+            'modelId' => $variant->door_model_id, 'frameDesignCode' => $variant->frame_design_code,
+            'variantId' => $variant->id,
+        ])
+        ->call('validateBuilderSection', 1)->assertReturned(false)
+        ->assertHasErrors('builderFields.openingHeight');
+
+    $component->call('restoreBuilderFields', [
+        'openingWidth' => '1600', 'openingHeight' => '1038', 'doorCount' => 2,
+        'modelId' => $variant->door_model_id, 'frameDesignCode' => $variant->frame_design_code,
+        'variantId' => $variant->id,
+    ])
+        ->call('validateBuilderSection', 1)->assertReturned(true)
+        ->call('validateBuilderSection', 2)->assertReturned(true)
+        ->assertHasNoErrors();
 });
 
 test('all model infills have visible numbered searchable selects with escaped material swatches', function () {

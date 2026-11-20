@@ -22,11 +22,11 @@ test('a complete design resolves to a variant supporting its height', () => {
 
 test('model size boundaries are inclusive and invalid sizes link to the first step', () => {
     const {config,catalog,metadata}=fixture();
-    for (const [width,height] of [[1000,1600],[2200,2600]]) {
+    for (const [width,height] of [[1000,1638],[2200,2638]]) {
         Object.assign(config,{openingWidth:width,openingHeight:height});
         assert.deepEqual(validateBuilder(config,catalog,metadata).errors,[]);
     }
-    for (const [field,value,code,limit] of [['openingWidth',999,'min',1000],['openingWidth',2201,'max',2200],['openingHeight',1599,'min',1600],['openingHeight',2601,'max',2600]]) {
+    for (const [field,value,code,limit] of [['openingWidth',999,'min',1000],['openingWidth',2201,'max',2200],['openingHeight',1637,'min',1638],['openingHeight',2639,'max',2638]]) {
         Object.assign(config,{openingWidth:1600,openingHeight:2400,[field]:value});
         assert.ok(validateBuilder(config,catalog,metadata).errors.some(issue=>issue.field===`builder-${field}` && issue.step===1 && issue.code===code && issue.limit===limit));
     }
@@ -116,16 +116,16 @@ test('unsupported soft close remains a blocker while discouraged variant sizing 
     assert.ok(result.advisories.some(issue=>issue.code==='discouraged_height_reference'));
 });
 
-test('2650 remains selectable with a warning above the recommended catalog maximum', () => {
+test('2688 remains selectable with a warning above the recommended catalog maximum', () => {
     const {config,catalog,metadata}=fixture();
     Object.assign(catalog.models[0],{notRecommendedHeightMin:2601,notRecommendedHeightMax:2700});
-    for (const height of [2601,2650,2700]) {
+    for (const height of [2639,2688,2738]) {
         config.openingHeight=height;
         const result=validateBuilder(config,catalog,metadata);
         assert.deepEqual(result.errors,[]);
         assert.ok(result.advisories.some(issue=>issue.code==='discouraged_height_reference'));
     }
-    config.openingHeight=2701;
+    config.openingHeight=2739;
     assert.ok(validateBuilder(config,catalog,metadata).errors.length > 0);
 });
 
@@ -145,11 +145,11 @@ test('model height warning appears on the first step before a variant is selecte
 test('height warning appears only within the inclusive discouraged range', () => {
     const {config,catalog,metadata}=fixture();
     Object.assign(catalog.models[0],{notRecommendedHeightMin:2300,notRecommendedHeightMax:2500});
-    for (const height of [2300,2400,2500]) {
+    for (const height of [2338,2400,2538]) {
         config.openingHeight=height;
         assert.ok(validateBuilder(config,catalog,metadata).advisories.some(issue=>issue.code==='discouraged_height_reference'));
     }
-    for (const height of [2299,2501,null,'']) {
+    for (const height of [2337,2539,null,'']) {
         config.openingHeight=height;
         assert.deepEqual(validateBuilder(config,catalog,metadata).advisories,[]);
     }

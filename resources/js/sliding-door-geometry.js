@@ -10,13 +10,17 @@
  * All rectangles use the opening's coordinate system. No track overlaps,
  * profile deductions, viewport scaling or manufacturing sizes are inferred.
  *
- * @param {{ openingWidth: number, openingHeight: number, doorCount: number, infillWeightsByDoor: number[][] }} configuration
+ * @param {{ openingWidth: number, openingHeight: number, doorHeight?: number, doorCount: number, infillWeightsByDoor: number[][] }} configuration
  * @returns {{ opening: Rectangle, doors: DoorGeometry[] }}
  * @throws {RangeError} When dimensions, counts or weights cannot form nonzero finite rectangles.
  */
-export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, infillWeightsByDoor }) {
+export function calculateDoorGeometry({ openingWidth, openingHeight, doorHeight = openingHeight, doorCount, infillWeightsByDoor }) {
     requirePositiveFinite(openingWidth);
     requirePositiveFinite(openingHeight);
+    requirePositiveFinite(doorHeight);
+    if (doorHeight > openingHeight) {
+        throw new RangeError('Door height cannot exceed the opening height.');
+    }
 
     if (!Number.isSafeInteger(doorCount) || doorCount < 1) {
         throw new RangeError('Door count must be a positive safe integer.');
@@ -29,9 +33,11 @@ export function calculateDoorGeometry({ openingWidth, openingHeight, doorCount, 
     const width = openingWidth / openingHeight;
     requirePositiveFinite(width);
 
+    const normalizedHeight = doorHeight / openingHeight;
+
     return {
         opening: { x: 0, y: 0, width, height: 1 },
-        doors: Array.from(infillWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, weights)),
+        doors: Array.from(infillWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, normalizedHeight, weights)),
     };
 }
 
@@ -93,19 +99,24 @@ function projectRectangle(rectangle, opening, scale, offsetX, offsetY) {
     };
 }
 
-function calculateDoor(index, count, openingWidth, weights) {
+function calculateDoor(index, count, openingWidth, height, weights) {
     const x = openingWidth * (index / count);
     const right = openingWidth * ((index + 1) / count);
     const width = right - x;
     requirePositiveFinite(width);
 
+    const y = (1 - height) / 2;
     return {
         index,
         x,
-        y: 0,
+        y,
         width,
-        height: 1,
-        infills: calculateInfills(x, width, weights),
+        height,
+        infills: calculateInfills(x, width, weights).map(infill => ({
+            ...infill,
+            y: y + infill.y * height,
+            height: infill.height * height,
+        })),
     };
 }
 
