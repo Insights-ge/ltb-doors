@@ -36,7 +36,7 @@ class BuilderCatalogReadService
     {
         return array_values(DoorModel::query()
             ->where('status', DoorModelStatus::Active)
-            ->select(['id', 'name', 'min_height', 'max_height', 'min_width', 'max_width', 'partition_count', 'not_recommended_height_min', 'not_recommended_height_max'])
+            ->select(['id', 'name', 'min_height', 'max_height', 'min_width', 'max_width', 'panel_layout', 'not_recommended_height_min', 'not_recommended_height_max'])
             ->with($this->variantRelationships())
             ->orderBy('name')->orderBy('id')
             ->get()

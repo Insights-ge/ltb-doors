@@ -308,7 +308,7 @@ test('restoring and clearing Filament field state preserves raw measurements and
 
 test('dimensions are entered first and selected door count scales inclusive model width ranges', function () {
     $variant = DoorVariant::factory()->create(['height_range_max' => 2600]);
-    $variant->doorModel->update(['min_width' => 600, 'max_width' => 1000, 'min_height' => 1600, 'max_height' => 2500, 'partition_count' => 4]);
+    $variant->doorModel->update(['min_width' => 600, 'max_width' => 1000, 'min_height' => 1600, 'max_height' => 2500, 'panel_layout' => array_fill(0, 5, ['type' => 'flexible', 'min_mm' => 200, 'weight' => 1])]);
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
     $this->actingAs($user);
@@ -401,7 +401,7 @@ test('the infill control is a searchable Filament select with variant incompatib
 
 test('all model infills have visible numbered searchable selects with escaped material swatches', function () {
     $variant = DoorVariant::factory()->create();
-    $variant->doorModel->update(['partition_count' => 4]);
+    $variant->doorModel->update(['panel_layout' => array_fill(0, 5, ['type' => 'flexible', 'min_mm' => 200, 'weight' => 1])]);
     $infill = Infill::factory()->create(['description' => '<img src=x onerror=alert(1)>', 'visual_color' => '#AABBCC']);
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
