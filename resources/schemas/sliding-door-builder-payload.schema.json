@@ -59,7 +59,7 @@
         "model": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "partitionCount", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
+            "required": ["id", "name", "minHeight", "maxHeight", "minWidth", "maxWidth", "partitionCount", "panelLayout", "notRecommendedHeightMin", "notRecommendedHeightMax", "variants"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "name": { "type": "string" },
@@ -67,7 +67,33 @@
                 "maxHeight": { "type": "integer" },
                 "minWidth": { "type": "integer" },
                 "maxWidth": { "type": "integer" },
-                "partitionCount": { "type": "integer", "minimum": 1, "maximum": 4 },
+                "partitionCount": { "type": "integer", "minimum": 0, "maximum": 4 },
+                "panelLayout": {
+                    "type": ["array", "null"],
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "contains": { "properties": { "type": { "const": "flexible" } } },
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["type", "fixed_mm"],
+                                "properties": { "type": { "const": "fixed" }, "fixed_mm": { "type": "integer", "minimum": 1 } }
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["type", "min_mm", "weight"],
+                                "properties": {
+                                    "type": { "const": "flexible" },
+                                    "min_mm": { "type": "integer", "minimum": 1 },
+                                    "weight": { "type": "integer", "minimum": 1 }
+                                }
+                            }
+                        ]
+                    }
+                },
                 "notRecommendedHeightMin": { "type": ["integer", "null"] },
                 "notRecommendedHeightMax": { "type": ["integer", "null"] },
                 "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } }

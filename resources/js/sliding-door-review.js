@@ -1,3 +1,5 @@
+import { doorHeight } from './sliding-door-state.js';
+
 /** Resolve current catalog labels at review time; never trust saved display names. */
 export function summarizeConfiguration(config, catalog, metadata) {
     if (!config) return null;
@@ -5,11 +7,13 @@ export function summarizeConfiguration(config, catalog, metadata) {
     const variant = model?.variants.find((item) => item.id === config.variantId);
     return {
         doorCount: config.doorCount, openingWidth: config.openingWidth, openingHeight: config.openingHeight,
+        doorWidth: config.doorCount ? config.openingWidth / config.doorCount : null,
+        doorHeight: doorHeight(config.openingHeight),
         modelName: model?.name ?? '', variantName: variant?.name ?? '',
         frameDesignCode: variant?.frameDesignCode ?? '',
         colorLabel: metadata.frameColors?.find((color) => color.color === variant?.color)?.label ?? '',
         partitionCount: model?.partitionCount ?? null, infillsPerDoor: config.infillWeights.length, softClose: Boolean(config.softClose),
-        components: (variant?.components ?? []).map(component => ({
+        components: (variant?.components ?? []).filter(component => component.type !== 'partition' || config.infillWeights.length > 1).map(component => ({
             id:component.id, type:component.type, code:component.code, description:component.description,
             colorLabel:metadata.frameColors?.find(color => color.color===component.color)?.label ?? '',
         })),

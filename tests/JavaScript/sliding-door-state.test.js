@@ -55,11 +55,11 @@ test('model layout remapping preserves matching infills and does not resurrect r
 });
 
 test('door suggestions use inclusive per-door widths, model heights and usable variants', () => {
-    const model={minWidth:600,maxWidth:1000,minHeight:1600,maxHeight:2600,variants:[{hasPartition:true,heightRangeMin:1800,heightRangeMax:2400}]};
+    const model={partitionCount:1,minWidth:600,maxWidth:1000,minHeight:1600,maxHeight:2600,variants:[{hasPartition:true,heightRangeMin:1800,heightRangeMax:2400}]};
     assert.deepEqual(availableDoorCounts([model],3000,2400),[3,4,5]);
-    assert.deepEqual(availableDoorCounts([model],1200,1800),[2]);
+    assert.deepEqual(availableDoorCounts([model],1200,1838),[2]);
     assert.deepEqual(availableDoorCounts([model],5000,2400),[5]);
-    for (const [width,height] of [[1199,2000],[5001,2000],[3000,1799],[3000,2401],['',2000],['abc',2000],[Infinity,2000]]) {
+    for (const [width,height] of [[1199,2000],[5001,2000],[3000,1837],[3000,2439],['',2000],['abc',2000],[Infinity,2000]]) {
         assert.deepEqual(availableDoorCounts([model],width,height),[]);
     }
     assert.deepEqual(availableDoorCounts([{...model,variants:[{...model.variants[0],hasPartition:false}]}],3000,2000),[]);

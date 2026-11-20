@@ -1,7 +1,7 @@
 <div class="builder-review mt-4 space-y-4" x-show="canReview">
     <dl class="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-        @foreach (['openingWidth' => 'size.width', 'openingHeight' => 'size.height', 'doorCount' => 'size.door_count', 'modelName' => 'system.model', 'frameDesignCode' => 'system.design', 'variantName' => 'system.variant', 'colorLabel' => 'review.colour'] as $field => $label)
-            <div><dt class="font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.' . $label) }}</dt><dd class="text-gray-600 dark:text-gray-300" x-text="reviewDesign?.{{ $field }}"></dd></div>
+        @foreach (['doorWidth' => 'review.door_width', 'doorHeight' => 'review.door_height', 'doorCount' => 'size.door_count', 'modelName' => 'system.model', 'frameDesignCode' => 'system.design', 'variantName' => 'system.variant', 'colorLabel' => 'review.colour'] as $field => $label)
+            <div><dt class="font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.' . $label) }}</dt><dd class="text-gray-600 dark:text-gray-300" x-text="@if (in_array($field, ['doorWidth', 'doorHeight'], true)) reviewDesign?.{{ $field }}?.toLocaleString(document.documentElement.lang) @else reviewDesign?.{{ $field }} @endif"></dd></div>
         @endforeach
         <div><dt class="font-medium text-gray-950 dark:text-white">{{ __('sliding_door_builder.system.soft_close') }}</dt><dd x-text="reviewDesign?.softClose ? @js(__('sliding_door_builder.review.yes')) : @js(__('sliding_door_builder.review.no'))"></dd></div>
     </dl>

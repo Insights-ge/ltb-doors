@@ -98,7 +98,6 @@ class DoorCatalogSeeder extends Seeder
             return $this->seededModels[$name];
         }
 
-        $partitionCount = random_int(1, 4);
         $model = DoorModel::query()->firstOrCreate(
             ['name' => $name],
             [
@@ -107,12 +106,10 @@ class DoorCatalogSeeder extends Seeder
                 'max_height' => (int) $data['max_height'],
                 'min_width' => (int) $data['min_width'],
                 'max_width' => (int) $data['max_width'],
-                'partition_count' => $partitionCount,
                 'not_recommended_height_min' => (int) $data['not_recommended_height_min'],
                 'not_recommended_height_max' => (int) $data['not_recommended_height_max'],
             ]
         );
-        $model->update(['partition_count' => $partitionCount]);
 
         return $this->seededModels[$name] = $model;
     }

@@ -2,7 +2,7 @@ import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
-import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout, variantSupportsHeight } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout, variantSupportsHeight, doorHeight, resolvePanelHeights } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -269,11 +269,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         get frameDesigns() {
-            return [...new Set(this.selectedModel?.variants.filter(variant => variant.hasPartition && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)).map((variant) => variant.frameDesignCode) ?? [])];
+            return [...new Set(this.selectedModel?.variants.filter(variant => variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)).map((variant) => variant.frameDesignCode) ?? [])];
         },
 
         get availableVariants() {
-            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variant.hasPartition && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)) ?? [];
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)) ?? [];
         },
 
         selectModel(value) {
@@ -533,7 +533,13 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             }
             this.syncInfillField();
             preview?.setSelection(this.previewSelection);
-            preview?.render(configuration);
+            const height = doorHeight(configuration.openingHeight);
+            const panels = this.selectedModel ? resolvePanelHeights(this.selectedModel, height) : null;
+            preview?.render(panels ? {
+                ...configuration,
+                doorHeight: height,
+                infillWeightsByDoor: Array.from({ length: configuration.doorCount }, () => panels),
+            } : null);
             this.saveLocalDraft();
         },
 

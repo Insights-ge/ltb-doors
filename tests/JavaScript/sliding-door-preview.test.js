@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { reconcilePreviewConfiguration } from '../../resources/js/sliding-door-selection.js';
 import { createPreviewScene } from '../../resources/js/sliding-door-preview.js';
+import { doorHeight, resolvePanelHeights } from '../../resources/js/sliding-door-state.js';
 
 function metadata() {
     return {
@@ -35,6 +36,28 @@ test('preview scenes preserve geometry and resolve fills per infill', () => {
     assert.ok(scene.opening.x >= 48 && scene.opening.y >= 48);
     assert.ok(scene.opening.x + scene.opening.width <= 752);
     assert.ok(scene.opening.y + scene.opening.height <= 452);
+});
+
+test('fixed and weighted panel heights render inside the shorter door', () => {
+    const model = { panelLayout: [
+        { type: 'flexible', min_mm: 800, weight: 1 },
+        { type: 'fixed', fixed_mm: 400 },
+        { type: 'flexible', min_mm: 800, weight: 3 },
+    ] };
+    const openingHeight = 2438;
+    const height = doorHeight(openingHeight);
+    assert.deepEqual(resolvePanelHeights(model, 2000), [800, 400, 800]);
+    assert.equal(resolvePanelHeights(model, 1999), null);
+    const panels = resolvePanelHeights(model, height);
+    assert.deepEqual(panels, [900, 400, 1100]);
+    const scene = createPreviewScene({
+        openingWidth: 1600, openingHeight, doorHeight: height, doorCount: 2,
+        infillWeightsByDoor: [panels, panels],
+    }, metadata(), { width: 800, height: 500 });
+    for (const door of scene.doors) {
+        assert.ok(Math.abs(door.height / scene.opening.height - 2400 / 2438) < 1e-12);
+        assert.deepEqual(door.infills.map(panel => Math.round(panel.height / door.height * height)), panels);
+    }
 });
 
 test('unknown frame colours and unselected infills use neutral visuals', () => {
