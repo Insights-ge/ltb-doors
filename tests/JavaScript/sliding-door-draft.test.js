@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { configurationSnapshot, saveDraft, readDraft } from '../../resources/js/sliding-door-draft.js';
+import { applyModelLayout } from '../../resources/js/sliding-door-state.js';
 
 test('draft saving whitelists configuration facts and reports unavailable storage', () => {
     const config={openingWidth:3000,infillWeights:[1], secret:'not saved'};
@@ -36,6 +37,20 @@ test('draft round trips preserve identities and recheck the current catalog', ()
     result=readDraft(storage,'draft',catalog,metadata);
     assert.equal(result.status,'outdated');
     assert.deepEqual(result.configuration.infillIdsByDoor,[[7,7],[7,7]]);
+});
+
+test('a draft requires review when panel order changes at the same count', () => {
+    const {config, catalog, metadata} = fixture();
+    const [model] = catalog.models;
+    model.panelLayout = [{type: 'fixed', fixed_mm: 400}, {type: 'flexible', min_mm: 800, weight: 1}];
+    const oldDraft = {getItem: () => JSON.stringify(config)};
+    assert.equal(readDraft(oldDraft, 'draft', catalog, metadata).status, 'outdated_layout');
+
+    const currentDraft = applyModelLayout(config, model);
+    const storage = {getItem: () => JSON.stringify(currentDraft)};
+    assert.equal(readDraft(storage, 'draft', catalog, metadata).status, 'restored');
+    model.panelLayout.reverse();
+    assert.equal(readDraft(storage, 'draft', catalog, metadata).status, 'outdated_layout');
 });
 
 

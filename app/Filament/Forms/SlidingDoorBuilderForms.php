@@ -17,6 +17,13 @@ use Illuminate\Support\MessageBag;
 
 class SlidingDoorBuilderForms
 {
+    private const OPENING_HEIGHT_DEDUCTION_MM = 38;
+
+    private const OPENING_BOUNDS = [
+        'width' => ['min' => 985, 'max' => 5460],
+        'height' => ['min' => 238, 'max' => 2738],
+    ];
+
     public static function size(Schema $schema, SlidingDoorBuilder $page): Schema
     {
         $modelField = Select::make('modelId')
@@ -58,11 +65,9 @@ class SlidingDoorBuilderForms
                     }
                 })
                 ->rule('gt:0')
-                ->minValue(fn (Get $get): ?int => self::sizeBound($page, $get, $label, 'min'))
-                ->maxValue(fn (Get $get): ?int => self::sizeBound($page, $get, $label, 'max'))
-                ->helperText(fn (Get $get): ?string => self::model($page, $get)
-                    ? self::sizeBound($page, $get, $label, 'min') . '–' . self::sizeBound($page, $get, $label, 'max') . ' ' . __('sliding_door_builder.size.unit')
-                    : null)
+                ->minValue(fn (Get $get): int => self::sizeBound($page, $get, $label, 'min'))
+                ->maxValue(fn (Get $get): int => self::sizeBound($page, $get, $label, 'max'))
+                ->helperText(fn (Get $get): string => self::sizeBound($page, $get, $label, 'min') . '–' . self::sizeBound($page, $get, $label, 'max') . ' ' . __('sliding_door_builder.size.unit'))
                 ->mutateStateForValidationUsing(fn ($state) => is_string($state) ? str_replace(',', '.', trim($state)) : $state)
                 ->live(onBlur: true)
                 ->afterStateUpdated(function (Get $get, Set $set) use ($page, $name): void {
@@ -286,19 +291,21 @@ class SlidingDoorBuilderForms
     /** @return list<BuilderDoorVariantData> */
     private static function supportedVariants(?BuilderDoorModelData $model): array
     {
-        return array_values(array_filter($model->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $variant->hasPartition));
+        return array_values(array_filter($model->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $model->partitionCount === 0 || $variant->hasPartition));
     }
 
     /** @return list<BuilderDoorVariantData> */
     private static function matchingVariants(SlidingDoorBuilder $page, Get $get): array
     {
-        $height = $get('openingHeight');
-        $height = is_string($height) ? str_replace(',', '.', trim($height)) : $height;
-        if (! is_numeric($height) || ! is_finite((float) $height)) {
+        $openingHeight = self::measurement($get('openingHeight'));
+        if ($openingHeight === null) {
             return [];
         }
 
-        return array_values(array_filter(self::supportedVariants(self::model($page, $get)), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight(self::model($page, $get), $variant, (float) $height)));
+        $model = self::model($page, $get);
+        $height = self::doorHeight($openingHeight);
+
+        return array_values(array_filter(self::supportedVariants($model), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight($model, $variant, $height)));
     }
 
     private static function maximumHeight(BuilderDoorModelData $model): int
@@ -318,18 +325,26 @@ class SlidingDoorBuilderForms
         return $height >= $variant->heightRangeMin && $height <= $maximum;
     }
 
-    private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): ?int
+    private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): int
     {
         $model = self::model($page, $get);
         $count = self::id($get('doorCount'));
 
-        return match ($field . '.' . $bound) {
+        $modelBound = match ($field . '.' . $bound) {
             'width.min' => $model === null || $count === null ? null : $model->minWidth * $count,
             'width.max' => $model === null || $count === null ? null : $model->maxWidth * $count,
-            'height.min' => $model?->minHeight,
-            'height.max' => $model === null ? null : self::maximumHeight($model),
+            'height.min' => $model === null ? null : $model->minimumHeight() + self::OPENING_HEIGHT_DEDUCTION_MM,
+            'height.max' => $model === null ? null : self::maximumHeight($model) + self::OPENING_HEIGHT_DEDUCTION_MM,
             default => null,
         };
+        $openingBound = self::OPENING_BOUNDS[$field][$bound];
+
+        return $bound === 'min' ? max($openingBound, $modelBound ?? $openingBound) : min($openingBound, $modelBound ?? $openingBound);
+    }
+
+    private static function doorHeight(float $openingHeight): float
+    {
+        return $openingHeight - self::OPENING_HEIGHT_DEDUCTION_MM;
     }
 
     private static function measurement(mixed $value): ?float
@@ -342,11 +357,14 @@ class SlidingDoorBuilderForms
     private static function supportsSize(BuilderDoorModelData $model, Get $get, ?int $count): bool
     {
         $width = self::measurement($get('openingWidth'));
-        $height = self::measurement($get('openingHeight'));
+        $openingHeight = self::measurement($get('openingHeight'));
+        $height = $openingHeight === null ? null : self::doorHeight($openingHeight);
 
-        return $width !== null && $height !== null && in_array($count, [2, 3, 4, 5], true)
+        return $width !== null && $openingHeight !== null && $height !== null && in_array($count, [2, 3, 4, 5], true)
+            && $width >= self::OPENING_BOUNDS['width']['min'] && $width <= self::OPENING_BOUNDS['width']['max']
+            && $openingHeight >= self::OPENING_BOUNDS['height']['min'] && $openingHeight <= self::OPENING_BOUNDS['height']['max']
             && $width >= $model->minWidth * $count && $width <= $model->maxWidth * $count
-            && $height >= $model->minHeight && $height <= self::maximumHeight($model)
+            && $height >= $model->minimumHeight() && $height <= self::maximumHeight($model)
             && array_any(self::supportedVariants($model), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight($model, $variant, $height));
     }
 
