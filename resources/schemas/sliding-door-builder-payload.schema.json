@@ -67,11 +67,11 @@
                 "maxHeight": { "type": "integer" },
                 "minWidth": { "type": "integer" },
                 "maxWidth": { "type": "integer" },
-                "partitionCount": { "type": "integer", "minimum": 0, "maximum": 4 },
+                "partitionCount": { "type": "integer", "minimum": 0, "maximum": 6 },
                 "panelLayout": {
                     "type": ["array", "null"],
                     "minItems": 1,
-                    "maxItems": 5,
+                    "maxItems": 7,
                     "contains": { "properties": { "type": { "const": "flexible" } } },
                     "items": {
                         "oneOf": [

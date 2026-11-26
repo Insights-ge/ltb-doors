@@ -40,9 +40,8 @@ class BuilderCatalogReadService
             ->with($this->variantRelationships())
             ->orderBy('name')->orderBy('id')
             ->get()
-            ->filter(fn (DoorModel $model): bool => $this->validator->isModelUsable($model))
-            ->map(fn (DoorModel $model): BuilderDoorModelData => $this->mapModel($model))
-            ->filter(fn (BuilderDoorModelData $model): bool => $model->variants !== [])
+            ->map(fn (DoorModel $model): ?BuilderDoorModelData => $this->mapModel($model))
+            ->filter(fn (?BuilderDoorModelData $model): bool => $model !== null && $model->variants !== [])
             ->all());
     }
 
@@ -63,8 +62,12 @@ class BuilderCatalogReadService
         return $relationships;
     }
 
-    private function mapModel(DoorModel $model): BuilderDoorModelData
+    private function mapModel(DoorModel $model): ?BuilderDoorModelData
     {
+        if (! $this->validator->isModelUsable($model)) {
+            return null;
+        }
+
         return new BuilderDoorModelData(
             id: $model->id,
             name: $model->name,

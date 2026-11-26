@@ -113,7 +113,6 @@ return [
         ],
         'review' => [
             'label' => 'Review',
-            'description' => 'Review the measurements and selections for your doors.',
         ],
     ],
     'preview' => [

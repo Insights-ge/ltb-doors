@@ -1,3 +1,5 @@
+export const maxPanels = 7;
+
 export const openingHeightDeductionMm = 38;
 
 export const openingBounds = {
@@ -42,7 +44,7 @@ export function parseMeasurement(value) {
 
 
 export function modelInfillWeights(model) {
-    return Number.isInteger(model?.partitionCount) && model.partitionCount >= 0 && model.partitionCount <= 4
+    return Number.isInteger(model?.partitionCount) && model.partitionCount >= 0 && model.partitionCount < maxPanels
         ? Array(model.partitionCount + 1).fill(1) : [];
 }
 

@@ -7,6 +7,7 @@ use App\Data\BuilderCatalogData;
 use App\Data\BuilderMetadataData;
 use App\Enums\SlidingDoorBuilderStep;
 use App\Filament\Forms\SlidingDoorBuilderForms;
+use App\Models\DoorModel;
 use App\Services\BuilderCatalogReadService;
 use App\Services\BuilderMetadataReadService;
 use BackedEnum;
@@ -195,7 +196,7 @@ class SlidingDoorBuilder extends Page
             'builder-design' => __('sliding_door_builder.system.design'),
             'builder-variant' => __('sliding_door_builder.system.variant'),
         ];
-        for ($index = 0; $index < 5; $index++) {
+        for ($index = 0; $index < DoorModel::MAX_PANELS; $index++) {
             $labels['builder-infill-' . $index] = __('sliding_door_builder.preview.infill_short_label', ['number' => $index + 1]);
         }
         $messages = [];

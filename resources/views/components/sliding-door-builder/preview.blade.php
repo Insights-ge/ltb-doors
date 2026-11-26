@@ -10,16 +10,26 @@
 
                 role="group"
                 aria-label="{{ __('sliding_door_builder.preview.infills_label') }}"
+                x-on:keydown.escape.stop.prevent="clearPreviewSelection()"
 
                 class="builder-preview-selector-list"
                 x-bind:style="{ transform: `translateX(-${previewLabelOffset}px)` }"
             >
                 <template x-for="infill in (previewDoors[0]?.infills ?? [])" :key="infill.id">
-                    <span
+                    <button
+                        type="button"
                         class="builder-preview-infill-label"
                         x-bind:style="{ top: `${previewInfillPositions[infill.index] ?? 50}%` }"
+                        x-on:click="isEmptyInfill(infill.index) ? openInfillPicker(infill.index) : selectInfillIndex(infill.index)"
+                        aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+                        x-on:keydown.alt.arrow-up.prevent.stop="swapInfills(infill.index, infill.index - 1)"
+                        x-on:keydown.alt.arrow-down.prevent.stop="swapInfills(infill.index, infill.index + 1)"
+                        x-bind:aria-pressed="previewSelection.infillInstanceId === infill.id"
+                        x-bind:aria-controls="$id('builder-preview-drawing')"
+                        x-bind:aria-label="previewInfillAccessibleLabel(infill.index)"
+                        x-bind:data-preview-infill-control="infill.id"
                         x-text="previewInfillLabel(infill.index)"
-                    ></span>
+                    ></button>
                 </template>
             </div>
         </div>

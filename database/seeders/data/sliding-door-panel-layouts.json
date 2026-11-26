@@ -1,0 +1,47 @@
+{
+    "მირზაია": [
+        { "type": "fixed", "fixed_mm": 400 },
+        { "type": "flexible", "min_mm": 800, "weight": 1 },
+        { "type": "fixed", "fixed_mm": 400 }
+    ],
+    "დავლური": [
+        { "type": "flexible", "min_mm": 800, "weight": 1 },
+        { "type": "fixed", "fixed_mm": 400 },
+        { "type": "flexible", "min_mm": 800, "weight": 1 }
+    ],
+    "დაისი": [
+        { "type": "flexible", "min_mm": 800, "weight": 1 },
+        { "type": "fixed", "fixed_mm": 200 },
+        { "type": "fixed", "fixed_mm": 400 }
+    ],
+    "დაირა": [
+        { "type": "fixed", "fixed_mm": 400 },
+        { "type": "fixed", "fixed_mm": 200 },
+        { "type": "flexible", "min_mm": 800, "weight": 1 }
+    ],
+    "ფარცა": [
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 }
+    ],
+    "ნადური": [
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 }
+    ],
+    "სამაია": [
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 }
+    ],
+    "ჯეირანი": [
+        { "type": "flexible", "min_mm": 200, "weight": 1 },
+        { "type": "flexible", "min_mm": 200, "weight": 1 }
+    ],
+    "სიმდი": [
+        { "type": "flexible", "min_mm": 200, "weight": 1 }
+    ]
+}

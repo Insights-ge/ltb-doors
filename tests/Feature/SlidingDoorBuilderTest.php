@@ -66,7 +66,9 @@ test('admins and super admins can open the builder using their session locale', 
 
     foreach (SlidingDoorBuilderStep::cases() as $step) {
         $response->assertSee($step->getLabel());
-        $response->assertSee($step->getDescription());
+        if (($description = $step->getDescription()) !== null) {
+            $response->assertSee($description);
+        }
     }
 
     Livewire::test(SlidingDoorBuilder::class)
@@ -259,8 +261,8 @@ test('opening limits are validated before a model is selected', function (string
     $this->actingAs($user);
 
     $field = 'builderFields.opening' . ucfirst($dimension);
-    $message = __("validation.$rule.numeric", [
-        'attribute' => Str::lcfirst(__("sliding_door_builder.size.$dimension")),
+    $message = __("validation.{$rule}.numeric", [
+        'attribute' => Str::lcfirst(__("sliding_door_builder.size.{$dimension}")),
         $rule => $limit,
     ]);
 
@@ -425,9 +427,9 @@ test('a single panel needs no divider and its minimum is checked against door he
         ->assertHasNoErrors();
 });
 
-test('all model infills have visible numbered searchable selects with escaped material swatches', function () {
+test('all seven model infills have visible numbered searchable selects with escaped material swatches', function () {
     $variant = DoorVariant::factory()->create();
-    $variant->doorModel->update(['panel_layout' => array_fill(0, 5, ['type' => 'flexible', 'min_mm' => 200, 'weight' => 1])]);
+    $variant->doorModel->update(['panel_layout' => array_fill(0, 7, ['type' => 'flexible', 'min_mm' => 200, 'weight' => 1])]);
     $infill = Infill::factory()->create(['description' => '<img src=x onerror=alert(1)>', 'visual_color' => '#AABBCC']);
     $user = User::factory()->create();
     $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
@@ -436,7 +438,7 @@ test('all model infills have visible numbered searchable selects with escaped ma
         ->set('builderFields.doorCount', 2)
         ->set('builderFields.modelId', $variant->door_model_id)
         ->set('builderFields.variantId', $variant->id);
-    for ($index = 0; $index < 5; $index++) {
+    for ($index = 0; $index < 7; $index++) {
         $component->assertFormFieldExists((string) $index, 'infillForm', function (Select $field) use ($index, $infill): bool {
             $label = $field->getOptions()[$infill->id];
 

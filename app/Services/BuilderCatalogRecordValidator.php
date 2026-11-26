@@ -11,44 +11,15 @@ use App\Models\Infill;
 
 class BuilderCatalogRecordValidator
 {
+    /**
+     * @phpstan-assert-if-true list<array{type: 'fixed', fixed_mm: int}|array{type: 'flexible', min_mm: int, weight: int}>|null $model->panel_layout
+     */
     public function isModelUsable(DoorModel $model): bool
     {
         return $this->isPanelLayoutUsable($model->panel_layout)
             && trim($model->name) !== ''
             && $model->min_height > 0 && $model->max_height >= $model->min_height
             && $model->min_width > 0 && $model->max_width >= $model->min_width;
-    }
-
-    private function isPanelLayoutUsable(?array $layout): bool
-    {
-        if ($layout === null) {
-            return true;
-        }
-
-        if (! array_is_list($layout) || count($layout) < 1 || count($layout) > 5) {
-            return false;
-        }
-
-        $positiveInteger = fn (mixed $value): bool => is_int($value) && $value > 0 && $value <= 9_007_199_254_740_991;
-        $hasFlexiblePanel = false;
-        foreach ($layout as $panel) {
-            if (! is_array($panel)) {
-                return false;
-            }
-
-            if (($panel['type'] ?? null) === 'fixed' && count($panel) === 2 && $positiveInteger($panel['fixed_mm'] ?? null)) {
-                continue;
-            }
-
-            if (($panel['type'] ?? null) !== 'flexible' || count($panel) !== 3
-                || ! $positiveInteger($panel['min_mm'] ?? null) || ! $positiveInteger($panel['weight'] ?? null)) {
-                return false;
-            }
-
-            $hasFlexiblePanel = true;
-        }
-
-        return $hasFlexiblePanel;
     }
 
     public function isVariantUsable(DoorVariant $variant): bool
@@ -80,5 +51,38 @@ class BuilderCatalogRecordValidator
     public function isInfillUsable(Infill $infill): bool
     {
         return trim($infill->code) !== '' && trim($infill->description) !== '';
+    }
+
+    /** @param array<array-key, mixed>|null $layout */
+    private function isPanelLayoutUsable(?array $layout): bool
+    {
+        if ($layout === null) {
+            return true;
+        }
+
+        if (! array_is_list($layout) || count($layout) < 1 || count($layout) > DoorModel::MAX_PANELS) {
+            return false;
+        }
+
+        $positiveInteger = fn (mixed $value): bool => is_int($value) && $value > 0 && $value <= 9_007_199_254_740_991;
+        $hasFlexiblePanel = false;
+        foreach ($layout as $panel) {
+            if (! is_array($panel)) {
+                return false;
+            }
+
+            if (($panel['type'] ?? null) === 'fixed' && count($panel) === 2 && $positiveInteger($panel['fixed_mm'] ?? null)) {
+                continue;
+            }
+
+            if (($panel['type'] ?? null) !== 'flexible' || count($panel) !== 3
+                || ! $positiveInteger($panel['min_mm'] ?? null) || ! $positiveInteger($panel['weight'] ?? null)) {
+                return false;
+            }
+
+            $hasFlexiblePanel = true;
+        }
+
+        return $hasFlexiblePanel;
     }
 }

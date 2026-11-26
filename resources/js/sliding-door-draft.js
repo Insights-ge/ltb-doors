@@ -1,5 +1,5 @@
 import { reconcilePreviewConfiguration } from './sliding-door-selection.js';
-import { modelInfillWeights, panelLayoutSignature } from './sliding-door-state.js';
+import { maxPanels, modelInfillWeights, panelLayoutSignature } from './sliding-door-state.js';
 import { validateBuilder } from './sliding-door-rules.js';
 
 /** Persist only configuration facts, never catalog records or translated labels. */
@@ -22,7 +22,7 @@ function validStructure(config) {
     if (!['openingWidth','openingHeight'].every(key => typeof config[key] === 'number' && Number.isFinite(config[key]) && config[key] > 0)) return false;
     if (!['modelId','variantId'].every(key => Number.isSafeInteger(config[key]) && config[key] > 0)) return false;
     if (typeof config.softClose !== 'boolean' || typeof config.frameColor !== 'string' || typeof config.frameDesignCode !== 'string' || config.frameDesignCode.length > 255) return false;
-    if (!Array.isArray(config.infillWeights) || config.infillWeights.length < 1 || config.infillWeights.length > 5 || !config.infillWeights.every(weight => Number.isFinite(weight) && weight > 0)) return false;
+    if (!Array.isArray(config.infillWeights) || config.infillWeights.length < 1 || config.infillWeights.length > maxPanels || !config.infillWeights.every(weight => Number.isFinite(weight) && weight > 0)) return false;
     if (![2,3,4,5].includes(config.doorCount)) return false;
     const identity = id => typeof id === 'string' && id.length > 0 && id.length <= 128;
     if (!Array.isArray(config.doorIds) || config.doorIds.length !== config.doorCount || !config.doorIds.every(identity) || new Set(config.doorIds).size !== config.doorCount) return false;
