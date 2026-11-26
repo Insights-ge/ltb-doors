@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DoorModels\Schemas;
 
 use App\Enums\DoorModelStatus;
 use App\Enums\DoorPanelType;
+use App\Models\DoorModel;
 use Closure;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -72,7 +73,7 @@ class DoorModelForm
                     ->required()
                     ->minItems(1)
                     ->deletable(fn (?array $state): bool => count($state ?? []) > 1)
-                    ->maxItems(7)
+                    ->maxItems(DoorModel::MAX_PANELS)
                     ->reorderableWithButtons()
                     ->live()
                     ->columns(3)
@@ -99,7 +100,9 @@ class DoorModelForm
                             return;
                         }
 
-                        $maximum = max((int) $get('max_height'), (int) $get('not_recommended_height_max'));
+                        $regularMaximum = $get('max_height');
+                        $advisoryMaximum = $get('not_recommended_height_max');
+                        $maximum = max(is_numeric($regularMaximum) ? (int) $regularMaximum : 0, is_numeric($advisoryMaximum) ? (int) $advisoryMaximum : 0);
                         if ($maximum > 0 && self::panelStackHeight($value) > $maximum) {
                             $fail(__('door_models.form.panel_exceeds_maximum', ['maximum' => $maximum]));
                         }
@@ -117,13 +120,18 @@ class DoorModelForm
             ->maxValue(self::MAX_SAFE_PANEL_INTEGER)
             ->required()
             ->live(onBlur: true)
-            ->dehydrateStateUsing(fn (mixed $state): int => (int) $state);
+            ->dehydrateStateUsing(fn (mixed $state): ?int => is_numeric($state) ? (int) $state : null);
     }
 
+    /** @param array<array-key, mixed> $panels */
     private static function panelStackHeight(array $panels): int
     {
         $height = 0;
         foreach ($panels as $panel) {
+            if (! is_array($panel)) {
+                continue;
+            }
+
             $field = ($panel['type'] ?? null) === DoorPanelType::Fixed->value ? 'fixed_mm' : 'min_mm';
             $value = filter_var($panel[$field] ?? null, FILTER_VALIDATE_INT, [
                 'options' => ['min_range' => 1, 'max_range' => self::MAX_SAFE_PANEL_INTEGER],

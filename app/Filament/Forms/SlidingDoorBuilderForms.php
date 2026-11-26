@@ -291,7 +291,11 @@ class SlidingDoorBuilderForms
     /** @return list<BuilderDoorVariantData> */
     private static function supportedVariants(?BuilderDoorModelData $model): array
     {
-        return array_values(array_filter($model->variants ?? [], fn (BuilderDoorVariantData $variant): bool => $model->partitionCount === 0 || $variant->hasPartition));
+        if ($model === null) {
+            return [];
+        }
+
+        return array_values(array_filter($model->variants, fn (BuilderDoorVariantData $variant): bool => $model->partitionCount === 0 || $variant->hasPartition));
     }
 
     /** @return list<BuilderDoorVariantData> */

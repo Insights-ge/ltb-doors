@@ -12,7 +12,7 @@
                     {{ __('components.layout.components') }}
                 </x-filament::button>
             </x-slot>
-            <dl class="mt-2 space-y-3 text-sm">
+            <dl tabindex="0" class="mt-2 space-y-3 text-sm">
                 @foreach (\App\Enums\ComponentType::cases() as $type)
                     <div data-review-component="{{ $type->value }}">
                         <dt class="font-medium text-gray-950 dark:text-white">{{ $type->getLabel() }}</dt>
@@ -29,7 +29,7 @@
             </x-slot>
             <template x-for="door in (reviewDesign?.doors ?? []).slice(0, 1)" :key="door.id">
                 <div>
-                    <dl class="mt-2 space-y-2 text-sm">
+                    <dl tabindex="0" class="mt-2 space-y-2 text-sm">
                         <template x-for="infill in door.infills" :key="infill.id">
                             <div><dt class="flex flex-wrap items-center justify-between gap-2"><span x-text="previewInfillLabel(infill.index)"></span></dt><dd class="text-gray-600 dark:text-gray-300" x-text="infill.infill ? `${infill.infill.code} — ${infill.infill.description}` : @js(__('sliding_door_builder.finishes.unselected'))"></dd></div>
                         </template>

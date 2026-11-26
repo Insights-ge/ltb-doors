@@ -139,6 +139,7 @@
         position: absolute;
         inset-inline-start: 0;
         width: 100%;
+        min-height: 44px;
         transform: translateY(-50%);
         text-align: start;
         font-size: 0.875rem;
