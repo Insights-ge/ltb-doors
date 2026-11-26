@@ -307,6 +307,7 @@ class SlidingDoorBuilderForms
         }
 
         $model = self::model($page, $get);
+
         return array_values(array_filter(self::supportedVariants($model), fn (BuilderDoorVariantData $variant): bool => self::variantSupportsHeight($model, $variant, $openingHeight)));
     }
 
