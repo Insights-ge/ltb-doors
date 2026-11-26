@@ -26,7 +26,7 @@ return [
         'panel_flexible' => 'Flexible',
         'panel_fixed_mm' => 'Height (mm)',
         'panel_min_mm' => 'Minimum height (mm)',
-        'panel_weight' => 'Growth weight',
+        'panel_weight' => 'Weight',
         'panel_default' => 'Add panels in top-to-bottom order. An empty layout uses two equal panels.',
         'panel_summary' => 'Minimum panel height in total is :height mm. Divider count is :dividers.',
         'panel_requires_flexible' => 'Add at least one flexible panel.',

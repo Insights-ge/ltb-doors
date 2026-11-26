@@ -66,7 +66,9 @@ test('admins and super admins can open the builder using their session locale', 
 
     foreach (SlidingDoorBuilderStep::cases() as $step) {
         $response->assertSee($step->getLabel());
-        $response->assertSee($step->getDescription());
+        if (($description = $step->getDescription()) !== null) {
+            $response->assertSee($description);
+        }
     }
 
     Livewire::test(SlidingDoorBuilder::class)
