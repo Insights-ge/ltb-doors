@@ -378,6 +378,28 @@ test('design and variant choices resolve only existing variants for the selected
     }
 });
 
+test('variant availability uses the side profile height deduction', function () {
+    $variant = DoorVariant::factory()->create(['frame_design_code' => 'custom', 'height_range_min' => 1600, 'height_range_max' => 2000]);
+    $variant->sideProfile->update(['height_deduction' => 30]);
+    DoorVariant::factory()->for($variant->doorModel)->create([
+        'frame_design_code' => 'default',
+        'height_range_min' => 1600,
+        'height_range_max' => 2000,
+    ]);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->call('restoreBuilderFields', [
+            'openingWidth' => '1600', 'openingHeight' => '1630', 'doorCount' => 2,
+            'modelId' => $variant->door_model_id, 'frameDesignCode' => 'custom', 'variantId' => $variant->id,
+        ])
+        ->assertFormFieldExists('frameDesignCode', 'systemForm', fn (Select $field): bool => $field->getOptions() === ['custom' => 'custom'])
+        ->call('validateBuilderSection', 1)->assertReturned(true)
+        ->call('validateBuilderSection', 2)->assertReturned(true);
+});
+
 test('the infill control is a searchable Filament select with variant incompatibilities disabled', function () {
     $variant = DoorVariant::factory()->create();
     $allowed = Infill::factory()->create();

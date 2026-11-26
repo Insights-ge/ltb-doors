@@ -33,7 +33,7 @@ class ComponentForm
                     ->integer()
                     ->minValue(0)
                     ->maxValue(65_535)
-                    ->visible(fn (Get $get, ?Component $record): bool => ($record?->type ?? $get->enum('type', ComponentType::class)) === ComponentType::SideProfile)
+                    ->visible(fn (Get $get, ?Component $record): bool => ($record->type ?? $get->enum('type', ComponentType::class)) === ComponentType::SideProfile)
                     ->disabledOn(Operation::Edit),
                 TextInput::make('code')
                     ->label(__('components.form.code'))

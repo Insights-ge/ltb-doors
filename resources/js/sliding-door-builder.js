@@ -533,7 +533,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             }
             this.syncInfillField();
             preview?.setSelection(this.previewSelection);
-            const height = doorHeight(configuration.openingHeight);
+            const height = doorHeight(configuration.openingHeight, this.selectedVariant);
             const panels = this.selectedModel ? resolvePanelHeights(this.selectedModel, height) : null;
             preview?.render(panels ? {
                 ...configuration,

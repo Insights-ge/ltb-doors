@@ -8,7 +8,7 @@ export function summarizeConfiguration(config, catalog, metadata) {
     return {
         doorCount: config.doorCount, openingWidth: config.openingWidth, openingHeight: config.openingHeight,
         doorWidth: config.doorCount ? config.openingWidth / config.doorCount : null,
-        doorHeight: doorHeight(config.openingHeight),
+        doorHeight: doorHeight(config.openingHeight, variant),
         modelName: model?.name ?? '', variantName: variant?.name ?? '',
         frameDesignCode: variant?.frameDesignCode ?? '',
         colorLabel: metadata.frameColors?.find((color) => color.color === variant?.color)?.label ?? '',
