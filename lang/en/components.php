@@ -19,6 +19,7 @@ return [
     ],
     'form' => [
         'type' => 'Type',
+        'height_deduction' => 'Height deduction (mm)',
         'code' => 'Code',
         'description' => 'Description',
         'color' => 'Color',
