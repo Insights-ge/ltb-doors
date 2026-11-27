@@ -24,6 +24,7 @@ readonly class BuilderDoorVariantData
         public int $heightRangeMin,
         public int $heightRangeMax,
         public array $components,
+        public ?int $heightDeduction = null,
     ) {
         $this->hasPartition = $this->hasComponent(ComponentType::Partition);
         $this->hasSoftCloseMechanism = $this->hasComponent(ComponentType::SoftCloseMechanism);

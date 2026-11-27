@@ -48,9 +48,13 @@ export function modelInfillWeights(model) {
         ? Array(model.partitionCount + 1).fill(1) : [];
 }
 
-export function doorHeight(openingHeight) {
+function heightDeduction(variant) {
+    return variant?.heightDeduction ?? openingHeightDeductionMm;
+}
+
+export function doorHeight(openingHeight, variant) {
     const height = parseMeasurement(openingHeight);
-    return height === null ? null : height - openingHeightDeductionMm;
+    return height === null ? null : height - heightDeduction(variant);
 }
 
 export function panelLayoutSignature(model) {
@@ -103,25 +107,34 @@ export function modelMaximumHeight(model) {
     return Math.max(model.maxHeight, model.notRecommendedHeightMax ?? model.maxHeight);
 }
 
+export function modelOpeningHeightRange(model) {
+    const deductions = model.variants
+        .filter(variant => model.partitionCount === 0 || variant.hasPartition)
+        .map(heightDeduction);
+    if (!deductions.length) deductions.push(openingHeightDeductionMm);
+    return [
+        modelMinimumHeight(model) + Math.min(...deductions),
+        modelMaximumHeight(model) + Math.max(...deductions),
+    ];
+}
+
 export function variantSupportsHeight(model, variant, openingHeight) {
-    const height = doorHeight(openingHeight);
+    const height = doorHeight(openingHeight, variant);
     if (height === null || (model.partitionCount !== 0 && !variant.hasPartition)) return false;
 
     const maximum = variant.heightRangeMax >= model.maxHeight
         ? Math.max(variant.heightRangeMax, modelMaximumHeight(model)) : variant.heightRangeMax;
-    return height >= variant.heightRangeMin && height <= maximum;
+    return height >= Math.max(modelMinimumHeight(model), variant.heightRangeMin) && height <= Math.min(modelMaximumHeight(model), maximum);
 }
 
 /** Opening dimensions imply equal illustrative door widths; catalog width limits are per door. */
 export function modelSupportsOpening(model, width, height, doorCount) {
     width = parseMeasurement(width);
     const openingHeight = parseMeasurement(height);
-    height = doorHeight(openingHeight);
-    return width !== null && openingHeight !== null && height !== null && [2,3,4,5].includes(doorCount)
+    return width !== null && openingHeight !== null && [2,3,4,5].includes(doorCount)
         && width >= openingBounds.openingWidth.min && width <= openingBounds.openingWidth.max
         && openingHeight >= openingBounds.openingHeight.min && openingHeight <= openingBounds.openingHeight.max
         && width >= model.minWidth * doorCount && width <= model.maxWidth * doorCount
-        && height >= modelMinimumHeight(model) && height <= modelMaximumHeight(model)
         && model.variants.some(variant => variantSupportsHeight(model, variant, openingHeight));
 }
 

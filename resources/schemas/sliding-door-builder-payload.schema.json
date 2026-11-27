@@ -102,7 +102,7 @@
         "variant": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "name", "color", "frameDesignCode", "heightRangeMin", "heightRangeMax", "hasPartition", "hasSoftCloseMechanism", "components"],
+            "required": ["id", "name", "color", "frameDesignCode", "heightRangeMin", "heightRangeMax", "heightDeduction", "hasPartition", "hasSoftCloseMechanism", "components"],
             "properties": {
                 "id": { "$ref": "#/$defs/id" },
                 "name": { "type": "string" },
@@ -110,6 +110,7 @@
                 "frameDesignCode": { "type": "string" },
                 "heightRangeMin": { "type": "integer" },
                 "heightRangeMax": { "type": "integer" },
+                "heightDeduction": { "type": ["integer", "null"], "minimum": 0, "maximum": 65535 },
                 "hasPartition": { "type": "boolean" },
                 "hasSoftCloseMechanism": { "type": "boolean" },
                 "components": { "type": "array", "items": { "$ref": "#/$defs/component" } }

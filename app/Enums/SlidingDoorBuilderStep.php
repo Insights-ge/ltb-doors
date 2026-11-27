@@ -18,7 +18,13 @@ enum SlidingDoorBuilderStep: int implements HasLabel
 
     public function getDescription(): ?string
     {
-        return $this === self::Review ? null : __($this->translationKey() . '.description');
+        if ($this === self::Review) {
+            return null;
+        }
+
+        $description = __($this->translationKey() . '.description');
+
+        return is_string($description) ? $description : null;
     }
 
     private function translationKey(): string

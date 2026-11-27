@@ -19,6 +19,7 @@ return [
     ],
     'form' => [
         'type' => 'ტიპი',
+        'height_deduction' => 'სიმაღლის დაკლება (მმ)',
         'code' => 'კოდი',
         'description' => 'აღწერა',
         'color' => 'ფერი',

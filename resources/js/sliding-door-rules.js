@@ -1,5 +1,5 @@
 import { calculateDoorGeometry } from './sliding-door-geometry.js';
-import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelMaximumHeight, variantSupportsHeight, openingBounds, openingHeightDeductionMm, doorHeight, modelMinimumHeight, resolvePanelHeights } from './sliding-door-state.js';
+import { measurementError, parseMeasurement, modelInfillWeights, availableDoorCounts, modelOpeningHeightRange, variantSupportsHeight, openingBounds, doorHeight, resolvePanelHeights } from './sliding-door-state.js';
 
 export const sizingScopes = Object.freeze({ model: 'per_door', variantHeight: 'per_door', discouragedHeight: 'unconfirmed' });
 
@@ -38,9 +38,11 @@ export function validateBuilder(configuration, catalog, metadata) {
     const missing = (value) => value === null || value === undefined || value === '';
     if (!model) add(missing(config.modelId) ? 'required' : 'exists', 1, 'builder-model');
     const modelWidthApplies = model && [2, 3, 4, 5].includes(config.doorCount);
+    const variant = model?.variants.find((item) => item.id === config.variantId);
+    const [minimumHeight, maximumHeight] = model ? modelOpeningHeightRange(model) : [];
     const openingRanges = [
         ['openingWidth', modelWidthApplies ? model.minWidth * config.doorCount : null, modelWidthApplies ? model.maxWidth * config.doorCount : null],
-        ['openingHeight', model ? modelMinimumHeight(model) + openingHeightDeductionMm : null, model ? modelMaximumHeight(model) + openingHeightDeductionMm : null],
+        ['openingHeight', minimumHeight, maximumHeight],
     ];
     for (const [field, modelMin, modelMax] of openingRanges) {
         const error = measurementError(config[field]);
@@ -67,16 +69,15 @@ export function validateBuilder(configuration, catalog, metadata) {
         }
     }
     try {
-        const height = doorHeight(config.openingHeight);
+        const height = doorHeight(config.openingHeight, variant);
         const panels = model ? resolvePanelHeights(model, height) : config.infillWeights;
         calculateDoorGeometry({ ...config, doorHeight: height, infillWeightsByDoor: Array.from({length:config.doorCount ?? 0}, () => panels) });
     } catch {
         if (!errors.length) add('geometry_invalid', 1, 'builder-openingWidth');
     }
-    const variant = model?.variants.find((item) => item.id === config.variantId);
     const discouragedHeight = model?.notRecommendedHeightMin != null && model?.notRecommendedHeightMax != null
         ? [model.notRecommendedHeightMin, model.notRecommendedHeightMax] : null;
-    const chosenHeight = doorHeight(config.openingHeight);
+    const chosenHeight = doorHeight(config.openingHeight, variant);
     if (discouragedHeight && chosenHeight !== null && chosenHeight >= discouragedHeight[0] && chosenHeight <= discouragedHeight[1]) {
         advisories.push({ code: 'discouraged_height_reference', step: 1, field: 'builder-openingHeight' });
     }

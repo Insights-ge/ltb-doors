@@ -45,7 +45,7 @@ test('authorized roles receive only the builder field allowlist', function (Role
         'notRecommendedHeightMin', 'notRecommendedHeightMax', 'variants',
     ]);
     expect(array_keys($catalog['models'][0]['variants'][0]))->toEqualCanonicalizing([
-        'id', 'name', 'color', 'frameDesignCode', 'heightRangeMin', 'heightRangeMax',
+        'id', 'name', 'color', 'frameDesignCode', 'heightRangeMin', 'heightRangeMax', 'heightDeduction',
         'hasPartition', 'hasSoftCloseMechanism', 'components',
     ]);
     foreach ($catalog['models'][0]['variants'][0]['components'] as $compatibility) {

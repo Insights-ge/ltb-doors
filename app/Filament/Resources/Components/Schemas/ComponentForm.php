@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Components\Schemas;
 
 use App\Enums\ComponentType;
 use App\Enums\DoorColor;
+use App\Models\Component;
 use App\Models\Infill;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -24,8 +25,16 @@ class ComponentForm
                     ->label(__('components.form.type'))
                     ->options(ComponentType::class)
                     ->searchable()
+                    ->live()
                     ->disabledOn(Operation::Edit)
                     ->required(),
+                TextInput::make('height_deduction')
+                    ->label(__('components.form.height_deduction'))
+                    ->integer()
+                    ->minValue(0)
+                    ->maxValue(65_535)
+                    ->visible(fn (Get $get, ?Component $record): bool => ($record->type ?? $get->enum('type', ComponentType::class)) === ComponentType::SideProfile)
+                    ->disabledOn(Operation::Edit),
                 TextInput::make('code')
                     ->label(__('components.form.code'))
                     ->maxLength(255)

@@ -33,6 +33,14 @@ test('review and JSON describe the exact shared infills using current catalog la
     assert.equal(summarizeConfiguration(config,catalog,metadata).modelName,'Renamed system');
 });
 
+test('review and export use the selected variant side profile deduction', () => {
+    const {config, catalog, metadata} = fixture();
+    catalog.models[0].variants[0].heightDeduction = 30;
+
+    assert.equal(summarizeConfiguration(config, catalog, metadata).doorHeight, 2370);
+    assert.equal(JSON.parse(exportConfiguration(config, catalog, metadata)).summary.doorHeight, 2370);
+});
+
 test('draft round trips retain shared finishes but changed compatibility blocks export', () => {
     const {config,catalog,metadata}=fixture();
     let raw;

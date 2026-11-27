@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['type', 'code', 'description', 'color', 'unique_code'])]
+#[Fillable(['type', 'code', 'description', 'color', 'unique_code', 'height_deduction'])]
 #[UseFactory(ComponentFactory::class)]
 class Component extends Model
 {
@@ -42,6 +42,7 @@ class Component extends Model
         return [
             'type' => ComponentType::class,
             'color' => DoorColor::class,
+            'height_deduction' => 'integer',
         ];
     }
 }
