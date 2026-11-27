@@ -6,6 +6,7 @@ use App\Data\BuilderDoorModelData;
 use App\Data\BuilderDoorVariantData;
 use App\Data\BuilderInfillData;
 use App\Enums\InfillTexture;
+use App\Enums\OpeningMeasurement;
 use App\Filament\Pages\SlidingDoorBuilder;
 use Closure;
 use Filament\Forms\Components\Select;
@@ -52,10 +53,11 @@ class SlidingDoorBuilderForms
             });
         $fields = [];
 
-        foreach (['openingWidth' => 'width', 'openingHeight' => 'height'] as $name => $label) {
+        foreach (OpeningMeasurement::cases() as $measurement) {
+            $name = $measurement->value;
             $fields[] = TextInput::make($name)
                 ->id('builder-' . $name)
-                ->label(__('sliding_door_builder.size.' . $label))
+                ->label(__('sliding_door_builder.size.' . $measurement->labelKey()))
                 ->inputMode('decimal')
                 ->required()
                 ->rules(['bail', 'numeric'])
@@ -65,9 +67,9 @@ class SlidingDoorBuilderForms
                     }
                 })
                 ->rule('gt:0')
-                ->minValue(fn (Get $get): int => self::sizeBound($page, $get, $label, 'min'))
-                ->maxValue(fn (Get $get): int => self::sizeBound($page, $get, $label, 'max'))
-                ->helperText(fn (Get $get): string => self::sizeBound($page, $get, $label, 'min') . '–' . self::sizeBound($page, $get, $label, 'max') . ' ' . __('sliding_door_builder.size.unit'))
+                ->minValue(fn (Get $get): int => self::sizeBound($page, $get, $measurement, 'min'))
+                ->maxValue(fn (Get $get): int => self::sizeBound($page, $get, $measurement, 'max'))
+                ->helperText(fn (Get $get): string => self::sizeBound($page, $get, $measurement, 'min') . '–' . self::sizeBound($page, $get, $measurement, 'max') . ' ' . __('sliding_door_builder.size.unit'))
                 ->mutateStateForValidationUsing(fn ($state) => is_string($state) ? str_replace(',', '.', trim($state)) : $state)
                 ->live(onBlur: true)
                 ->afterStateUpdated(function (Get $get, Set $set) use ($page): void {
@@ -86,13 +88,13 @@ class SlidingDoorBuilderForms
                     }
                     $page->resetValidation();
                 })
-                ->rule(fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($page, $get, $name): void {
+                ->rule(fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($page, $get, $measurement): void {
                     $model = self::model($page, $get);
                     if ($model === null) {
                         return;
                     }
 
-                    if ($name === 'openingWidth') {
+                    if ($measurement === OpeningMeasurement::Width) {
                         $width = self::measurement($value);
                         $count = self::id($get('doorCount'));
                         if ($width !== null && $count !== null && $count >= 2 && $count <= 5
@@ -345,16 +347,16 @@ class SlidingDoorBuilderForms
             && $height <= min(self::maximumHeight($model), $maximum);
     }
 
-    private static function sizeBound(SlidingDoorBuilder $page, Get $get, string $field, string $bound): int
+    private static function sizeBound(SlidingDoorBuilder $page, Get $get, OpeningMeasurement $measurement, string $bound): int
     {
         $model = self::model($page, $get);
 
-        $modelBound = match ($field . '.' . $bound) {
-            'height.min' => $model === null ? null : $model->minimumHeight() + self::heightBoundDeduction($model, $bound),
-            'height.max' => $model === null ? null : self::maximumHeight($model) + self::heightBoundDeduction($model, $bound),
+        $modelBound = match ([$measurement, $bound]) {
+            [OpeningMeasurement::Height, 'min'] => $model === null ? null : $model->minimumHeight() + self::heightBoundDeduction($model, $bound),
+            [OpeningMeasurement::Height, 'max'] => $model === null ? null : self::maximumHeight($model) + self::heightBoundDeduction($model, $bound),
             default => null,
         };
-        $openingBound = self::OPENING_BOUNDS[$field][$bound];
+        $openingBound = self::OPENING_BOUNDS[$measurement->labelKey()][$bound];
 
         return $bound === 'min' ? max($openingBound, $modelBound ?? $openingBound) : min($openingBound, $modelBound ?? $openingBound);
     }
