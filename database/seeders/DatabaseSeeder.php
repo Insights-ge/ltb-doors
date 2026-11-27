@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call(GeneralSettingsSeeder::class);
         $this->call(DoorCatalogSeeder::class);
         $this->call(HeightDeductionSeeder::class);
+        $this->call(OverlapWidthSeeder::class);
         $this->call(DoorLayoutSeeder::class);
         $this->call(InfillSeeder::class);
         $this->call(InfillIncompatibilitySeeder::class);
