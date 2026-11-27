@@ -55,7 +55,7 @@ class BuilderCatalogReadService
         ];
 
         foreach (['sideProfile', 'topRail', 'bottomRail', 'partition', 'softCloseMechanism'] as $relation) {
-            $columns = $relation === 'sideProfile' ? 'id,type,code,description,color,height_deduction' : 'id,type,code,description,color';
+            $columns = $relation === 'sideProfile' ? 'id,type,code,description,color,height_deduction,overlap_width' : 'id,type,code,description,color';
             $relationships[] = "variants.{$relation}:{$columns}";
             $relationships[] = "variants.{$relation}.incompatibleInfills:infills.id";
         }
@@ -112,6 +112,7 @@ class BuilderCatalogReadService
             heightRangeMax: $variant->height_range_max,
             components: $components,
             heightDeduction: $variant->sideProfile?->height_deduction,
+            overlapWidth: $variant->sideProfile?->overlap_width,
         );
     }
 

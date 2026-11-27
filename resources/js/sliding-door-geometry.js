@@ -7,14 +7,14 @@
 /**
  * Calculate a front elevation in normalized coordinates (opening height = 1).
  * Infill weights describe relative heights from top to bottom for each door.
- * All rectangles use the opening's coordinate system. No track overlaps,
- * profile deductions, viewport scaling or manufacturing sizes are inferred.
+ * All rectangles use the opening's coordinate system. If a leaf width is
+ * supplied, the leaves are evenly spaced between the opening edges.
  *
- * @param {{ openingWidth: number, openingHeight: number, doorHeight?: number, doorCount: number, infillWeightsByDoor: number[][] }} configuration
+ * @param {{ openingWidth: number, openingHeight: number, doorHeight?: number, doorWidth?: number, doorCount: number, infillWeightsByDoor: number[][] }} configuration
  * @returns {{ opening: Rectangle, doors: DoorGeometry[] }}
  * @throws {RangeError} When dimensions, counts or weights cannot form nonzero finite rectangles.
  */
-export function calculateDoorGeometry({ openingWidth, openingHeight, doorHeight = openingHeight, doorCount, infillWeightsByDoor }) {
+export function calculateDoorGeometry({ openingWidth, openingHeight, doorHeight = openingHeight, doorWidth, doorCount, infillWeightsByDoor }) {
     requirePositiveFinite(openingWidth);
     requirePositiveFinite(openingHeight);
     requirePositiveFinite(doorHeight);
@@ -34,10 +34,12 @@ export function calculateDoorGeometry({ openingWidth, openingHeight, doorHeight 
     requirePositiveFinite(width);
 
     const normalizedHeight = doorHeight / openingHeight;
+    const leafWidth = doorWidth === undefined ? undefined : doorWidth / openingHeight;
+    if (leafWidth !== undefined) requirePositiveFinite(leafWidth);
 
     return {
         opening: { x: 0, y: 0, width, height: 1 },
-        doors: Array.from(infillWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, normalizedHeight, weights)),
+        doors: Array.from(infillWeightsByDoor, (weights, index) => calculateDoor(index, doorCount, width, normalizedHeight, weights, leafWidth)),
     };
 }
 
@@ -99,10 +101,11 @@ function projectRectangle(rectangle, opening, scale, offsetX, offsetY) {
     };
 }
 
-function calculateDoor(index, count, openingWidth, height, weights) {
-    const x = openingWidth * (index / count);
-    const right = openingWidth * ((index + 1) / count);
-    const width = right - x;
+function calculateDoor(index, count, openingWidth, height, weights, leafWidth) {
+    const x = leafWidth === undefined
+        ? openingWidth * (index / count)
+        : count === 1 ? (openingWidth - leafWidth) / 2 : (openingWidth - leafWidth) * (index / (count - 1));
+    const width = leafWidth ?? openingWidth * ((index + 1) / count) - x;
     requirePositiveFinite(width);
 
     const y = (1 - height) / 2;

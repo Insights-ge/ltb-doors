@@ -25,6 +25,7 @@ readonly class BuilderDoorVariantData
         public int $heightRangeMax,
         public array $components,
         public ?int $heightDeduction = null,
+        public ?int $overlapWidth = null,
     ) {
         $this->hasPartition = $this->hasComponent(ComponentType::Partition);
         $this->hasSoftCloseMechanism = $this->hasComponent(ComponentType::SoftCloseMechanism);

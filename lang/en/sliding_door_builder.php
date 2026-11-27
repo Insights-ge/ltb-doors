@@ -53,6 +53,9 @@ return [
     ],
     'validation' => [
         'shared_infills_mismatch' => 'Use the same infill for this infill on all doors.',
+        'no_variant_for_width' => 'No available variant supports this width.',
+        'no_variant_for_dimensions' => 'No available variant supports these opening dimensions.',
+        'variant_width_mismatch' => 'Choose a variant available for this width.',
         'no_variant_for_height' => 'No available variant supports this height.',
         'variant_components_mismatch' => 'The components must match the selected variant. Choose an available variant.',
         'variant_height_mismatch' => 'Choose a variant available for this height.',

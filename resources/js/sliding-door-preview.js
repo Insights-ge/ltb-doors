@@ -207,7 +207,7 @@ function drawDimensions(svg, door, configuration, labels, locale) {
     line(group, x - 29, y, x - 10, y);
     line(group, x - 29, bottom, x - 10, bottom);
 
-    const widthLabel = labels.width_annotation.replace(':value', formatDimension(configuration.openingWidth / configuration.doorCount, locale));
+    const widthLabel = labels.width_annotation.replace(':value', formatDimension(configuration.doorWidth ?? configuration.openingWidth / configuration.doorCount, locale));
     const heightLabel = labels.height_annotation.replace(':value', formatDimension(configuration.doorHeight ?? configuration.openingHeight, locale));
     text(group, x + width / 2, bottom + 40, widthLabel);
     text(group, x - 36, y + height / 2, heightLabel, {

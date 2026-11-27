@@ -18,6 +18,9 @@ return [
         'delete_in_use_body' => 'This component is used by one or more door variants and cannot be deleted.',
     ],
     'form' => [
+        'general_section' => 'Component details',
+        'side_profile_section' => 'Side profile dimensions',
+        'overlap_width' => 'Overlap width (mm)',
         'type' => 'Type',
         'height_deduction' => 'Height deduction (mm)',
         'code' => 'Code',
