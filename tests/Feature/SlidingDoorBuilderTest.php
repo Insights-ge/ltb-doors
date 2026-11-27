@@ -400,6 +400,27 @@ test('variant availability uses the side profile height deduction', function () 
         ->call('validateBuilderSection', 2)->assertReturned(true);
 });
 
+test('variant availability uses rounded leaf width with the side profile overlap', function () {
+    $variant = DoorVariant::factory()->create(['frame_design_code' => 'overlap']);
+    $variant->doorModel->update(['min_width' => 500, 'max_width' => 520]);
+    $variant->sideProfile->update(['overlap_width' => 55]);
+    DoorVariant::factory()->for($variant->doorModel)->create(['frame_design_code' => 'unset']);
+    $user = User::factory()->create();
+    $user->givePermissionTo(Permission::findOrCreate('View:SlidingDoorBuilder', 'web'));
+    $this->actingAs($user);
+
+    Livewire::test(SlidingDoorBuilder::class)
+        ->call('restoreBuilderFields', [
+            'openingWidth' => '986,5', 'openingHeight' => '1700', 'doorCount' => 2,
+            'modelId' => $variant->door_model_id, 'frameDesignCode' => 'overlap', 'variantId' => $variant->id,
+        ])
+        ->assertFormFieldExists('frameDesignCode', 'systemForm', fn (Select $field): bool => $field->getOptions() === ['overlap' => 'overlap'])
+        ->call('validateBuilderSection', 1)->assertReturned(true)
+        ->call('validateBuilderSection', 2)->assertReturned(true)
+        ->set('builderFields.openingWidth', '987')
+        ->call('validateBuilderSection', 1)->assertReturned(false);
+});
+
 test('the infill control is a searchable Filament select with variant incompatibilities disabled', function () {
     $variant = DoorVariant::factory()->create();
     $allowed = Infill::factory()->create();

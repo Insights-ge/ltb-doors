@@ -1,4 +1,4 @@
-import { doorHeight } from './sliding-door-state.js';
+import { doorHeight, doorWidth } from './sliding-door-state.js';
 
 /** Resolve current catalog labels at review time; never trust saved display names. */
 export function summarizeConfiguration(config, catalog, metadata) {
@@ -7,7 +7,7 @@ export function summarizeConfiguration(config, catalog, metadata) {
     const variant = model?.variants.find((item) => item.id === config.variantId);
     return {
         doorCount: config.doorCount, openingWidth: config.openingWidth, openingHeight: config.openingHeight,
-        doorWidth: config.doorCount ? config.openingWidth / config.doorCount : null,
+        doorWidth: doorWidth(config.openingWidth, config.doorCount, variant),
         doorHeight: doorHeight(config.openingHeight, variant),
         modelName: model?.name ?? '', variantName: variant?.name ?? '',
         frameDesignCode: variant?.frameDesignCode ?? '',

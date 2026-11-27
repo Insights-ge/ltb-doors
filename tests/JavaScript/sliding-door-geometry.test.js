@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { calculateDoorGeometry } from '../../resources/js/sliding-door-geometry.js';
+import { doorWidth } from '../../resources/js/sliding-door-state.js';
 
 function approximately(actual, expected) {
     const tolerance = 16 * Number.EPSILON * Math.max(1, Math.abs(expected));
@@ -16,6 +17,19 @@ function geometry(overrides = {}) {
         ...overrides,
     });
 }
+
+test('the preview preserves the calculated leaf width and shows overlap within the opening', () => {
+    const openingWidth = 1644;
+    const variant = { overlapWidth: 40 };
+    assert.deepEqual([2, 3, 4, 5].map(count => doorWidth(openingWidth, count, variant)), [842, 574, 431, 344]);
+
+    const scene = geometry({ openingWidth, doorWidth: doorWidth(openingWidth, 3, variant) });
+    const [first, second, last] = scene.doors;
+    approximately(first.width * 2000, 574);
+    assert.equal(first.x, 0);
+    assert.ok(second.x < first.x + first.width);
+    approximately(last.x + last.width, scene.opening.width);
+});
 
 test('mixed door layouts preserve the opening ratio and horizontal divisions', () => {
     const result = geometry();

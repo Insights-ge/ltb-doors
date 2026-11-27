@@ -57,6 +57,17 @@ export function doorHeight(openingHeight, variant) {
     return height === null ? null : height - heightDeduction(variant);
 }
 
+export function doorWidth(openingWidth, doorCount, variant) {
+    const width = parseMeasurement(openingWidth);
+    if (width === null || ![2, 3, 4, 5].includes(doorCount)) return null;
+
+    const overlap = variant?.overlapWidth;
+    if (overlap == null) return width / doorCount;
+
+    const totalOverlap = doorCount === 2 ? overlap : 2 * overlap;
+    return Math.floor((width + totalOverlap) / doorCount);
+}
+
 export function panelLayoutSignature(model) {
     return model?.panelLayout == null ? null : JSON.stringify(model.panelLayout.map(panel =>
         panel.type === 'fixed' ? [panel.type, panel.fixed_mm] : [panel.type, panel.min_mm, panel.weight]));
@@ -127,15 +138,23 @@ export function variantSupportsHeight(model, variant, openingHeight) {
     return height >= Math.max(modelMinimumHeight(model), variant.heightRangeMin) && height <= Math.min(modelMaximumHeight(model), maximum);
 }
 
-/** Opening dimensions imply equal illustrative door widths; catalog width limits are per door. */
+export function variantSupportsWidth(model, variant, openingWidth, doorCount) {
+    const width = doorWidth(openingWidth, doorCount, variant);
+    return width !== null && width >= model.minWidth && width <= model.maxWidth;
+}
+
+export function variantSupportsOpening(model, variant, openingWidth, openingHeight, doorCount) {
+    return variantSupportsHeight(model, variant, openingHeight) && variantSupportsWidth(model, variant, openingWidth, doorCount);
+}
+
+/** Catalog width limits are per door. */
 export function modelSupportsOpening(model, width, height, doorCount) {
     width = parseMeasurement(width);
     const openingHeight = parseMeasurement(height);
     return width !== null && openingHeight !== null && [2,3,4,5].includes(doorCount)
         && width >= openingBounds.openingWidth.min && width <= openingBounds.openingWidth.max
         && openingHeight >= openingBounds.openingHeight.min && openingHeight <= openingBounds.openingHeight.max
-        && width >= model.minWidth * doorCount && width <= model.maxWidth * doorCount
-        && model.variants.some(variant => variantSupportsHeight(model, variant, openingHeight));
+        && model.variants.some(variant => variantSupportsOpening(model, variant, width, openingHeight, doorCount));
 }
 
 export function availableDoorCounts(models, width, height) {

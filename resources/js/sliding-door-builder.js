@@ -2,7 +2,7 @@ import { exportConfiguration } from './sliding-door-export.js';
 import { saveDraft, readDraft, configurationSnapshot } from './sliding-door-draft.js';
 import { summarizeConfiguration } from './sliding-door-review.js';
 import { validateBuilder, incompatibleInfillIds, catalogSizingReference } from './sliding-door-rules.js';
-import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout, variantSupportsHeight, doorHeight, resolvePanelHeights } from './sliding-door-state.js';
+import { createInitialConfiguration, parseMeasurement, measurementError, applyModelLayout, variantSupportsOpening, doorHeight, doorWidth, resolvePanelHeights } from './sliding-door-state.js';
 import { createDoorPreview } from './sliding-door-preview.js';
 import { frameVisual, infillVisual } from './sliding-door-visuals.js';
 import { reconcilePreviewConfiguration, previewSelectionTargets, reconcilePreviewSelection } from './sliding-door-selection.js';
@@ -269,11 +269,11 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
         },
 
         get frameDesigns() {
-            return [...new Set(this.selectedModel?.variants.filter(variant => variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)).map((variant) => variant.frameDesignCode) ?? [])];
+            return [...new Set(this.selectedModel?.variants.filter(variant => variantSupportsOpening(this.selectedModel, variant, this.previewConfiguration.openingWidth, this.previewConfiguration.openingHeight, this.previewConfiguration.doorCount)).map((variant) => variant.frameDesignCode) ?? [])];
         },
 
         get availableVariants() {
-            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variantSupportsHeight(this.selectedModel, variant, this.previewConfiguration.openingHeight)) ?? [];
+            return this.selectedModel?.variants.filter((variant) => variant.frameDesignCode === this.previewConfiguration.frameDesignCode && variantSupportsOpening(this.selectedModel, variant, this.previewConfiguration.openingWidth, this.previewConfiguration.openingHeight, this.previewConfiguration.doorCount)) ?? [];
         },
 
         selectModel(value) {
@@ -538,6 +538,7 @@ export default function slidingDoorBuilder({ initialStep, payload, previewLabels
             preview?.render(panels ? {
                 ...configuration,
                 doorHeight: height,
+                doorWidth: this.selectedVariant?.overlapWidth == null ? undefined : doorWidth(configuration.openingWidth, configuration.doorCount, this.selectedVariant),
                 infillWeightsByDoor: Array.from({ length: configuration.doorCount }, () => panels),
             } : null);
             this.saveLocalDraft();
